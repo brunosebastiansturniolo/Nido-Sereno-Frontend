@@ -59,7 +59,7 @@ export class RegisterComponent {
       next: () => {
         this.success = '¡Registro exitoso! Revisá tu email para activar tu cuenta.';
         this.registerForm.reset();
-        setTimeout(() => this.router.navigate(['/login']), 3000);
+        setTimeout(() => this.router.navigate(['/activate-account']), 3000);
       },
       error: (err) => {
         this.error = 'Error al registrar. Intentá de nuevo.';
