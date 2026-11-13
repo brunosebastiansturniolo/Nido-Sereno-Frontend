@@ -5,6 +5,15 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { RegistrationRequest } from '../../models/auth.models';
 
+function passwordsMatch(group: FormGroup): { [key: string]: boolean } | null {
+  const password = group.get('password')?.value;
+  const confirmPassword = group.get('confirmPassword')?.value;
+  if (password && confirmPassword && password !== confirmPassword) {
+    return { passwordsMismatch: true };
+  }
+  return null;
+}
+
 @Component({
   selector: 'app-register',
   standalone: true,
@@ -23,7 +32,7 @@ export class RegisterComponent {
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', [Validators.required]]
-  });
+  }, { validators: passwordsMatch });
 
   error = '';
   success = '';
