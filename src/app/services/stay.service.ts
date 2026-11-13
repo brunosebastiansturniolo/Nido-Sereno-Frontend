@@ -11,8 +11,16 @@ export class StayService {
   private http = inject(HttpClient);
   private baseUrl = `${environment.apiUrl}/stays`;
 
-  getMyStays(): Observable<StayResponse[]> {
-    return this.http.get<StayResponse[]>(`${this.baseUrl}/myStays`);
+  getMyStays(
+    documentNumber?: string,
+    name?: string,
+    active?: boolean
+  ): Observable<StayResponse[]> {
+    const params: any = {};
+    if (documentNumber) params.documentNumber = documentNumber;
+    if (name) params.name = name;
+    if (active !== undefined) params.active = active;
+    return this.http.get<StayResponse[]>(this.baseUrl, { params });
   }
 
   getStayById(id: number): Observable<StayResponse> {
@@ -27,11 +35,15 @@ export class StayService {
     return this.http.put<StayResponse>(`${this.baseUrl}/${id}`, request);
   }
 
-  checkIn(id: number, request: CheckInRequest): Observable<StayResponse> {
-    return this.http.patch<StayResponse>(`${this.baseUrl}/${id}/check-in`, request);
+  checkInFromReservation(request: CheckInRequest): Observable<StayResponse> {
+    return this.http.post<StayResponse>(`${this.baseUrl}/checkin`, request);
   }
 
   finalizeStay(id: number, request: StayFinalizationRequest): Observable<StayResponse> {
-    return this.http.patch<StayResponse>(`${this.baseUrl}/${id}/finalize`, request);
+    return this.http.patch<StayResponse>(`${this.baseUrl}/${id}/checkout`, request);
+  }
+
+  deleteStay(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 }

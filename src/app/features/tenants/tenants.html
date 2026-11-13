@@ -1,18 +1,60 @@
 <div class="p-6">
   <h1 class="text-2xl font-bold text-gray-800 mb-6">👥 Inquilinos</h1>
+
+  <p class="text-sm text-gray-500 mb-4">
+    Los inquilinos se registran automáticamente al hacer check-in. Acá podés ver el historial de todos los inquilinos que se hospedaron en tus departamentos.
+  </p>
+
+  <!-- Búsqueda -->
+  <div class="bg-white rounded-xl shadow p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-700 mb-4">Buscar inquilinos</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Documento</label>
+        <input [(ngModel)]="searchDocument" class="w-full px-4 py-2 border rounded-lg" placeholder="Ej: 12345678" (keyup.enter)="onSearch()" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre o apellido</label>
+        <input [(ngModel)]="searchName" class="w-full px-4 py-2 border rounded-lg" placeholder="Ej: Juan Pérez" (keyup.enter)="onSearch()" />
+      </div>
+      <div class="flex items-end gap-2">
+        <button (click)="onSearch()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-lg transition">
+          Buscar
+        </button>
+        <button (click)="onClear()" class="px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg transition">
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de inquilinos -->
   <div class="bg-white rounded-xl shadow p-6">
+    <h2 class="text-lg font-semibold text-gray-700 mb-4">Historial de inquilinos</h2>
     <div *ngIf="loading" class="text-gray-500">Cargando...</div>
-    <div *ngIf="!loading && tenants.length === 0" class="text-gray-400">No tenés inquilinos aún.</div>
-    <table *ngIf="!loading && tenants.length > 0" class="w-full text-left">
-      <thead><tr class="border-b"><th class="py-2 px-3 text-sm text-gray-500">Nombre</th><th class="py-2 px-3 text-sm text-gray-500">DNI</th><th class="py-2 px-3 text-sm text-gray-500">Email</th><th class="py-2 px-3 text-sm text-gray-500">Teléfono</th></tr></thead>
+    <div *ngIf="!loading && tenants.length === 0" class="text-gray-400">
+      {{ searchDocument || searchName ? 'No se encontraron inquilinos con esos filtros.' : 'No tenés inquilinos aún. Se registrarán automáticamente al hacer check-in.' }}
+    </div>
+    <div *ngIf="!loading && tenants.length > 0" class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead><tr class="border-b">
+        <th class="py-2 px-3 text-sm text-gray-500">Nombre</th>
+        <th class="py-2 px-3 text-sm text-gray-500">Documento</th>
+        <th class="py-2 px-3 text-sm text-gray-500">Email</th>
+        <th class="py-2 px-3 text-sm text-gray-500">Teléfono</th>
+        <th class="py-2 px-3 text-sm text-gray-500">Fecha de nacimiento</th>
+      </tr></thead>
       <tbody>
         <tr *ngFor="let t of tenants" class="border-b hover:bg-gray-50">
           <td class="py-2 px-3">{{ t.firstName }} {{ t.lastName }}</td>
           <td class="py-2 px-3">{{ t.documentNumber }}</td>
-          <td class="py-2 px-3">{{ t.email }}</td>
-          <td class="py-2 px-3">{{ t.phoneNumber }}</td>
+          <td class="py-2 px-3">{{ t.email || '—' }}</td>
+          <td class="py-2 px-3">{{ t.phoneNumber || '—' }}</td>
+          <td class="py-2 px-3">{{ t.dateOfBirth || '—' }}</td>
         </tr>
       </tbody>
     </table>
+    <p class="text-sm text-gray-500 mt-3">{{ tenants.length }} inquilino(s) encontrado(s)</p>
+    </div>
   </div>
 </div>
