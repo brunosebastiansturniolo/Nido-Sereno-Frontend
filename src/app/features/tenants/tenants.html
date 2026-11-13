@@ -1,0 +1,18 @@
+<div class="p-6">
+  <h1 class="text-2xl font-bold text-gray-800 mb-6">👥 Inquilinos</h1>
+  <div class="bg-white rounded-xl shadow p-6">
+    <div *ngIf="loading" class="text-gray-500">Cargando...</div>
+    <div *ngIf="!loading && tenants.length === 0" class="text-gray-400">No tenés inquilinos aún.</div>
+    <table *ngIf="!loading && tenants.length > 0" class="w-full text-left">
+      <thead><tr class="border-b"><th class="py-2 px-3 text-sm text-gray-500">Nombre</th><th class="py-2 px-3 text-sm text-gray-500">DNI</th><th class="py-2 px-3 text-sm text-gray-500">Email</th><th class="py-2 px-3 text-sm text-gray-500">Teléfono</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let t of tenants" class="border-b hover:bg-gray-50">
+          <td class="py-2 px-3">{{ t.firstName }} {{ t.lastName }}</td>
+          <td class="py-2 px-3">{{ t.documentNumber }}</td>
+          <td class="py-2 px-3">{{ t.email }}</td>
+          <td class="py-2 px-3">{{ t.phoneNumber }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

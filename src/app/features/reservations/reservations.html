@@ -1,0 +1,21 @@
+<div class="p-6">
+  <h1 class="text-2xl font-bold text-gray-800 mb-6">📋 Reservas</h1>
+  <div class="bg-white rounded-xl shadow p-6">
+    <div *ngIf="loading" class="text-gray-500">Cargando...</div>
+    <div *ngIf="!loading && reservations.length === 0" class="text-gray-400">No tenés reservas aún.</div>
+    <table *ngIf="!loading && reservations.length > 0" class="w-full text-left">
+      <thead><tr class="border-b"><th class="py-2 px-3 text-sm text-gray-500">Nombre</th><th class="py-2 px-3 text-sm text-gray-500">DNI</th><th class="py-2 px-3 text-sm text-gray-500">Check-in</th><th class="py-2 px-3 text-sm text-gray-500">Check-out</th><th class="py-2 px-3 text-sm text-gray-500">Estado</th><th class="py-2 px-3 text-sm text-gray-500">Total</th><th class="py-2 px-3 text-sm text-gray-500">Acciones</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let r of reservations" class="border-b hover:bg-gray-50">
+          <td class="py-2 px-3">{{ r.firstName }} {{ r.lastName }}</td>
+          <td class="py-2 px-3">{{ r.documentNumber }}</td>
+          <td class="py-2 px-3">{{ r.fechaCheckIn }}</td>
+          <td class="py-2 px-3">{{ r.fechaCheckOut }}</td>
+          <td class="py-2 px-3"><span class="px-2 py-1 rounded text-xs font-semibold" [class.bg-yellow-100]="r.estado==='PENDING'" [class.bg-green-100]="r.estado==='CONFIRMED'" [class.bg-red-100]="r.estado==='CANCELLED'" [class.bg-blue-100]="r.estado==='CHECKED_IN'">{{ r.estado }}</span></td>
+          <td class="py-2 px-3">$ {{ r.precioTotal }}</td>
+          <td class="py-2 px-3"><button (click)="onCancel(r.id)" class="text-red-600 hover:underline text-sm">Cancelar</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
