@@ -21,7 +21,7 @@ export class AuthService {
   }
 
   activateAccount(token: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/activate-account?token=${token}`, { responseType: 'text' });
+    return this.http.post(`${this.baseUrl}/activate-account`, { token });
   }
 
   refreshToken(refreshToken: string): Observable<AuthenticationResponse> {

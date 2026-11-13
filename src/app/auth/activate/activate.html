@@ -1,22 +1,46 @@
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 px-4">
   <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
-    <h1 class="text-3xl font-bold text-emerald-700 mb-4">🌿 Nido Sereno</h1>
+    <h1 class="text-3xl font-bold text-emerald-700 mb-2">🌿 Nido Sereno</h1>
 
-    <div *ngIf="loading" class="py-8">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
-      <p class="text-gray-500 mt-4">Activando tu cuenta...</p>
-    </div>
-
-    <div *ngIf="!loading && success" class="py-8">
+    <div *ngIf="success" class="py-8">
       <div class="text-5xl mb-4">✅</div>
       <p class="text-emerald-600 text-lg">{{ success }}</p>
       <p class="text-gray-400 text-sm mt-2">Redirigiendo al login...</p>
     </div>
 
-    <div *ngIf="!loading && error" class="py-8">
-      <div class="text-5xl mb-4">❌</div>
-      <p class="text-red-500 text-lg">{{ error }}</p>
-      <a routerLink="/login" class="text-emerald-600 hover:underline mt-4 inline-block">Ir al login</a>
+    <div *ngIf="!success">
+      <h2 class="text-xl font-semibold text-gray-700 mb-2">Activar cuenta</h2>
+      <p class="text-gray-500 text-sm mb-6">Ingresá el código de 6 dígitos que recibiste por correo.</p>
+
+      <form (ngSubmit)="submitCode()" class="space-y-4">
+        <div>
+          <input
+            type="text"
+            [(ngModel)]="token"
+            name="token"
+            maxlength="6"
+            pattern="[0-9]{6}"
+            placeholder="123456"
+            class="w-full text-center text-2xl tracking-[0.5em] font-mono px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+        </div>
+
+        <p *ngIf="error" class="text-red-500 text-sm bg-red-50 p-2 rounded">{{ error }}</p>
+
+        <button
+          type="submit"
+          [disabled]="loading || !token.trim()"
+          class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition"
+        >
+          <span *ngIf="loading">Activando...</span>
+          <span *ngIf="!loading">Activar cuenta</span>
+        </button>
+      </form>
+
+      <div class="mt-6 text-sm text-gray-400">
+        <p>¿No recibiste el código? Revisá tu bandeja de spam o</p>
+        <a routerLink="/register" class="text-emerald-600 hover:underline">registrate de nuevo</a>
+      </div>
     </div>
   </div>
 </div>

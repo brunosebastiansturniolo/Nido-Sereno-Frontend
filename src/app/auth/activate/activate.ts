@@ -1,47 +1,43 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-activate',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './activate.html',
   styleUrl: './activate.css'
 })
-export class ActivateComponent implements OnInit {
+export class ActivateComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
 
   token = '';
   error = '';
   success = '';
-  loading = true;
+  loading = false;
 
-  ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      this.token = params['token'] || '';
-
-      if (!this.token) {
-        this.error = 'Token de activación no encontrado.';
+  submitCode(): void {
+    if (!this.token.trim()) {
+      this.error = 'Ingresá el código de activación de 6 dígitos.';
+      return;
+    }
+    this.loading = true;
+    this.error = '';
+    this.auth.activateAccount(this.token.trim()).subscribe({
+      next: () => {
+        this.success = '¡Cuenta activada exitosamente! Podés iniciar sesión.';
         this.loading = false;
-        return;
+        setTimeout(() => this.router.navigate(['/login']), 3000);
+      },
+      error: (err) => {
+        this.error = 'Error al activar la cuenta. Verificá el código o intentá de nuevo.';
+        this.loading = false;
+        console.error(err);
       }
-
-      this.auth.activateAccount(this.token).subscribe({
-        next: () => {
-          this.success = '¡Cuenta activada exitosamente! Podés iniciar sesión.';
-          this.loading = false;
-          setTimeout(() => this.router.navigate(['/login']), 3000);
-        },
-        error: (err) => {
-          this.error = 'Error al activar la cuenta. El token puede haber expirado.';
-          this.loading = false;
-          console.error(err);
-        }
-      });
     });
   }
 }
