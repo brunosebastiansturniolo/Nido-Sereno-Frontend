@@ -22,7 +22,7 @@ export class ReservationService {
     if (fechaFin) params.fechaFin = fechaFin;
     if (documento) params.documento = documento;
     if (nombre) params.nombre = nombre;
-    return this.http.get<ReservationResponse[]>(this.baseUrl, { params });
+    return this.http.get<ReservationResponse[]>(`${this.baseUrl}/myReservations`, { params });
   }
 
   getReservationById(id: number): Observable<ReservationResponse> {
