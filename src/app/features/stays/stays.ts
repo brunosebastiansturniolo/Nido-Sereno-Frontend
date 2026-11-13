@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { StayService } from '../../services/stay.service';
-import { StayResponse, StayRequest, StayFinalizationRequest } from '../../models/stay.models';
+import { StayResponse, StayRequest, StayFinalizationRequest, CheckInRequest } from '../../models/stay.models';
 import { TenantRequest } from '../../models/tenant.models';
 import { ReservationService } from '../../services/reservation.service';
 import { ReservationResponse } from '../../models/reservation.models';
@@ -162,7 +162,7 @@ export class StaysComponent implements OnInit {
   onCheckInFromReservation(): void {
     if (this.existingForm.invalid) return;
     const formValue = this.existingForm.value;
-    const request: StayRequest = {
+    const request: CheckInRequest = {
       reservationId: formValue.reservationId,
       fechaHoraCheckInReal: formValue.fechaHoraCheckInReal,
       comentariosCheckIn: formValue.comentariosCheckIn,
@@ -170,7 +170,7 @@ export class StaysComponent implements OnInit {
     };
     this.error = '';
     this.success = '';
-    this.stayService.createStay(request).subscribe({
+    this.stayService.checkInFromReservation(request).subscribe({
       next: () => {
         this.success = 'Check-in realizado exitosamente.';
         this.existingForm.reset({

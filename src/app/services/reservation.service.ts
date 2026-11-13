@@ -12,17 +12,17 @@ export class ReservationService {
   private baseUrl = `${environment.apiUrl}/reservations`;
 
   getMyReservations(
-    fechaInicio?: string,
-    fechaFin?: string,
-    documento?: string,
-    nombre?: string
+    startDate?: string,
+    endDate?: string,
+    documentNumber?: string,
+    name?: string
   ): Observable<ReservationResponse[]> {
     const params: any = {};
-    if (fechaInicio) params.fechaInicio = fechaInicio;
-    if (fechaFin) params.fechaFin = fechaFin;
-    if (documento) params.documento = documento;
-    if (nombre) params.nombre = nombre;
-    return this.http.get<ReservationResponse[]>(`${this.baseUrl}/myReservations`, { params });
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+    if (documentNumber) params.documentNumber = documentNumber;
+    if (name) params.name = name;
+    return this.http.get<ReservationResponse[]>(this.baseUrl, { params });
   }
 
   getReservationById(id: number): Observable<ReservationResponse> {

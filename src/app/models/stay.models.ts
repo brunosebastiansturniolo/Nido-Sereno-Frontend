@@ -1,5 +1,12 @@
 import { TenantRequest } from '../models/tenant.models';
 
+export interface CheckInRequest {
+  reservationId: number;
+  fechaHoraCheckInReal: string;
+  comentariosCheckIn?: string;
+  tenants: TenantRequest[];
+}
+
 export interface StayRequest {
   reservationId?: number;
   departmentId?: number;
@@ -24,11 +31,6 @@ export interface StayResponse {
   departmentId: number;
   departamentoNombre?: string;
   tenants?: any[];
-}
-
-export interface CheckInRequest {
-  fechaHoraCheckInReal: string;
-  comentariosCheckIn?: string;
 }
 
 export interface StayFinalizationRequest {
