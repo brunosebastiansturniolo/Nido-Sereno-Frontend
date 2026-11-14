@@ -1,1 +1,0 @@
-import{Bb as n,Eb as a,L as r,Q as p}from"./chunk-5N5RF4OV.js";var s=class e{http=p(n);baseUrl=`${a.apiUrl}/departments`;getMyDepartments(){return this.http.get(this.baseUrl)}createDepartment(t){return this.http.post(this.baseUrl,t)}static \u0275fac=function(o){return new(o||e)};static \u0275prov=r({token:e,factory:e.\u0275fac,providedIn:"root"})};export{s as a};
