@@ -23,18 +23,24 @@ export class LoginComponent {
   });
 
   error = '';
+  loading = false;
 
   onSubmit(): void {
     if (this.loginForm.invalid) return;
+
+    this.loading = true;
+    this.error = '';
 
     const request: AuthenticationRequest = this.loginForm.value;
     this.auth.login(request).subscribe({
       next: (response) => {
         this.auth.saveAuthResponse(response);
+        this.loading = false;
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.error = 'Credenciales inválidas. Verificá tu email y contraseña.';
+        this.loading = false;
         console.error(err);
       }
     });
