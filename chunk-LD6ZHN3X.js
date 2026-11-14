@@ -1,0 +1,1 @@
+import{Ab as a,L as r,Q as p,xb as n}from"./chunk-3SYS4ACI.js";var s=class e{http=p(n);baseUrl=`${a.apiUrl}/departments`;getMyDepartments(){return this.http.get(this.baseUrl)}createDepartment(t){return this.http.post(this.baseUrl,t)}static \u0275fac=function(o){return new(o||e)};static \u0275prov=r({token:e,factory:e.\u0275fac,providedIn:"root"})};export{s as a};
