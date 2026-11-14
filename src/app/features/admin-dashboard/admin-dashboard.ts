@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { AdminService } from '../../services/admin.service';
 import { AdminStatistics, ComplexStatistics } from '../../models/admin.models';
@@ -7,7 +8,7 @@ import { AdminStatistics, ComplexStatistics } from '../../models/admin.models';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css'
 })
@@ -40,6 +41,12 @@ export class AdminDashboardComponent implements OnInit {
 
   complexStatistics: ComplexStatistics[] = [];
 
+  // Promote to super admin
+  promoteEmail = '';
+  promoting = false;
+  promoteSuccess = '';
+  promoteError = '';
+
   ngOnInit(): void {
     this.loadStatistics();
   }
@@ -64,6 +71,34 @@ export class AdminDashboardComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading complex statistics:', err);
+      }
+    });
+  }
+
+  promoteToSuperAdmin(): void {
+    if (!this.promoteEmail.trim()) {
+      this.promoteError = 'Ingresá un email válido';
+      return;
+    }
+    this.promoting = true;
+    this.promoteSuccess = '';
+    this.promoteError = '';
+
+    this.adminService.promoteToSuperAdmin(this.promoteEmail.trim()).subscribe({
+      next: (response) => {
+        this.promoteSuccess = response.message;
+        this.promoteEmail = '';
+        this.promoting = false;
+      },
+      error: (err) => {
+        if (err.status === 404) {
+          this.promoteError = 'Usuario no encontrado. Verificá que el email esté registrado.';
+        } else if (err.status === 403) {
+          this.promoteError = 'No tenés permiso para realizar esta acción.';
+        } else {
+          this.promoteError = err.error?.message || 'Error al promover el usuario.';
+        }
+        this.promoting = false;
       }
     });
   }

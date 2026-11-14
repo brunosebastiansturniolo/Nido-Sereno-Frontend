@@ -220,5 +220,40 @@
         </div>
       </div>
     </div>
+
+    <!-- Promover a SUPER_ADMIN -->
+    <div class="bg-white rounded-xl shadow p-6 mt-6">
+      <h2 class="text-lg font-semibold text-gray-700 mb-2">👑 Promover a SUPER_ADMIN</h2>
+      <p class="text-sm text-gray-500 mb-4">Asigná el rol de SUPER_ADMIN a un usuario registrado por su email.</p>
+
+      <form (ngSubmit)="promoteToSuperAdmin()" class="flex flex-col sm:flex-row gap-3">
+        <input
+          type="email"
+          [(ngModel)]="promoteEmail"
+          name="promoteEmail"
+          placeholder="Ingresa el email del usuario"
+          class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder:text-gray-400 placeholder:italic"
+          [disabled]="promoting"
+        />
+        <button
+          type="submit"
+          [disabled]="promoting || !promoteEmail.trim()"
+          class="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+        >
+          <svg *ngIf="promoting" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ promoting ? 'Promoviendo...' : 'Promover' }}
+        </button>
+      </form>
+
+      <div *ngIf="promoteSuccess" class="mt-3 px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+        ✅ {{ promoteSuccess }}
+      </div>
+      <div *ngIf="promoteError" class="mt-3 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        ❌ {{ promoteError }}
+      </div>
+    </div>
   </div>
 </div>

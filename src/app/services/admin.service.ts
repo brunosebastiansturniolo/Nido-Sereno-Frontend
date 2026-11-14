@@ -67,4 +67,8 @@ export class AdminService {
   getComplexStatistics(): Observable<ComplexStatistics[]> {
     return this.http.get<ComplexStatistics[]>(`${this.baseUrl}/statistics/complexes`);
   }
+
+  promoteToSuperAdmin(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/promote-super-admin`, { email });
+  }
 }
