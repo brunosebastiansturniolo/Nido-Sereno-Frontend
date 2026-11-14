@@ -1,41 +1,167 @@
 <div class="p-6">
   <h1 class="text-2xl font-bold text-gray-800 mb-6">Bienvenido, {{ user?.fullName }} 👋</h1>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+  <!-- Loading state -->
+  <div *ngIf="loading" class="flex justify-center items-center py-12">
+    <div class="text-center">
+      <svg class="animate-spin h-10 w-10 text-emerald-600 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p class="text-gray-500">Cargando resumen...</p>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <!-- Complejos Card -->
     <div class="bg-white rounded-xl shadow p-6">
-      <div class="flex items-center">
+      <div class="flex items-center mb-4">
         <span class="text-4xl mr-4">🏢</span>
         <div>
           <p class="text-gray-500 text-sm">Complejos</p>
-          <p class="text-2xl font-bold text-gray-800">—</p>
+          <p class="text-2xl font-bold text-gray-800">{{ complexes.length }}</p>
+        </div>
+      </div>
+      <div class="border-t pt-3">
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-500">Total departamentos</span>
+          <span class="font-semibold">{{ getTotalDepartments() }}</span>
         </div>
       </div>
     </div>
 
+    <!-- Reservas Card -->
     <div class="bg-white rounded-xl shadow p-6">
-      <div class="flex items-center">
+      <div class="flex items-center mb-4">
         <span class="text-4xl mr-4">📋</span>
         <div>
           <p class="text-gray-500 text-sm">Reservas</p>
-          <p class="text-2xl font-bold text-gray-800">—</p>
+          <p class="text-2xl font-bold text-gray-800">{{ reservationSummary.total }}</p>
+        </div>
+      </div>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between items-center">
+          <span class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+            <span class="text-gray-600">Pendientes</span>
+          </span>
+          <span class="font-semibold">{{ reservationSummary.pending }}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-green-400"></span>
+            <span class="text-gray-600">Confirmadas</span>
+          </span>
+          <span class="font-semibold">{{ reservationSummary.confirmed }}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-blue-400"></span>
+            <span class="text-gray-600">Check-in</span>
+          </span>
+          <span class="font-semibold">{{ reservationSummary.checkedIn }}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-gray-400"></span>
+            <span class="text-gray-600">Completadas</span>
+          </span>
+          <span class="font-semibold">{{ reservationSummary.completed }}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-red-400"></span>
+            <span class="text-gray-600">Canceladas</span>
+          </span>
+          <span class="font-semibold">{{ reservationSummary.cancelled }}</span>
         </div>
       </div>
     </div>
 
+    <!-- Estadías Card -->
     <div class="bg-white rounded-xl shadow p-6">
-      <div class="flex items-center">
+      <div class="flex items-center mb-4">
         <span class="text-4xl mr-4">🛏️</span>
         <div>
-          <p class="text-gray-500 text-sm">Estadías activas</p>
-          <p class="text-2xl font-bold text-gray-800">—</p>
+          <p class="text-gray-500 text-sm">Estadías</p>
+          <p class="text-2xl font-bold text-gray-800">{{ staySummary.total }}</p>
+        </div>
+      </div>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between items-center">
+          <span class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-green-400"></span>
+            <span class="text-gray-600">Activas (Check-in)</span>
+          </span>
+          <span class="font-semibold">{{ staySummary.checkedIn }}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-blue-400"></span>
+            <span class="text-gray-600">Finalizadas</span>
+          </span>
+          <span class="font-semibold">{{ staySummary.checkedOut }}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+            <span class="text-gray-600">Pendientes</span>
+          </span>
+          <span class="font-semibold">{{ staySummary.pending }}</span>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="bg-white rounded-xl shadow p-6">
-    <h2 class="text-lg font-semibold text-gray-700 mb-2">Panel de Control — Nido Sereno</h2>
-    <p class="text-gray-500">Usá el menú lateral para navegar entre las secciones.</p>
-    <p class="text-gray-400 text-sm mt-4">Roles: {{ user?.roles?.join(', ') || 'Ninguno' }}</p>
+  <!-- Complexes Detail Section -->
+  <div *ngIf="!loading && complexSummaries.length > 0" class="bg-white rounded-xl shadow p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-700 mb-4">Detalle por complejo</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div *ngFor="let cs of complexSummaries" class="border rounded-lg p-4 hover:shadow-md transition">
+        <h3 class="font-semibold text-gray-800 mb-1">{{ cs.complex.nombre }}</h3>
+        <p class="text-sm text-gray-500 mb-3">{{ cs.complex.ubicacion }}</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Total departamentos</span>
+            <span class="font-semibold">{{ cs.totalDepartments }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-red-400"></span>
+              <span class="text-gray-600">Ocupados</span>
+            </span>
+            <span class="font-semibold text-red-600">{{ cs.occupiedDepartments }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-400"></span>
+              <span class="text-gray-600">Libres</span>
+            </span>
+            <span class="font-semibold text-green-600">{{ cs.freeDepartments }}</span>
+          </div>
+        </div>
+        <!-- Occupancy bar -->
+        <div class="mt-3">
+          <div class="flex justify-between text-xs text-gray-500 mb-1">
+            <span>Ocupación</span>
+            <span>{{ cs.totalDepartments > 0 ? (cs.occupiedDepartments / cs.totalDepartments * 100 | number:'1.0-0') : 0 }}%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="bg-emerald-500 h-2 rounded-full" [style.width]="(cs.totalDepartments > 0 ? cs.occupiedDepartments / cs.totalDepartments * 100 : 0) + '%'"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && complexes.length === 0" class="bg-white rounded-xl shadow p-6">
+    <div class="text-center py-6">
+      <span class="text-5xl mb-4 block">🏗️</span>
+      <h3 class="text-lg font-semibold text-gray-700 mb-2">No tenés complejos aún</h3>
+      <p class="text-gray-500 mb-4">Comenzá creando tu primer complejo para empezar a gestionar departamentos y reservas.</p>
+      <p class="text-gray-400 text-sm">Roles: {{ user?.roles?.join(', ') || 'Ninguno' }}</p>
+    </div>
   </div>
 </div>
