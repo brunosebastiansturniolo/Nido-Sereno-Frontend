@@ -13,12 +13,12 @@
     <nav class="flex-1 py-4">
       <a *ngIf="hasRole('SUPER_ADMIN')" routerLink="/dashboard/admin" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
         <span class="text-lg">📊</span>
-        <span *ngIf="sidebarOpen" class="ml-3">Dashboard</span>
+        <span *ngIf="sidebarOpen" class="ml-3">Dashboard (Admin)</span>
       </a>
 
       <a *ngIf="hasRole('OWNER')" routerLink="/dashboard" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
         <span class="text-lg">📊</span>
-        <span *ngIf="sidebarOpen" class="ml-3">Dashboard</span>
+        <span *ngIf="sidebarOpen" class="ml-3">Dashboard (Owner)</span>
       </a>
 
       <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/complexes" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
