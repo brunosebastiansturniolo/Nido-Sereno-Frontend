@@ -48,7 +48,7 @@ export class DepartmentsComponent implements OnInit {
   }
 
   loadComplexes(): void {
-    this.complexService.getAllComplexs().subscribe({
+    this.complexService.getMyComplexs().subscribe({
       next: (data) => { this.complexes = data; },
       error: (err) => console.error(err)
     });
