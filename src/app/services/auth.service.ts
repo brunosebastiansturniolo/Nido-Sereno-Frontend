@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 import { RegistrationRequest } from '../models/auth.models';
 import { AuthenticationRequest, AuthenticationResponse } from '../models/auth-response.models';
 
@@ -24,17 +25,24 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}/activate-account`, { token });
   }
 
-  refreshToken(refreshToken: string): Observable<AuthenticationResponse> {
+  refreshToken(): Observable<AuthenticationResponse> {
+    const refreshToken = localStorage.getItem('refreshToken');
     return this.http.post<AuthenticationResponse>(
       `${this.baseUrl}/refresh-token`,
       {},
-      { headers: { Authorization: refreshToken } }
+      { headers: { Authorization: `Bearer ${refreshToken}` } }
+    ).pipe(
+      tap(response => this.saveAuthResponse(response)),
+      catchError(() => {
+        this.logout();
+        return throwError(() => new Error('Sesión expirada'));
+      })
     );
   }
 
   saveAuthResponse(response: AuthenticationResponse): void {
     localStorage.setItem('token', response.token);
-    localStorage.setItem('refreshToken', response.token);
+    localStorage.setItem('refreshToken', response.refreshToken);
     localStorage.setItem('user', JSON.stringify(response.user));
   }
 

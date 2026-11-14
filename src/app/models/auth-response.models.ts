@@ -13,5 +13,6 @@ export interface UserDataDTO {
 
 export interface AuthenticationResponse {
   token: string;
+  refreshToken: string;
   user: UserDataDTO;
 }
