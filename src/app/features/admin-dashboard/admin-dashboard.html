@@ -1,0 +1,224 @@
+<div class="p-6">
+  <h1 class="text-2xl font-bold text-gray-800 mb-2">Panel de Administración 📊</h1>
+  <p class="text-gray-500 mb-6">Bienvenido, {{ user?.fullName }} — Vista global de todos los complejos</p>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="flex justify-center items-center py-12">
+    <div class="text-center">
+      <svg class="animate-spin h-10 w-10 text-emerald-600 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p class="text-gray-500">Cargando estadísticas...</p>
+    </div>
+  </div>
+
+  <div *ngIf="!loading">
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <!-- Complejos -->
+      <div class="bg-white rounded-xl shadow p-6">
+        <div class="flex items-center mb-4">
+          <span class="text-4xl mr-4">🏢</span>
+          <div>
+            <p class="text-gray-500 text-sm">Complejos</p>
+            <p class="text-2xl font-bold text-gray-800">{{ statistics.totalComplexes }}</p>
+          </div>
+        </div>
+        <div class="border-t pt-3 space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Departamentos</span>
+            <span class="font-semibold">{{ statistics.totalDepartments }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Inquilinos</span>
+            <span class="font-semibold">{{ statistics.totalTenants }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reservas -->
+      <div class="bg-white rounded-xl shadow p-6">
+        <div class="flex items-center mb-4">
+          <span class="text-4xl mr-4">📋</span>
+          <div>
+            <p class="text-gray-500 text-sm">Reservas</p>
+            <p class="text-2xl font-bold text-gray-800">{{ statistics.totalReservations }}</p>
+          </div>
+        </div>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between items-center">
+            <span class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+              <span class="text-gray-600">Pendientes</span>
+            </span>
+            <span class="font-semibold">{{ statistics.reservationsPending }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-green-400"></span>
+              <span class="text-gray-600">Confirmadas</span>
+            </span>
+            <span class="font-semibold">{{ statistics.reservationsConfirmed }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-blue-400"></span>
+              <span class="text-gray-600">Check-in</span>
+            </span>
+            <span class="font-semibold">{{ statistics.reservationsCheckedIn }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-gray-400"></span>
+              <span class="text-gray-600">Completadas</span>
+            </span>
+            <span class="font-semibold">{{ statistics.reservationsCompleted }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-red-400"></span>
+              <span class="text-gray-600">Canceladas</span>
+            </span>
+            <span class="font-semibold">{{ statistics.reservationsCancelled }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estadías -->
+      <div class="bg-white rounded-xl shadow p-6">
+        <div class="flex items-center mb-4">
+          <span class="text-4xl mr-4">🛏️</span>
+          <div>
+            <p class="text-gray-500 text-sm">Estadías</p>
+            <p class="text-2xl font-bold text-gray-800">{{ statistics.totalStays }}</p>
+          </div>
+        </div>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between items-center">
+            <span class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-green-400"></span>
+              <span class="text-gray-600">Activas</span>
+            </span>
+            <span class="font-semibold">{{ statistics.staysActive }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-blue-400"></span>
+              <span class="text-gray-600">Finalizadas</span>
+            </span>
+            <span class="font-semibold">{{ statistics.staysCompleted }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ocupación -->
+      <div class="bg-white rounded-xl shadow p-6">
+        <div class="flex items-center mb-4">
+          <span class="text-4xl mr-4">📈</span>
+          <div>
+            <p class="text-gray-500 text-sm">Ocupación</p>
+            <p class="text-2xl font-bold text-gray-800">{{ statistics.occupancyRate | number:'1.1-1' }}%</p>
+          </div>
+        </div>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-red-400"></span>
+              <span class="text-gray-600">Ocupados</span>
+            </span>
+            <span class="font-semibold text-red-600">{{ statistics.occupiedDepartments }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-400"></span>
+              <span class="text-gray-600">Libres</span>
+            </span>
+            <span class="font-semibold text-green-600">{{ statistics.freeDepartments }}</span>
+          </div>
+        </div>
+        <!-- Occupancy bar -->
+        <div class="mt-3">
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="bg-emerald-500 h-2 rounded-full" [style.width]="statistics.occupancyRate + '%'"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clasificaciones -->
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+      <div class="flex items-center mb-4">
+        <span class="text-4xl mr-4">⭐</span>
+        <div>
+          <p class="text-gray-500 text-sm">Clasificaciones</p>
+          <p class="text-2xl font-bold text-gray-800">
+            {{ statistics.totalClassifications > 0 ? (statistics.averageClassificationScore | number:'1.1-1') : '—' }}
+            <span class="text-sm text-gray-400">/ 5</span>
+          </p>
+        </div>
+      </div>
+      <p class="text-sm text-gray-500">{{ statistics.totalClassifications }} clasificaciones totales</p>
+    </div>
+
+    <!-- Ranking por complejo -->
+    <div class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-lg font-semibold text-gray-700 mb-4">Ranking por complejo</h2>
+      <div *ngIf="complexStatistics.length === 0" class="text-center py-6">
+        <span class="text-5xl mb-4 block">🏗️</span>
+        <p class="text-gray-500">No hay complejos registrados aún.</p>
+      </div>
+      <div *ngIf="complexStatistics.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div *ngFor="let cs of complexStatistics" class="border rounded-lg p-4 hover:shadow-md transition">
+          <h3 class="font-semibold text-gray-800 mb-1">{{ cs.complexName }}</h3>
+          <p class="text-sm text-gray-500 mb-3">{{ cs.complexLocation }}</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Departamentos</span>
+              <span class="font-semibold">{{ cs.totalDepartments }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-red-400"></span>
+                <span class="text-gray-600">Ocupados</span>
+              </span>
+              <span class="font-semibold text-red-600">{{ cs.occupiedDepartments }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                <span class="text-gray-600">Libres</span>
+              </span>
+              <span class="font-semibold text-green-600">{{ cs.freeDepartments }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Reservas</span>
+              <span class="font-semibold">{{ cs.totalReservations }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Estadías</span>
+              <span class="font-semibold">{{ cs.totalStays }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Nota promedio</span>
+              <span class="font-semibold">
+                {{ cs.totalClassifications > 0 ? (cs.averageClassificationScore | number:'1.1-1') : '—' }}
+                <span class="text-gray-400">/ 5</span>
+              </span>
+            </div>
+          </div>
+          <!-- Occupancy bar -->
+          <div class="mt-3">
+            <div class="flex justify-between text-xs text-gray-500 mb-1">
+              <span>Ocupación</span>
+              <span>{{ cs.occupancyRate | number:'1.0-0' }}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" [style.width]="cs.occupancyRate + '%'"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
