@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nido Sereno - Redirigiendo...</title>
+  <script type="text/javascript">
+    // Single Page App routing fix for GitHub Pages
+    // This script redirects 404 errors to index.html, preserving the path
+    // so Angular's router can handle the route correctly
+    var path = window.location.pathname;
+    // The base href for this app
+    var baseHref = '/Nido-Sereno-Frontend/';
+    // Redirect to index.html with the current path
+    window.location.replace(baseHref + 'index.html' + window.location.search + window.location.hash);
+  </script>
+</head>
+<body>
+  <p>Redirigiendo...</p>
+</body>
+</html>
