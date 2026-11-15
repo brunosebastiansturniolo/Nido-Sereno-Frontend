@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
-import { ClassificationResponse, TenantRequest, TenantResponse } from '../models/tenant.models';
+import { ClassificationResponse, TenantRequest, TenantResponse, TenantSearchResponse } from '../models/tenant.models';
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +27,15 @@ export class TenantService {
 
   getTenantByDocumentNumber(documentNumber: string): Observable<TenantResponse> {
     return this.http.get<TenantResponse>(`${this.baseUrl}/document/${documentNumber}`);
+  }
+
+  /**
+   * Busca un inquilino por DNI con contexto del owner.
+   * Devuelve datos del inquilino, nota promedio y los complejos del owner
+   * donde se ha alojado previamente.
+   */
+  searchTenantByDocumentNumber(documentNumber: string): Observable<TenantSearchResponse> {
+    return this.http.get<TenantSearchResponse>(`${this.baseUrl}/search/document/${documentNumber}`);
   }
 
   getTenantClassifications(id: number): Observable<ClassificationResponse[]> {

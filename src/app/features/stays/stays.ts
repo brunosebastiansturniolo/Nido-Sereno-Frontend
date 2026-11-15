@@ -3,11 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { StayService } from '../../services/stay.service';
 import { StayResponse, StayRequest, StayFinalizationRequest, CheckInRequest } from '../../models/stay.models';
-import { TenantRequest } from '../../models/tenant.models';
+import { TenantRequest, TenantSearchResponse } from '../../models/tenant.models';
 import { ReservationService } from '../../services/reservation.service';
 import { ReservationResponse } from '../../models/reservation.models';
 import { DepartmentService } from '../../services/department.service';
 import { DepartmentResponse } from '../../models/department.models';
+import { TenantService } from '../../services/tenant.service';
+import { debounceTime, distinctUntilChanged, switchMap, tap, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-stays',
@@ -20,6 +23,7 @@ export class StaysComponent implements OnInit {
   private stayService = inject(StayService);
   private resService = inject(ReservationService);
   private deptService = inject(DepartmentService);
+  private tenantService = inject(TenantService);
   private fb = inject(FormBuilder);
 
   stays: StayResponse[] = [];
@@ -29,6 +33,11 @@ export class StaysComponent implements OnInit {
   error = '';
   success = '';
   checkoutStayId: number | null = null;
+
+  // Mapa de inquilinos encontrados por DNI, claveado por índice de tenant
+  // Ej: { 0: TenantSearchResponse, 2: TenantSearchResponse }
+  foundTenants: { [key: number]: TenantSearchResponse } = {};
+  searchingTenants: { [key: number]: boolean } = {};
 
   // Mode: 'express' = check-in express, 'existing' = check-in desde reserva
   checkInMode = 'express';
@@ -66,6 +75,10 @@ export class StaysComponent implements OnInit {
       classificationScore: [null],
       classificationReviewComment: ['']
     });
+
+    // Inicializar búsqueda por DNI para los tenants iniciales
+    this.onDocumentNumberChange(this.expressTenants, 0);
+    this.onDocumentNumberChange(this.existingTenants, 0);
   }
 
   createTenant(): FormGroup {
@@ -88,21 +101,29 @@ export class StaysComponent implements OnInit {
   }
 
   addTenantExpress(): void {
+    const newIndex = this.expressTenants.length;
     this.expressTenants.push(this.createTenant());
+    this.onDocumentNumberChange(this.expressTenants, newIndex);
   }
 
   removeTenantExpress(index: number): void {
     if (this.expressTenants.length > 1) {
+      delete this.foundTenants[index];
+      delete this.searchingTenants[index];
       this.expressTenants.removeAt(index);
     }
   }
 
   addTenantExisting(): void {
+    const newIndex = this.existingTenants.length;
     this.existingTenants.push(this.createTenant());
+    this.onDocumentNumberChange(this.existingTenants, newIndex);
   }
 
   removeTenantExisting(index: number): void {
     if (this.existingTenants.length > 1) {
+      delete this.foundTenants[index];
+      delete this.searchingTenants[index];
       this.existingTenants.removeAt(index);
     }
   }
@@ -242,5 +263,82 @@ export class StaysComponent implements OnInit {
     if (!dateStr) return '—';
     const date = new Date(dateStr);
     return date.toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  // ----------------------------------------------------------------------
+  // Búsqueda de inquilino existente por DNI
+  // ----------------------------------------------------------------------
+
+  /**
+   * Se llama cuando el usuario escribe en el campo DNI de un inquilino.
+   * Usa debounce para no hacer demasiadas consultas.
+   */
+  onDocumentNumberChange(formArray: FormArray, index: number): void {
+    const tenantControl = formArray.at(index) as FormGroup;
+    const docControl = tenantControl.get('documentNumber');
+
+    // Limpiar resultado anterior
+    delete this.foundTenants[index];
+
+    docControl?.valueChanges.pipe(
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap((docNumber: string) => {
+        // Solo buscar si tiene al menos 6 caracteres (DNI mínimo)
+        if (!docNumber || docNumber.length < 6) {
+          delete this.foundTenants[index];
+          this.searchingTenants[index] = false;
+          return of(null);
+        }
+        this.searchingTenants[index] = true;
+        return this.tenantService.searchTenantByDocumentNumber(docNumber).pipe(
+          tap((tenant) => {
+            this.foundTenants[index] = tenant;
+            this.searchingTenants[index] = false;
+          }),
+          catchError((err) => {
+            // Error: inquilino no encontrado (404)
+            delete this.foundTenants[index];
+            this.searchingTenants[index] = false;
+            return of(null);
+          })
+        );
+      })
+    ).subscribe();
+  }
+
+  /**
+   * Autocompleta los campos del formulario con los datos del inquilino encontrado.
+   */
+  fillTenantFromExisting(formArray: FormArray, index: number): void {
+    const tenant = this.foundTenants[index];
+    if (!tenant) return;
+
+    const tenantControl = formArray.at(index) as FormGroup;
+    tenantControl.patchValue({
+      firstName: tenant.firstName,
+      lastName: tenant.lastName,
+      email: tenant.email || '',
+      phoneNumber: tenant.phoneNumber || '',
+      dateOfBirth: tenant.dateOfBirth || ''
+    });
+
+    // Limpiar el resultado después de autocompletar
+    delete this.foundTenants[index];
+  }
+
+  /**
+   * Desestima el inquilino encontrado y permite crear uno nuevo con el mismo DNI.
+   */
+  dismissFoundTenant(index: number): void {
+    delete this.foundTenants[index];
+  }
+
+  /**
+   * Devuelve la nota promedio formateada con estrellas.
+   */
+  getScoreStars(score: number | null | undefined): string {
+    if (score == null) return 'Sin clasificación';
+    return '⭐'.repeat(Math.round(score)) + ` (${score.toFixed(1)}/5)`;
   }
 }

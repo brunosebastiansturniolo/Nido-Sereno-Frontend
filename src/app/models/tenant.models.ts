@@ -18,6 +18,24 @@ export interface TenantResponse {
   averageScore?: number;
 }
 
+export interface ComplexSummary {
+  id: number;
+  nombre: string;
+  ubicacion: string;
+}
+
+export interface TenantSearchResponse {
+  id: number;
+  documentNumber: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  dateOfBirth: string;
+  averageScore?: number;
+  hostedInComplexes: ComplexSummary[];
+}
+
 export interface ClassificationResponse {
   id: number;
   score: number;

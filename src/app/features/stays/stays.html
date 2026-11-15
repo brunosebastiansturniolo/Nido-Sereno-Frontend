@@ -68,10 +68,49 @@
             <p class="text-sm font-medium text-gray-600 mb-2">Inquilino {{ i + 1 }}
               <button *ngIf="expressTenants.length > 1" type="button" (click)="removeTenantExpress(i)" class="text-red-500 text-xs ml-2">Eliminar</button>
             </p>
+
+            <!-- Panel: inquilino encontrado -->
+            <div *ngIf="foundTenants[i]" class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-sm font-semibold text-blue-800">
+                    ✅ Inquilino encontrado: {{ foundTenants[i].firstName }} {{ foundTenants[i].lastName }}
+                  </p>
+                  <p class="text-xs text-blue-600 mt-1">
+                    Documento: {{ foundTenants[i].documentNumber }}
+                    <span *ngIf="foundTenants[i].email"> · {{ foundTenants[i].email }}</span>
+                  </p>
+                  <p class="text-xs text-blue-600 mt-1">
+                    Nota promedio: <span class="font-semibold">{{ getScoreStars(foundTenants[i].averageScore) }}</span>
+                  </p>
+                  <!-- Complejos donde se alojó -->
+                  <div *ngIf="foundTenants[i].hostedInComplexes && foundTenants[i].hostedInComplexes.length > 0" class="mt-2">
+                    <p class="text-xs font-medium text-blue-700">Se alojó en tus complejos:</p>
+                    <ul class="text-xs text-blue-600 mt-1 space-y-1">
+                      <li *ngFor="let c of foundTenants[i].hostedInComplexes">
+                        📍 {{ c.nombre }}
+                        <span *ngIf="c.ubicacion" class="text-gray-500">({{ c.ubicacion }})</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <p *ngIf="!foundTenants[i].hostedInComplexes || foundTenants[i].hostedInComplexes.length === 0" class="text-xs text-gray-500 mt-1 italic">
+                    No se ha alojado en tus complejos anteriormente.
+                  </p>
+                </div>
+                <button type="button" (click)="dismissFoundTenant(i)" class="text-blue-400 hover:text-blue-600 text-xs ml-2">✕</button>
+              </div>
+              <button type="button" (click)="fillTenantFromExisting(expressTenants, i)" class="mt-2 text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition">
+                Usar este inquilino (autocompletar)
+              </button>
+            </div>
+
+            <!-- Spinner de búsqueda -->
+            <div *ngIf="searchingTenants[i]" class="mb-2 text-xs text-gray-400">Buscando inquilino...</div>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Documento</label>
-                <input formControlName="documentNumber" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="DNI" />
+                <input formControlName="documentNumber" (input)="onDocumentNumberChange(expressTenants, i)" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="DNI" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Nombre</label>
@@ -135,10 +174,49 @@
             <p class="text-sm font-medium text-gray-600 mb-2">Inquilino {{ i + 1 }}
               <button *ngIf="existingTenants.length > 1" type="button" (click)="removeTenantExisting(i)" class="text-red-500 text-xs ml-2">Eliminar</button>
             </p>
+
+            <!-- Panel: inquilino encontrado -->
+            <div *ngIf="foundTenants[i]" class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-sm font-semibold text-blue-800">
+                    ✅ Inquilino encontrado: {{ foundTenants[i].firstName }} {{ foundTenants[i].lastName }}
+                  </p>
+                  <p class="text-xs text-blue-600 mt-1">
+                    Documento: {{ foundTenants[i].documentNumber }}
+                    <span *ngIf="foundTenants[i].email"> · {{ foundTenants[i].email }}</span>
+                  </p>
+                  <p class="text-xs text-blue-600 mt-1">
+                    Nota promedio: <span class="font-semibold">{{ getScoreStars(foundTenants[i].averageScore) }}</span>
+                  </p>
+                  <!-- Complejos donde se alojó -->
+                  <div *ngIf="foundTenants[i].hostedInComplexes && foundTenants[i].hostedInComplexes.length > 0" class="mt-2">
+                    <p class="text-xs font-medium text-blue-700">Se alojó en tus complejos:</p>
+                    <ul class="text-xs text-blue-600 mt-1 space-y-1">
+                      <li *ngFor="let c of foundTenants[i].hostedInComplexes">
+                        📍 {{ c.nombre }}
+                        <span *ngIf="c.ubicacion" class="text-gray-500">({{ c.ubicacion }})</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <p *ngIf="!foundTenants[i].hostedInComplexes || foundTenants[i].hostedInComplexes.length === 0" class="text-xs text-gray-500 mt-1 italic">
+                    No se ha alojado en tus complejos anteriormente.
+                  </p>
+                </div>
+                <button type="button" (click)="dismissFoundTenant(i)" class="text-blue-400 hover:text-blue-600 text-xs ml-2">✕</button>
+              </div>
+              <button type="button" (click)="fillTenantFromExisting(existingTenants, i)" class="mt-2 text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition">
+                Usar este inquilino (autocompletar)
+              </button>
+            </div>
+
+            <!-- Spinner de búsqueda -->
+            <div *ngIf="searchingTenants[i]" class="mb-2 text-xs text-gray-400">Buscando inquilino...</div>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Documento</label>
-                <input formControlName="documentNumber" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="DNI" />
+                <input formControlName="documentNumber" (input)="onDocumentNumberChange(existingTenants, i)" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="DNI" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Nombre</label>
