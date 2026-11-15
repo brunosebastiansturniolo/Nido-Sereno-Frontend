@@ -275,9 +275,10 @@ export class StaysComponent implements OnInit {
       now.getMinutes()
     );
 
-    this.existingForm.patchValue({
-      fechaHoraCheckInReal: checkInDateTime.toISOString().slice(0, 16)
-    }, { emitEvent: false });
+    this.existingForm.get('fechaHoraCheckInReal')?.setValue(
+      checkInDateTime.toISOString().slice(0, 16),
+      { emitEvent: false }
+    );
 
     // Resetear el primer tenant
     const firstTenant = this.existingTenants.at(0) as FormGroup;
@@ -289,7 +290,7 @@ export class StaysComponent implements OnInit {
         email: '',
         phoneNumber: '',
         dateOfBirth: ''
-      });
+      }, { emitEvent: false });
     }
   }
 
