@@ -104,13 +104,22 @@
               </button>
             </div>
 
+            <!-- Advertencia: datos no coinciden con el inquilino encontrado -->
+            <div *ngIf="foundTenants[i] && hasDataMismatch(expressTenants, i)" class="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p class="text-sm font-semibold text-red-800">⚠️ Posible suplantación de identidad</p>
+              <p class="text-xs text-red-600 mt-1">
+                Los datos ingresados no coinciden con el inquilino encontrado para este DNI.
+                Para evitar errores, usá el botón "Usar este inquilino" o verificá el DNI físico del inquilino antes de continuar.
+              </p>
+            </div>
+
             <!-- Spinner de búsqueda -->
             <div *ngIf="searchingTenants[i]" class="mb-2 text-xs text-gray-400">Buscando inquilino...</div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Documento</label>
-                <input formControlName="documentNumber" (input)="onDocumentNumberChange(expressTenants, i)" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="DNI" />
+                <input formControlName="documentNumber" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="DNI" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Nombre</label>
@@ -210,13 +219,22 @@
               </button>
             </div>
 
+            <!-- Advertencia: datos no coinciden con el inquilino encontrado -->
+            <div *ngIf="foundTenants[i] && hasDataMismatch(existingTenants, i)" class="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p class="text-sm font-semibold text-red-800">⚠️ Posible suplantación de identidad</p>
+              <p class="text-xs text-red-600 mt-1">
+                Los datos ingresados no coinciden con el inquilino encontrado para este DNI.
+                Para evitar errores, usá el botón "Usar este inquilino" o verificá el DNI físico del inquilino antes de continuar.
+              </p>
+            </div>
+
             <!-- Spinner de búsqueda -->
             <div *ngIf="searchingTenants[i]" class="mb-2 text-xs text-gray-400">Buscando inquilino...</div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Documento</label>
-                <input formControlName="documentNumber" (input)="onDocumentNumberChange(existingTenants, i)" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="DNI" />
+                <input formControlName="documentNumber" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="DNI" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Nombre</label>

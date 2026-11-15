@@ -76,9 +76,9 @@ export class StaysComponent implements OnInit {
       classificationReviewComment: ['']
     });
 
-    // Inicializar búsqueda por DNI para los tenants iniciales
-    this.onDocumentNumberChange(this.expressTenants, 0);
-    this.onDocumentNumberChange(this.existingTenants, 0);
+    // Suscribir a la búsqueda por DNI para los tenants iniciales (una sola vez)
+    this.subscribeToDocumentSearch(this.expressTenants, 0);
+    this.subscribeToDocumentSearch(this.existingTenants, 0);
   }
 
   createTenant(): FormGroup {
@@ -103,7 +103,7 @@ export class StaysComponent implements OnInit {
   addTenantExpress(): void {
     const newIndex = this.expressTenants.length;
     this.expressTenants.push(this.createTenant());
-    this.onDocumentNumberChange(this.expressTenants, newIndex);
+    this.subscribeToDocumentSearch(this.expressTenants, newIndex);
   }
 
   removeTenantExpress(index: number): void {
@@ -117,7 +117,7 @@ export class StaysComponent implements OnInit {
   addTenantExisting(): void {
     const newIndex = this.existingTenants.length;
     this.existingTenants.push(this.createTenant());
-    this.onDocumentNumberChange(this.existingTenants, newIndex);
+    this.subscribeToDocumentSearch(this.existingTenants, newIndex);
   }
 
   removeTenantExisting(index: number): void {
@@ -243,18 +243,44 @@ export class StaysComponent implements OnInit {
   }
 
   private extractErrorMessage(err: any): string {
-    const body = err.error;
-    if (body?.validationErrors && Array.isArray(body.validationErrors) && body.validationErrors.length > 0) {
-      return body.validationErrors.join('. ');
+    // Intentar extraer el cuerpo del error de varias formas posibles
+    let body = err.error;
+
+    // Si err.error es un objeto Text (sin parsear), intentar parsearlo
+    if (body && typeof body === 'object' && !body.validationErrors && !body.businessErrorDescription && !body.error && !body.message) {
+      try {
+        // A veces Angular no parsea el JSON automáticamente
+        if (typeof body === 'string') {
+          body = JSON.parse(body);
+        }
+      } catch (e) {
+        // No es JSON, usar el texto como mensaje
+        return String(body);
+      }
     }
+
+    // 1. validationErrors (Set<String> serializado como array)
+    if (body?.validationErrors) {
+      const errors = Array.isArray(body.validationErrors) ? body.validationErrors : [body.validationErrors];
+      if (errors.length > 0) {
+        return errors.join('. ');
+      }
+    }
+    // 2. businessErrorDescription
     if (body?.businessErrorDescription) {
       return body.businessErrorDescription;
     }
+    // 3. error
     if (body?.error) {
       return body.error;
     }
+    // 4. message
     if (body?.message) {
       return body.message;
+    }
+    // 5. Fallback con status text
+    if (err?.statusText) {
+      return `Error ${err.status}: ${err.statusText}`;
     }
     return 'Error de servidor. Verificá los datos e intentá de nuevo.';
   }
@@ -270,17 +296,17 @@ export class StaysComponent implements OnInit {
   // ----------------------------------------------------------------------
 
   /**
-   * Se llama cuando el usuario escribe en el campo DNI de un inquilino.
+   * Suscribe a valueChanges del campo DNI de un tenant específico.
+   * Se llama UNA SOLA VEZ por tenant (en ngOnInit o al agregar un nuevo tenant).
    * Usa debounce para no hacer demasiadas consultas.
    */
-  onDocumentNumberChange(formArray: FormArray, index: number): void {
+  subscribeToDocumentSearch(formArray: FormArray, index: number): void {
     const tenantControl = formArray.at(index) as FormGroup;
-    const docControl = tenantControl.get('documentNumber');
+    const docControl = tenantControl?.get('documentNumber');
 
-    // Limpiar resultado anterior
-    delete this.foundTenants[index];
+    if (!docControl) return;
 
-    docControl?.valueChanges.pipe(
+    docControl.valueChanges.pipe(
       debounceTime(400),
       distinctUntilChanged(),
       switchMap((docNumber: string) => {
@@ -297,7 +323,7 @@ export class StaysComponent implements OnInit {
             this.searchingTenants[index] = false;
           }),
           catchError((err) => {
-            // Error: inquilino no encontrado (404)
+            // Error: inquilino no encontrado (404) u otro error
             delete this.foundTenants[index];
             this.searchingTenants[index] = false;
             return of(null);
@@ -325,6 +351,35 @@ export class StaysComponent implements OnInit {
 
     // Limpiar el resultado después de autocompletar
     delete this.foundTenants[index];
+  }
+
+  /**
+   * Verifica si los datos del formulario coinciden con el inquilino encontrado.
+   * Devuelve true si hay discrepancias (posible suplantación de identidad).
+   */
+  hasDataMismatch(formArray: FormArray, index: number): boolean {
+    const tenant = this.foundTenants[index];
+    if (!tenant) return false;
+
+    const tenantControl = formArray.at(index) as FormGroup;
+    const formValue = tenantControl.value;
+
+    // Si los campos están vacíos, no hay discrepancia
+    if (!formValue.firstName && !formValue.lastName && !formValue.email) {
+      return false;
+    }
+
+    // Verificar si los datos ingresados difieren de los datos del inquilino encontrado
+    if (formValue.firstName && formValue.firstName.toLowerCase().trim() !== tenant.firstName.toLowerCase().trim()) {
+      return true;
+    }
+    if (formValue.lastName && formValue.lastName.toLowerCase().trim() !== tenant.lastName.toLowerCase().trim()) {
+      return true;
+    }
+    if (formValue.email && formValue.email.toLowerCase().trim() !== (tenant.email || '').toLowerCase().trim()) {
+      return true;
+    }
+    return false;
   }
 
   /**
