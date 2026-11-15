@@ -24,7 +24,7 @@ export class DepartmentsComponent implements OnInit {
 
   createForm = this.fb.group({
     nombre: [''],
-    numeroPiezas: [0],
+    numeroHabitaciones: [0],
     precioPorNoche: [0],
     tamañoM2: [0],
     incluyeCochera: [false],

@@ -1,6 +1,6 @@
 export interface DepartmentRequest {
   nombre: string;
-  numeroPiezas: number;
+  numeroHabitaciones: number;
   precioPorNoche: number;
   tamañoM2: number;
   incluyeCochera: boolean;
@@ -13,7 +13,7 @@ export interface DepartmentRequest {
 export interface DepartmentResponse {
   id: number;
   nombre: string;
-  numeroPiezas: number;
+  numeroHabitaciones: number;
   precioPorNoche: number;
   tamañoM2: number;
   incluyeCochera: boolean;
