@@ -52,6 +52,9 @@ export class StaysComponent implements OnInit {
 
   // Reserva seleccionada para check-in desde reserva existente
   selectedReservation: ReservationResponse | null = null;
+  
+  // Checkbox para usar el reservante como inquilino
+  useReservanteAsTenant = false;
 
   ngOnInit(): void {
     this.loadStays();
@@ -247,16 +250,19 @@ export class StaysComponent implements OnInit {
   onReservationSelected(reservationId: any): void {
     if (!reservationId) {
       this.selectedReservation = null;
+      this.useReservanteAsTenant = false;
       return;
     }
 
     const reservation = this.reservations.find(r => r.id === reservationId);
     if (!reservation) {
       this.selectedReservation = null;
+      this.useReservanteAsTenant = false;
       return;
     }
 
     this.selectedReservation = reservation;
+    this.useReservanteAsTenant = false;
 
     // Prellenar la fecha de check-in con la fecha de la reserva + hora actual
     const now = new Date();
@@ -273,15 +279,46 @@ export class StaysComponent implements OnInit {
       fechaHoraCheckInReal: checkInDateTime.toISOString().slice(0, 16)
     }, { emitEvent: false });
 
-    // Prellenar el primer tenant con los datos de la reserva
+    // Resetear el primer tenant
     const firstTenant = this.existingTenants.at(0) as FormGroup;
     if (firstTenant) {
+      firstTenant.reset({
+        documentNumber: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: '',
+        dateOfBirth: ''
+      });
+    }
+  }
+
+  /**
+   * Cuando el usuario marca el checkbox "Usar reservante como inquilino",
+   * se prellena el primer tenant con los datos de quien hizo la reserva.
+   */
+  onUseReservanteAsTenant(): void {
+    if (!this.selectedReservation) return;
+    
+    const firstTenant = this.existingTenants.at(0) as FormGroup;
+    if (!firstTenant) return;
+
+    if (this.useReservanteAsTenant) {
       firstTenant.patchValue({
-        documentNumber: reservation.documentNumber || '',
-        firstName: reservation.firstName || '',
-        lastName: reservation.lastName || '',
-        phoneNumber: reservation.phoneNumber || ''
+        documentNumber: this.selectedReservation.documentNumber || '',
+        firstName: this.selectedReservation.firstName || '',
+        lastName: this.selectedReservation.lastName || '',
+        phoneNumber: this.selectedReservation.phoneNumber || ''
       }, { emitEvent: false });
+    } else {
+      firstTenant.reset({
+        documentNumber: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: '',
+        dateOfBirth: ''
+      });
     }
   }
 

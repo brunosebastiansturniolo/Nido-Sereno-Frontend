@@ -32,6 +32,7 @@ export class ReservationsComponent implements OnInit {
   calculatedNights: number | null = null;
   calculatedTotal: number | null = null;
   private userModifiedCheckOut = false; // Bandera para saber si el usuario modificó manualmente el check-out
+  private userModifiedNights = false; // Bandera para saber si el usuario modificó manualmente las noches
 
   ngOnInit(): void {
     this.loadReservations();
@@ -73,6 +74,11 @@ export class ReservationsComponent implements OnInit {
     this.createForm.get('fechaCheckOut')!.valueChanges.subscribe(() => {
       this.userModifiedCheckOut = true;
     });
+
+    // Detectar si el usuario modificó manualmente las noches
+    this.createForm.get('cantidadNoches')!.valueChanges.subscribe(() => {
+      this.userModifiedNights = true;
+    });
   }
 
   /**
@@ -80,6 +86,7 @@ export class ReservationsComponent implements OnInit {
    * Se suma la cantidad de noches a la fecha de check-in.
    */
   onNightsChange(nights: number | null): void {
+    if (!this.userModifiedNights) return; // Solo si fue el usuario quien cambió las noches manualmente
     const checkIn = this.createForm.get('fechaCheckIn')?.value;
     if (!checkIn || !nights || nights < 1) return;
 
@@ -89,6 +96,18 @@ export class ReservationsComponent implements OnInit {
 
     this.createForm.get('fechaCheckOut')?.setValue(dateOut.toISOString().slice(0, 10), { emitEvent: false });
     this.userModifiedCheckOut = false;
+    this.userModifiedNights = false;
+  }
+
+  /**
+   * Devuelve la fecha mínima para el check-out (día después del check-in).
+   */
+  getCheckOutMinDate(): string {
+    const checkIn = this.createForm.get('fechaCheckIn')?.value;
+    if (!checkIn) return '';
+    const dateIn = new Date(checkIn);
+    dateIn.setDate(dateIn.getDate() + 1);
+    return dateIn.toISOString().slice(0, 10);
   }
 
   loadDepartments(): void {
@@ -138,6 +157,7 @@ export class ReservationsComponent implements OnInit {
         this.calculatedNights = null;
         this.calculatedTotal = null;
         this.userModifiedCheckOut = false;
+        this.userModifiedNights = false;
         this.loadReservations();
       },
       error: (err) => {
@@ -173,7 +193,7 @@ export class ReservationsComponent implements OnInit {
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       this.calculatedNights = diffDays > 0 ? diffDays : null;
       // Actualizar el campo cantidadNoches si no fue modificado manualmente por el usuario
-      if (this.calculatedNights && !this.userModifiedCheckOut) {
+      if (this.calculatedNights && !this.userModifiedCheckOut && !this.userModifiedNights) {
         this.createForm.get('cantidadNoches')?.setValue(this.calculatedNights, { emitEvent: false });
       }
     } else {
