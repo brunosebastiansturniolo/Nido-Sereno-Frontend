@@ -5,11 +5,12 @@ import { DepartmentService } from '../../services/department.service';
 import { ComplexService } from '../../services/complex.service';
 import { DepartmentRequest, DepartmentResponse } from '../../models/department.models';
 import { ComplexResponse } from '../../models/complex.models';
+import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 
 @Component({
   selector: 'app-departments',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ErrorModalComponent],
   templateUrl: './departments.html',
   styleUrl: './departments.css'
 })
@@ -23,6 +24,8 @@ export class DepartmentsComponent implements OnInit {
   loading = false;
   error = '';
   success = '';
+  showErrorModal = false;
+  errorMessage = '';
 
   createForm = this.fb.group({
     nombre: [''],
@@ -67,10 +70,16 @@ export class DepartmentsComponent implements OnInit {
         this.createForm.reset();
       },
       error: (err) => {
-        this.error = this.extractErrorMessage(err);
+        this.errorMessage = this.extractErrorMessage(err);
+        this.showErrorModal = true;
         console.error(err);
       }
     });
+  }
+
+  closeErrorModal(): void {
+    this.showErrorModal = false;
+    this.errorMessage = '';
   }
 
   private extractErrorMessage(err: any): string {

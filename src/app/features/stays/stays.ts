@@ -9,13 +9,14 @@ import { ReservationResponse } from '../../models/reservation.models';
 import { DepartmentService } from '../../services/department.service';
 import { DepartmentResponse } from '../../models/department.models';
 import { TenantService } from '../../services/tenant.service';
+import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 import { debounceTime, distinctUntilChanged, switchMap, tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Component({
   selector: 'app-stays',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ErrorModalComponent],
   templateUrl: './stays.html',
   styleUrl: './stays.css'
 })
@@ -33,6 +34,8 @@ export class StaysComponent implements OnInit {
   error = '';
   success = '';
   checkoutStayId: number | null = null;
+  showErrorModal = false;
+  errorMessage = '';
 
   // Mapa de inquilinos encontrados por DNI, claveado por índice de tenant
   // Ej: { 0: TenantSearchResponse, 2: TenantSearchResponse }
@@ -178,7 +181,8 @@ export class StaysComponent implements OnInit {
         this.loadStays();
       },
       error: (err) => {
-        this.error = this.extractErrorMessage(err);
+        this.errorMessage = this.extractErrorMessage(err);
+        this.showErrorModal = true;
         console.error(err);
       }
     });
@@ -206,7 +210,8 @@ export class StaysComponent implements OnInit {
         this.loadReservations();
       },
       error: (err) => {
-        this.error = this.extractErrorMessage(err);
+        this.errorMessage = this.extractErrorMessage(err);
+        this.showErrorModal = true;
         console.error(err);
       }
     });
@@ -236,10 +241,16 @@ export class StaysComponent implements OnInit {
         this.loadStays();
       },
       error: (err) => {
-        this.error = this.extractErrorMessage(err);
+        this.errorMessage = this.extractErrorMessage(err);
+        this.showErrorModal = true;
         console.error(err);
       }
     });
+  }
+
+  closeErrorModal(): void {
+    this.showErrorModal = false;
+    this.errorMessage = '';
   }
 
   private extractErrorMessage(err: any): string {

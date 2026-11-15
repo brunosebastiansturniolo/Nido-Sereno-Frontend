@@ -5,11 +5,12 @@ import { ReservationService } from '../../services/reservation.service';
 import { ReservationRequest, ReservationResponse } from '../../models/reservation.models';
 import { DepartmentService } from '../../services/department.service';
 import { DepartmentResponse } from '../../models/department.models';
+import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 
 @Component({
   selector: 'app-reservations',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ErrorModalComponent],
   templateUrl: './reservations.html',
   styleUrl: './reservations.css'
 })
@@ -23,6 +24,8 @@ export class ReservationsComponent implements OnInit {
   loading = false;
   error = '';
   success = '';
+  showErrorModal = false;
+  errorMessage = '';
 
   createForm!: FormGroup;
 
@@ -89,10 +92,16 @@ export class ReservationsComponent implements OnInit {
         this.loadReservations();
       },
       error: (err) => {
-        this.error = this.extractErrorMessage(err);
+        this.errorMessage = this.extractErrorMessage(err);
+        this.showErrorModal = true;
         console.error(err);
       }
     });
+  }
+
+  closeErrorModal(): void {
+    this.showErrorModal = false;
+    this.errorMessage = '';
   }
 
   private extractErrorMessage(err: any): string {
