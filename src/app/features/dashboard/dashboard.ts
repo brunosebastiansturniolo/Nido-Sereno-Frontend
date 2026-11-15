@@ -96,9 +96,9 @@ export class DashboardComponent implements OnInit {
       next: (stays) => {
         this.staySummary = {
           total: stays.length,
-          checkedIn: stays.filter(s => s.estado === 'CHECKED_IN').length,
-          checkedOut: stays.filter(s => s.estado === 'CHECKED_OUT').length,
-          pending: stays.filter(s => s.estado === 'PENDING').length
+          checkedIn: stays.filter(s => s.status === 'ACTIVE').length,
+          checkedOut: stays.filter(s => s.status === 'COMPLETED').length,
+          pending: 0
         };
         this.checkLoadingComplete();
       },
