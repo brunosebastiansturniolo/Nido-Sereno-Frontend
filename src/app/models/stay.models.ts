@@ -43,3 +43,15 @@ export interface StayFinalizationRequest {
   classificationScore?: number;
   classificationReviewComment?: string;
 }
+
+export interface RetroactiveStayRequest {
+  departmentId: number;
+  fechaHoraCheckInReal: string;
+  fechaCheckOutPlaneada: string;
+  cantidadPersonas: number;
+  cantidadVehiculos?: number;
+  comentariosCheckIn?: string;
+  tenants: TenantRequest[];
+  reservanteFirstName?: string;
+  reservanteLastName?: string;
+}

@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { StayService } from '../../services/stay.service';
-import { StayResponse, StayRequest, StayFinalizationRequest, CheckInRequest } from '../../models/stay.models';
+import { StayResponse, StayRequest, StayFinalizationRequest, CheckInRequest, RetroactiveStayRequest } from '../../models/stay.models';
 import { TenantRequest, TenantSearchResponse } from '../../models/tenant.models';
 import { ReservationService } from '../../services/reservation.service';
 import { ReservationResponse } from '../../models/reservation.models';
@@ -42,11 +42,12 @@ export class StaysComponent implements OnInit {
   foundTenants: { [key: number]: TenantSearchResponse } = {};
   searchingTenants: { [key: number]: boolean } = {};
 
-  // Mode: 'express' = check-in express, 'existing' = check-in desde reserva
+  // Mode: 'express' = check-in express, 'existing' = check-in desde reserva, 'retroactive' = cargar historial
   checkInMode = 'express';
 
   expressForm!: FormGroup;
   existingForm!: FormGroup;
+  retroactiveForm!: FormGroup;
   checkoutForm!: FormGroup;
 
   ngOnInit(): void {
@@ -71,6 +72,16 @@ export class StaysComponent implements OnInit {
       tenants: this.fb.array([this.createTenant()])
     });
 
+    this.retroactiveForm = this.fb.group({
+      departmentId: [null, [Validators.required]],
+      fechaHoraCheckInReal: [''],
+      fechaCheckOutPlaneada: ['', [Validators.required]],
+      cantidadPersonas: [1, [Validators.required, Validators.min(1)]],
+      cantidadVehiculos: [0, [Validators.min(0)]],
+      comentariosCheckIn: [''],
+      tenants: this.fb.array([this.createTenant()])
+    });
+
     this.checkoutForm = this.fb.group({
       fechaHoraCheckOutReal: [new Date().toISOString().slice(0, 16)],
       comentariosCheckOut: [''],
@@ -82,6 +93,7 @@ export class StaysComponent implements OnInit {
     // Suscribir a la búsqueda por DNI para los tenants iniciales (una sola vez)
     this.subscribeToDocumentSearch(this.expressTenants, 0);
     this.subscribeToDocumentSearch(this.existingTenants, 0);
+    this.subscribeToDocumentSearch(this.retroactiveTenants, 0);
   }
 
   createTenant(): FormGroup {
@@ -101,6 +113,24 @@ export class StaysComponent implements OnInit {
 
   get existingTenants(): FormArray {
     return this.existingForm.get('tenants') as FormArray;
+  }
+
+  get retroactiveTenants(): FormArray {
+    return this.retroactiveForm.get('tenants') as FormArray;
+  }
+
+  addTenantRetroactive(): void {
+    const newIndex = this.retroactiveTenants.length;
+    this.retroactiveTenants.push(this.createTenant());
+    this.subscribeToDocumentSearch(this.retroactiveTenants, newIndex);
+  }
+
+  removeTenantRetroactive(index: number): void {
+    if (this.retroactiveTenants.length > 1) {
+      delete this.foundTenants[index];
+      delete this.searchingTenants[index];
+      this.retroactiveTenants.removeAt(index);
+    }
   }
 
   addTenantExpress(): void {
@@ -208,6 +238,38 @@ export class StaysComponent implements OnInit {
         while (this.existingTenants.length > 1) this.existingTenants.removeAt(1);
         this.loadStays();
         this.loadReservations();
+      },
+      error: (err) => {
+        this.errorMessage = this.extractErrorMessage(err);
+        this.showErrorModal = true;
+        console.error(err);
+      }
+    });
+  }
+
+  onCreateRetroactive(): void {
+    if (this.retroactiveForm.invalid) return;
+    const formValue = this.retroactiveForm.value;
+    const request: RetroactiveStayRequest = {
+      departmentId: formValue.departmentId,
+      fechaHoraCheckInReal: formValue.fechaHoraCheckInReal,
+      fechaCheckOutPlaneada: formValue.fechaCheckOutPlaneada,
+      cantidadPersonas: formValue.cantidadPersonas,
+      cantidadVehiculos: formValue.cantidadVehiculos,
+      comentariosCheckIn: formValue.comentariosCheckIn,
+      tenants: formValue.tenants as TenantRequest[]
+    };
+    this.error = '';
+    this.success = '';
+    this.stayService.createRetroactiveStay(request).subscribe({
+      next: () => {
+        this.success = 'Estadía retroactiva cargada exitosamente.';
+        this.retroactiveForm.reset({
+          cantidadPersonas: 1,
+          cantidadVehiculos: 0
+        });
+        while (this.retroactiveTenants.length > 1) this.retroactiveTenants.removeAt(1);
+        this.loadStays();
       },
       error: (err) => {
         this.errorMessage = this.extractErrorMessage(err);

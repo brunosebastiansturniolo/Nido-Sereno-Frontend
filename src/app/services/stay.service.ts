@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
-import { StayRequest, StayResponse, CheckInRequest, StayFinalizationRequest } from '../models/stay.models';
+import { StayRequest, StayResponse, CheckInRequest, StayFinalizationRequest, RetroactiveStayRequest } from '../models/stay.models';
 
 @Injectable({
   providedIn: 'root'
@@ -45,5 +45,9 @@ export class StayService {
 
   deleteStay(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  createRetroactiveStay(request: RetroactiveStayRequest): Observable<StayResponse> {
+    return this.http.post<StayResponse>(`${this.baseUrl}/retroactive`, request);
   }
 }

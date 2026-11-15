@@ -19,6 +19,9 @@
       <button (click)="checkInMode = 'existing'" [class.bg-emerald-600]="checkInMode === 'existing'" [class.text-white]="checkInMode === 'existing'" [class.bg-gray-200]="checkInMode !== 'existing'" class="px-4 py-2 rounded-lg text-sm font-medium transition">
         Desde Reserva existente
       </button>
+      <button (click)="checkInMode = 'retroactive'" [class.bg-emerald-600]="checkInMode === 'retroactive'" [class.text-white]="checkInMode === 'retroactive'" [class.bg-gray-200]="checkInMode !== 'retroactive'" class="px-4 py-2 rounded-lg text-sm font-medium transition">
+        Cargar historial (retroactivo)
+      </button>
     </div>
 
     <!-- Check-In Express -->
@@ -259,6 +262,134 @@
 
         <button type="submit" [disabled]="existingForm.invalid" class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition">
           Realizar Check-In
+        </button>
+      </form>
+    </div>
+
+    <!-- Cargar estadía retroactiva (historial) -->
+    <div *ngIf="checkInMode === 'retroactive'">
+      <p class="text-sm text-amber-600 mb-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+        📋 Usá esta opción para cargar alquileres que tenías anotados en papel. Podés elegir cualquier fecha, incluso en el pasado.
+      </p>
+      <form (ngSubmit)="onCreateRetroactive()" [formGroup]="retroactiveForm" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
+            <select formControlName="departmentId" class="w-full px-4 py-2 border rounded-lg">
+              <option value="" disabled>Seleccioná un departamento</option>
+              <option *ngFor="let d of departments" [value]="d.id">{{ d.nombre }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha y hora de check-in</label>
+            <input formControlName="fechaHoraCheckInReal" type="datetime-local" class="w-full px-4 py-2 border rounded-lg" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de check-out</label>
+            <input formControlName="fechaCheckOutPlaneada" type="date" class="w-full px-4 py-2 border rounded-lg" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad de personas</label>
+            <input formControlName="cantidadPersonas" type="number" min="1" class="w-full px-4 py-2 border rounded-lg" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad de vehículos</label>
+            <input formControlName="cantidadVehiculos" type="number" min="0" class="w-full px-4 py-2 border rounded-lg" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Comentarios</label>
+            <input formControlName="comentariosCheckIn" class="w-full px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Opcional" />
+          </div>
+        </div>
+
+        <!-- Inquilinos -->
+        <div formArrayName="tenants">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-md font-semibold text-gray-700">Inquilinos</h3>
+            <button type="button" (click)="addTenantRetroactive()" class="text-emerald-600 hover:underline text-sm">+ Agregar inquilino</button>
+          </div>
+          <div *ngFor="let t of retroactiveTenants.controls; let i=index" [formGroupName]="i" class="border rounded-lg p-4 mb-3 bg-gray-50">
+            <p class="text-sm font-medium text-gray-600 mb-2">Inquilino {{ i + 1 }}
+              <button *ngIf="retroactiveTenants.length > 1" type="button" (click)="removeTenantRetroactive(i)" class="text-red-500 text-xs ml-2">Eliminar</button>
+            </p>
+
+            <!-- Panel: inquilino encontrado -->
+            <div *ngIf="foundTenants[i]" class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-sm font-semibold text-blue-800">
+                    ✅ Inquilino encontrado: {{ foundTenants[i].firstName }} {{ foundTenants[i].lastName }}
+                  </p>
+                  <p class="text-xs text-blue-600 mt-1">
+                    Documento: {{ foundTenants[i].documentNumber }}
+                    <span *ngIf="foundTenants[i].email"> · {{ foundTenants[i].email }}</span>
+                  </p>
+                  <p class="text-xs text-blue-600 mt-1">
+                    Nota promedio: <span class="font-semibold">{{ getScoreStars(foundTenants[i].averageScore) }}</span>
+                  </p>
+                  <div *ngIf="foundTenants[i].hostedInComplexes && foundTenants[i].hostedInComplexes.length > 0" class="mt-2">
+                    <p class="text-xs font-medium text-blue-700">Se alojó en tus complejos:</p>
+                    <ul class="text-xs text-blue-600 mt-1 space-y-1">
+                      <li *ngFor="let c of foundTenants[i].hostedInComplexes">
+                        📍 {{ c.nombre }}
+                        <span *ngIf="c.ubicacion" class="text-gray-500">({{ c.ubicacion }})</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <p *ngIf="!foundTenants[i].hostedInComplexes || foundTenants[i].hostedInComplexes.length === 0" class="text-xs text-gray-500 mt-1 italic">
+                    No se ha alojado en tus complejos anteriormente.
+                  </p>
+                </div>
+                <button type="button" (click)="dismissFoundTenant(i)" class="text-blue-400 hover:text-blue-600 text-xs ml-2">✕</button>
+              </div>
+              <button type="button" (click)="fillTenantFromExisting(retroactiveTenants, i)" class="mt-2 text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition">
+                Usar este inquilino (autocompletar)
+              </button>
+            </div>
+
+            <!-- Advertencia: datos no coinciden -->
+            <div *ngIf="foundTenants[i] && hasDataMismatch(retroactiveTenants, i)" class="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p class="text-sm font-semibold text-red-800">⚠️ Posible suplantación de identidad</p>
+              <p class="text-xs text-red-600 mt-1">
+                Los datos ingresados no coinciden con el inquilino encontrado para este DNI.
+                Para evitar errores, usá el botón "Usar este inquilino" o verificá el DNI físico del inquilino antes de continuar.
+              </p>
+            </div>
+
+            <!-- Spinner de búsqueda -->
+            <div *ngIf="searchingTenants[i]" class="mb-2 text-xs text-gray-400">Buscando inquilino...</div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Documento</label>
+                <input formControlName="documentNumber" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="DNI" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Nombre</label>
+                <input formControlName="firstName" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="Nombre" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Apellido</label>
+                <input formControlName="lastName" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="Apellido" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                <input formControlName="email" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="Email" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Teléfono</label>
+                <input formControlName="phoneNumber" class="w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic" placeholder="Teléfono" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Fecha de nacimiento</label>
+                <input formControlName="dateOfBirth" type="date" class="w-full px-3 py-2 border rounded-lg text-sm" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="retroactiveForm.invalid" class="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition">
+          Cargar estadía retroactiva
         </button>
       </form>
     </div>
