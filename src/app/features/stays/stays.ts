@@ -257,17 +257,17 @@ export class StaysComponent implements OnInit {
    * - Datos del inquilino (nombre, apellido, DNI, teléfono)
    */
   onReservationSelected(reservationId: any): void {
-    console.log('[Stays] onReservationSelected called with:', reservationId);
-    
     if (!reservationId) {
       this.selectedReservation = null;
       this.useReservanteAsTenant = false;
       return;
     }
 
-    const reservation = this.reservations.find(r => r.id === reservationId);
-    console.log('[Stays] reservation found:', reservation);
-    
+    // El <select> devuelve el value como string, pero ReservationResponse.id es number.
+    // Convertimos para que la comparación estricta funcione.
+    const id = typeof reservationId === 'string' ? parseInt(reservationId, 10) : reservationId;
+    const reservation = this.reservations.find(r => r.id === id);
+
     if (!reservation) {
       this.selectedReservation = null;
       this.useReservanteAsTenant = false;
@@ -276,7 +276,6 @@ export class StaysComponent implements OnInit {
 
     this.selectedReservation = reservation;
     this.useReservanteAsTenant = false;
-    console.log('[Stays] selectedReservation set:', this.selectedReservation);
 
     // Prellenar la fecha de check-in con la fecha de la reserva + hora actual
     // IMPORTANTE: reservation.fechaCheckIn es "YYYY-MM-DD" (LocalDate del backend).
