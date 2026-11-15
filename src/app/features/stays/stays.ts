@@ -248,6 +248,8 @@ export class StaysComponent implements OnInit {
    * - Datos del inquilino (nombre, apellido, DNI, teléfono)
    */
   onReservationSelected(reservationId: any): void {
+    console.log('[Stays] onReservationSelected called with:', reservationId);
+    
     if (!reservationId) {
       this.selectedReservation = null;
       this.useReservanteAsTenant = false;
@@ -255,6 +257,8 @@ export class StaysComponent implements OnInit {
     }
 
     const reservation = this.reservations.find(r => r.id === reservationId);
+    console.log('[Stays] reservation found:', reservation);
+    
     if (!reservation) {
       this.selectedReservation = null;
       this.useReservanteAsTenant = false;
@@ -263,14 +267,21 @@ export class StaysComponent implements OnInit {
 
     this.selectedReservation = reservation;
     this.useReservanteAsTenant = false;
+    console.log('[Stays] selectedReservation set:', this.selectedReservation);
 
     // Prellenar la fecha de check-in con la fecha de la reserva + hora actual
+    // IMPORTANTE: reservation.fechaCheckIn es "YYYY-MM-DD" (LocalDate del backend).
+    // new Date("2026-12-01") lo interpreta como UTC midnight, lo que en Argentina (UTC-3)
+    // da 30/11/2026 21:00 — un día antes. Por eso parseamos manualmente los componentes.
     const now = new Date();
-    const checkInDate = new Date(reservation.fechaCheckIn);
+    const parts = reservation.fechaCheckIn.split('-');
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // JavaScript months: 0-11
+    const day = parseInt(parts[2], 10);
     const checkInDateTime = new Date(
-      checkInDate.getFullYear(),
-      checkInDate.getMonth(),
-      checkInDate.getDate(),
+      year,
+      month,
+      day,
       now.getHours(),
       now.getMinutes()
     );
