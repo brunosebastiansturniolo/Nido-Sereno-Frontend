@@ -2,8 +2,13 @@
   <h1 class="text-2xl font-bold text-gray-800 mb-6">🛏️ Estadías</h1>
 
   <!-- Mensajes -->
-  <p *ngIf="error" class="text-red-500 text-sm bg-red-50 p-2 rounded mb-4">{{ error }}</p>
-  <p *ngIf="success" class="text-emerald-500 text-sm bg-emerald-50 p-2 rounded mb-4">{{ success }}</p>
+  <div *ngIf="error" class="text-red-700 text-sm bg-red-50 border border-red-200 p-3 rounded mb-4">
+    <p class="font-semibold mb-1">⚠️ Error de validación:</p>
+    <ul class="list-disc list-inside">
+      <li *ngFor="let e of error.split('. ')">{{ e }}</li>
+    </ul>
+  </div>
+  <p *ngIf="success" class="text-emerald-500 text-sm bg-emerald-50 p-2 rounded mb-4">✅ {{ success }}</p>
 
   <!-- Check-In -->
   <div class="bg-white rounded-xl shadow p-6 mb-6">

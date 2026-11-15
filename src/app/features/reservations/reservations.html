@@ -53,8 +53,13 @@
         <input formControlName="montoSenia" type="number" min="0" class="w-full px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Ej: 15000" />
       </div>
       <div class="md:col-span-3">
-        <p *ngIf="error" class="text-red-500 text-sm bg-red-50 p-2 rounded">{{ error }}</p>
-        <p *ngIf="success" class="text-emerald-500 text-sm bg-emerald-50 p-2 rounded">{{ success }}</p>
+        <div *ngIf="error" class="text-red-700 text-sm bg-red-50 border border-red-200 p-3 rounded mb-2">
+          <p class="font-semibold mb-1">⚠️ Error de validación:</p>
+          <ul class="list-disc list-inside">
+            <li *ngFor="let e of error.split('. ')">{{ e }}</li>
+          </ul>
+        </div>
+        <p *ngIf="success" class="text-emerald-500 text-sm bg-emerald-50 p-2 rounded">✅ {{ success }}</p>
         <button type="submit" [disabled]="createForm.invalid" class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition mt-2">
           Crear reserva
         </button>

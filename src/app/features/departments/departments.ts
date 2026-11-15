@@ -21,6 +21,8 @@ export class DepartmentsComponent implements OnInit {
   departments: DepartmentResponse[] = [];
   complexes: ComplexResponse[] = [];
   loading = false;
+  error = '';
+  success = '';
 
   createForm = this.fb.group({
     nombre: [''],
@@ -56,9 +58,35 @@ export class DepartmentsComponent implements OnInit {
 
   onCreate(): void {
     const request: DepartmentRequest = this.createForm.value as DepartmentRequest;
+    this.error = '';
+    this.success = '';
     this.deptService.createDepartment(request).subscribe({
-      next: () => { this.loadDepartments(); this.createForm.reset(); },
-      error: (err) => console.error(err)
+      next: () => {
+        this.success = 'Departamento creado exitosamente.';
+        this.loadDepartments();
+        this.createForm.reset();
+      },
+      error: (err) => {
+        this.error = this.extractErrorMessage(err);
+        console.error(err);
+      }
     });
+  }
+
+  private extractErrorMessage(err: any): string {
+    const body = err.error;
+    if (body?.validationErrors && Array.isArray(body.validationErrors) && body.validationErrors.length > 0) {
+      return body.validationErrors.join('. ');
+    }
+    if (body?.businessErrorDescription) {
+      return body.businessErrorDescription;
+    }
+    if (body?.error) {
+      return body.error;
+    }
+    if (body?.message) {
+      return body.message;
+    }
+    return 'Error de servidor. Verificá los datos e intentá de nuevo.';
   }
 }

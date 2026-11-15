@@ -157,7 +157,7 @@ export class StaysComponent implements OnInit {
         this.loadStays();
       },
       error: (err) => {
-        this.error = err.error?.message || 'Error al realizar el check-in.';
+        this.error = this.extractErrorMessage(err);
         console.error(err);
       }
     });
@@ -185,7 +185,7 @@ export class StaysComponent implements OnInit {
         this.loadReservations();
       },
       error: (err) => {
-        this.error = err.error?.message || 'Error al realizar el check-in.';
+        this.error = this.extractErrorMessage(err);
         console.error(err);
       }
     });
@@ -215,10 +215,27 @@ export class StaysComponent implements OnInit {
         this.loadStays();
       },
       error: (err) => {
-        this.error = err.error?.message || 'Error al realizar el check-out.';
+        this.error = this.extractErrorMessage(err);
         console.error(err);
       }
     });
+  }
+
+  private extractErrorMessage(err: any): string {
+    const body = err.error;
+    if (body?.validationErrors && Array.isArray(body.validationErrors) && body.validationErrors.length > 0) {
+      return body.validationErrors.join('. ');
+    }
+    if (body?.businessErrorDescription) {
+      return body.businessErrorDescription;
+    }
+    if (body?.error) {
+      return body.error;
+    }
+    if (body?.message) {
+      return body.message;
+    }
+    return 'Error de servidor. Verificá los datos e intentá de nuevo.';
   }
 
   formatDate(dateStr: string): string {

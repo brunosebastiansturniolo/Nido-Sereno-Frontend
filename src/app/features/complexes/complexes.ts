@@ -17,6 +17,8 @@ export class ComplexesComponent implements OnInit {
 
   complexes: ComplexResponse[] = [];
   loading = false;
+  error = '';
+  success = '';
 
   createForm = this.fb.group({
     nombre: [''],
@@ -44,12 +46,35 @@ export class ComplexesComponent implements OnInit {
 
   onCreate(): void {
     const request: ComplexRequest = this.createForm.value as ComplexRequest;
+    this.error = '';
+    this.success = '';
     this.complexService.createComplex(request).subscribe({
       next: () => {
+        this.success = 'Complejo creado exitosamente.';
         this.loadComplexs();
         this.createForm.reset();
       },
-      error: (err) => console.error(err)
+      error: (err) => {
+        this.error = this.extractErrorMessage(err);
+        console.error(err);
+      }
     });
+  }
+
+  private extractErrorMessage(err: any): string {
+    const body = err.error;
+    if (body?.validationErrors && Array.isArray(body.validationErrors) && body.validationErrors.length > 0) {
+      return body.validationErrors.join('. ');
+    }
+    if (body?.businessErrorDescription) {
+      return body.businessErrorDescription;
+    }
+    if (body?.error) {
+      return body.error;
+    }
+    if (body?.message) {
+      return body.message;
+    }
+    return 'Error de servidor. Verificá los datos e intentá de nuevo.';
   }
 }
