@@ -15,4 +15,14 @@ export interface TenantResponse {
   email: string;
   phoneNumber: string;
   dateOfBirth: string;
+  averageScore?: number;
+}
+
+export interface ClassificationResponse {
+  id: number;
+  score: number;
+  reviewComment?: string;
+  date: string;
+  stayId?: number;
+  tenantName?: string;
 }

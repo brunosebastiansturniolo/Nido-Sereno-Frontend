@@ -43,6 +43,8 @@
         <th class="py-2 px-3 text-sm text-gray-500">Email</th>
         <th class="py-2 px-3 text-sm text-gray-500">Teléfono</th>
         <th class="py-2 px-3 text-sm text-gray-500">Fecha de nacimiento</th>
+        <th class="py-2 px-3 text-sm text-gray-500">Nota promedio</th>
+        <th class="py-2 px-3 text-sm text-gray-500">Acciones</th>
       </tr></thead>
       <tbody>
         <tr *ngFor="let t of tenants" class="border-b hover:bg-gray-50">
@@ -51,10 +53,46 @@
           <td class="py-2 px-3">{{ t.email || '—' }}</td>
           <td class="py-2 px-3">{{ t.phoneNumber || '—' }}</td>
           <td class="py-2 px-3">{{ t.dateOfBirth || '—' }}</td>
+          <td class="py-2 px-3">
+            <span *ngIf="t.averageScore !== undefined && t.averageScore !== null" class="text-sm font-semibold"
+              [class.text-green-600]="t.averageScore >= 4"
+              [class.text-yellow-600]="t.averageScore >= 3 && t.averageScore < 4"
+              [class.text-red-600]="t.averageScore < 3">
+              {{ t.averageScore | number:'1.1-1' }} / 5
+            </span>
+            <span *ngIf="t.averageScore === undefined || t.averageScore === null" class="text-gray-400 text-sm">Sin calificar</span>
+          </td>
+          <td class="py-2 px-3">
+            <button (click)="onViewClassifications(t.id)" class="text-blue-600 hover:underline text-sm">Ver clasificaciones</button>
+          </td>
         </tr>
       </tbody>
     </table>
     <p class="text-sm text-gray-500 mt-3">{{ tenants.length }} inquilino(s) encontrado(s)</p>
+    </div>
+  </div>
+
+  <!-- Panel de clasificaciones de un inquilino -->
+  <div *ngIf="selectedTenantId" class="bg-white rounded-xl shadow p-6 mt-6 border-2 border-purple-300">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold text-gray-700">⭐ Historial de clasificaciones</h2>
+      <button (click)="selectedTenantId = null" class="text-gray-500 hover:text-gray-700 text-sm">✕ Cerrar</button>
+    </div>
+
+    <div *ngIf="loadingClassifications" class="text-gray-500">Cargando...</div>
+    <div *ngIf="!loadingClassifications && classifications.length === 0" class="text-gray-400">
+      Este inquilino aún no tiene clasificaciones.
+    </div>
+    <div *ngIf="!loadingClassifications && classifications.length > 0" class="space-y-3">
+      <div *ngFor="let c of classifications" class="border rounded-lg p-4 bg-gray-50">
+        <div class="flex items-center justify-between mb-1">
+          <span class="font-semibold text-gray-700">
+            {{ '⭐'.repeat(c.score) }} ({{ c.score }}/5)
+          </span>
+          <span class="text-sm text-gray-500">{{ c.date | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <p *ngIf="c.reviewComment" class="text-sm text-gray-600 mt-1">{{ c.reviewComment }}</p>
+      </div>
     </div>
   </div>
 </div>

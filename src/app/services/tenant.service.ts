@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
-import { TenantRequest, TenantResponse } from '../models/tenant.models';
+import { ClassificationResponse, TenantRequest, TenantResponse } from '../models/tenant.models';
 
 @Injectable({
   providedIn: 'root'
@@ -27,5 +27,9 @@ export class TenantService {
 
   getTenantByDocumentNumber(documentNumber: string): Observable<TenantResponse> {
     return this.http.get<TenantResponse>(`${this.baseUrl}/document/${documentNumber}`);
+  }
+
+  getTenantClassifications(id: number): Observable<ClassificationResponse[]> {
+    return this.http.get<ClassificationResponse[]>(`${this.baseUrl}/${id}/classifications`);
   }
 }

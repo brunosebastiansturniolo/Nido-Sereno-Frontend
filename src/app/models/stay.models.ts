@@ -26,14 +26,20 @@ export interface StayResponse {
   fechaHoraCheckOutReal?: string;
   comentariosCheckIn?: string;
   comentariosCheckOut?: string;
-  estado: string;
+  estadoDepartamento?: string;
+  status: string; // 'ACTIVE' o 'COMPLETED'
   reservationId?: number;
   departmentId: number;
   departamentoNombre?: string;
   tenants?: any[];
+  classificationScore?: number;
+  classificationReviewComment?: string;
 }
 
 export interface StayFinalizationRequest {
   fechaHoraCheckOutReal: string;
   comentariosCheckOut?: string;
+  estadoDepartamento: 'GOOD' | 'MINOR_DAMAGE' | 'MAJOR_DAMAGE' | 'CLEANING_REQUIRED';
+  classificationScore?: number;
+  classificationReviewComment?: string;
 }

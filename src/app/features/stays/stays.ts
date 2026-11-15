@@ -28,6 +28,7 @@ export class StaysComponent implements OnInit {
   loading = false;
   error = '';
   success = '';
+  checkoutStayId: number | null = null;
 
   // Mode: 'express' = check-in express, 'existing' = check-in desde reserva
   checkInMode = 'express';
@@ -60,7 +61,10 @@ export class StaysComponent implements OnInit {
 
     this.checkoutForm = this.fb.group({
       fechaHoraCheckOutReal: [new Date().toISOString().slice(0, 16)],
-      comentariosCheckOut: ['']
+      comentariosCheckOut: [''],
+      estadoDepartamento: ['GOOD', [Validators.required]],
+      classificationScore: [null],
+      classificationReviewComment: ['']
     });
   }
 
@@ -190,9 +194,14 @@ export class StaysComponent implements OnInit {
   onCheckout(stayId: number): void {
     if (this.checkoutForm.invalid) return;
     const formValue = this.checkoutForm.value;
+
+    // La clasificación es opcional: solo se envía si hay puntuación
     const request: StayFinalizationRequest = {
       fechaHoraCheckOutReal: formValue.fechaHoraCheckOutReal,
-      comentariosCheckOut: formValue.comentariosCheckOut
+      comentariosCheckOut: formValue.comentariosCheckOut,
+      estadoDepartamento: formValue.estadoDepartamento,
+      classificationScore: formValue.classificationScore,
+      classificationReviewComment: formValue.classificationScore ? formValue.classificationReviewComment : undefined
     };
     this.error = '';
     this.success = '';
@@ -200,7 +209,8 @@ export class StaysComponent implements OnInit {
       next: () => {
         this.success = 'Check-out realizado exitosamente.';
         this.checkoutForm.reset({
-          fechaHoraCheckOutReal: new Date().toISOString().slice(0, 16)
+          fechaHoraCheckOutReal: new Date().toISOString().slice(0, 16),
+          estadoDepartamento: 'GOOD'
         });
         this.loadStays();
       },
