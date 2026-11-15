@@ -31,6 +31,7 @@ export interface StayResponse {
   reservationId?: number;
   departmentId: number;
   departamentoNombre?: string;
+  cantidadNoches?: number;
   tenants?: any[];
   classificationScore?: number;
   classificationReviewComment?: string;

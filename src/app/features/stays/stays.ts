@@ -50,6 +50,9 @@ export class StaysComponent implements OnInit {
   retroactiveForm!: FormGroup;
   checkoutForm!: FormGroup;
 
+  // Reserva seleccionada para check-in desde reserva existente
+  selectedReservation: ReservationResponse | null = null;
+
   ngOnInit(): void {
     this.loadStays();
     this.loadReservations();
@@ -72,14 +75,32 @@ export class StaysComponent implements OnInit {
       tenants: this.fb.array([this.createTenant()])
     });
 
+    // Cuando se selecciona una reserva, prellenar datos
+    this.existingForm.get('reservationId')?.valueChanges.subscribe((resId: any) => {
+      this.onReservationSelected(resId);
+    });
+
     this.retroactiveForm = this.fb.group({
       departmentId: [null, [Validators.required]],
       fechaHoraCheckInReal: [''],
       fechaCheckOutPlaneada: ['', [Validators.required]],
+      cantidadNoches: [null, [Validators.min(1)]],
       cantidadPersonas: [1, [Validators.required, Validators.min(1)]],
       cantidadVehiculos: [0, [Validators.min(0)]],
       comentariosCheckIn: [''],
       tenants: this.fb.array([this.createTenant()])
+    });
+
+    // Cuando cambian las fechas del retroactivo, calcular las noches
+    this.retroactiveForm.get('fechaHoraCheckInReal')!.valueChanges.subscribe(() => {
+      this.calculateRetroactiveNights();
+    });
+    this.retroactiveForm.get('fechaCheckOutPlaneada')!.valueChanges.subscribe(() => {
+      this.calculateRetroactiveNights();
+    });
+    // Cuando cambia la cantidad de noches, ajustar el check-out
+    this.retroactiveForm.get('cantidadNoches')!.valueChanges.subscribe((nights: number | null) => {
+      this.onRetroactiveNightsChange(nights);
     });
 
     this.checkoutForm = this.fb.group({
@@ -218,6 +239,52 @@ export class StaysComponent implements OnInit {
     });
   }
 
+  /**
+   * Cuando se selecciona una reserva existente, prellenar los datos del formulario:
+   * - Fecha de check-in (usando la fecha de la reserva)
+   * - Datos del inquilino (nombre, apellido, DNI, teléfono)
+   */
+  onReservationSelected(reservationId: any): void {
+    if (!reservationId) {
+      this.selectedReservation = null;
+      return;
+    }
+
+    const reservation = this.reservations.find(r => r.id === reservationId);
+    if (!reservation) {
+      this.selectedReservation = null;
+      return;
+    }
+
+    this.selectedReservation = reservation;
+
+    // Prellenar la fecha de check-in con la fecha de la reserva + hora actual
+    const now = new Date();
+    const checkInDate = new Date(reservation.fechaCheckIn);
+    const checkInDateTime = new Date(
+      checkInDate.getFullYear(),
+      checkInDate.getMonth(),
+      checkInDate.getDate(),
+      now.getHours(),
+      now.getMinutes()
+    );
+
+    this.existingForm.patchValue({
+      fechaHoraCheckInReal: checkInDateTime.toISOString().slice(0, 16)
+    }, { emitEvent: false });
+
+    // Prellenar el primer tenant con los datos de la reserva
+    const firstTenant = this.existingTenants.at(0) as FormGroup;
+    if (firstTenant) {
+      firstTenant.patchValue({
+        documentNumber: reservation.documentNumber || '',
+        firstName: reservation.firstName || '',
+        lastName: reservation.lastName || '',
+        phoneNumber: reservation.phoneNumber || ''
+      }, { emitEvent: false });
+    }
+  }
+
   onCheckInFromReservation(): void {
     if (this.existingForm.invalid) return;
     const formValue = this.existingForm.value;
@@ -232,6 +299,7 @@ export class StaysComponent implements OnInit {
     this.stayService.checkInFromReservation(request).subscribe({
       next: () => {
         this.success = 'Check-in realizado exitosamente.';
+        this.selectedReservation = null;
         this.existingForm.reset({
           fechaHoraCheckInReal: new Date().toISOString().slice(0, 16)
         });
@@ -266,7 +334,8 @@ export class StaysComponent implements OnInit {
         this.success = 'Estadía retroactiva cargada exitosamente.';
         this.retroactiveForm.reset({
           cantidadPersonas: 1,
-          cantidadVehiculos: 0
+          cantidadVehiculos: 0,
+          cantidadNoches: null
         });
         while (this.retroactiveTenants.length > 1) this.retroactiveTenants.removeAt(1);
         this.loadStays();
@@ -277,6 +346,38 @@ export class StaysComponent implements OnInit {
         console.error(err);
       }
     });
+  }
+
+  /**
+   * Calcula la cantidad de noches del formulario retroactivo a partir de las fechas.
+   */
+  calculateRetroactiveNights(): void {
+    const checkIn = this.retroactiveForm.get('fechaHoraCheckInReal')?.value;
+    const checkOut = this.retroactiveForm.get('fechaCheckOutPlaneada')?.value;
+    if (!checkIn || !checkOut) return;
+
+    const dateIn = new Date(checkIn);
+    const dateOut = new Date(checkOut);
+    const diffTime = dateOut.getTime() - dateIn.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays > 0) {
+      this.retroactiveForm.get('cantidadNoches')?.setValue(diffDays, { emitEvent: false });
+    }
+  }
+
+  /**
+   * Cuando el usuario cambia la cantidad de noches en el formulario retroactivo,
+   * ajustar la fecha de check-out.
+   */
+  onRetroactiveNightsChange(nights: number | null): void {
+    const checkIn = this.retroactiveForm.get('fechaHoraCheckInReal')?.value;
+    if (!checkIn || !nights || nights < 1) return;
+
+    const dateIn = new Date(checkIn);
+    const dateOut = new Date(dateIn);
+    dateOut.setDate(dateOut.getDate() + nights);
+
+    this.retroactiveForm.get('fechaCheckOutPlaneada')?.setValue(dateOut.toISOString().slice(0, 10), { emitEvent: false });
   }
 
   onCheckout(stayId: number): void {
