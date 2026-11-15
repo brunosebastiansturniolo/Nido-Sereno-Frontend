@@ -257,10 +257,6 @@ export class StaysComponent implements OnInit {
    * - Datos del inquilino (nombre, apellido, DNI, teléfono)
    */
   onReservationSelected(reservationId: any): void {
-    console.log('[Stays] onReservationSelected called with:', reservationId, 'type:', typeof reservationId);
-    console.log('[Stays] reservations array length:', this.reservations.length);
-    console.log('[Stays] reservation IDs in array:', this.reservations.map(r => ({ id: r.id, type: typeof r.id, name: `${r.firstName} ${r.lastName}` })));
-
     if (!reservationId) {
       this.selectedReservation = null;
       this.useReservanteAsTenant = false;
@@ -270,10 +266,8 @@ export class StaysComponent implements OnInit {
     // El <select> devuelve el value como string, pero ReservationResponse.id es number.
     // Convertimos para que la comparación estricta funcione.
     const id = typeof reservationId === 'string' ? parseInt(reservationId, 10) : reservationId;
-    console.log('[Stays] converted id:', id, 'type:', typeof id);
 
     const reservation = this.reservations.find(r => r.id === id);
-    console.log('[Stays] reservation found:', reservation);
 
     if (!reservation) {
       this.selectedReservation = null;
@@ -321,12 +315,17 @@ export class StaysComponent implements OnInit {
   }
 
   /**
-   * Cuando el usuario marca el checkbox "Usar reservante como inquilino",
-   * se prellena el primer tenant con los datos de quien hizo la reserva.
+   * Cuando el usuario marca/desmarca el checkbox "Usar reservante como inquilino",
+   * se prellena o limpia el primer tenant con los datos de quien hizo la reserva.
+   * IMPORTANTE: [checked] es unidireccional, así que hay que invertir el booleano
+   * manualmente al inicio del método.
    */
   onUseReservanteAsTenant(): void {
     if (!this.selectedReservation) return;
-    
+
+    // Invertir el booleano porque [checked] no actualiza la variable automáticamente
+    this.useReservanteAsTenant = !this.useReservanteAsTenant;
+
     const firstTenant = this.existingTenants.at(0) as FormGroup;
     if (!firstTenant) return;
 
@@ -345,7 +344,7 @@ export class StaysComponent implements OnInit {
         email: '',
         phoneNumber: '',
         dateOfBirth: ''
-      });
+      }, { emitEvent: false });
     }
   }
 
