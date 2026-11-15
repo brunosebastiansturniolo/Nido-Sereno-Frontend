@@ -243,6 +243,15 @@ export class StaysComponent implements OnInit {
   }
 
   /**
+   * Handler para el evento change del select de reservas.
+   * Lee el valor del formControl y lo pasa a onReservationSelected.
+   */
+  onReservationChange(): void {
+    const reservationId = this.existingForm.get('reservationId')?.value;
+    this.onReservationSelected(reservationId);
+  }
+
+  /**
    * Cuando se selecciona una reserva existente, prellenar los datos del formulario:
    * - Fecha de check-in (usando la fecha de la reserva)
    * - Datos del inquilino (nombre, apellido, DNI, teléfono)
