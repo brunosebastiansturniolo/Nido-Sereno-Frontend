@@ -589,6 +589,17 @@
           </div>
           <p class="text-gray-600 mb-4">El <strong>Check-In</strong> registra la llegada del reservante. Se crea la estadía activa y el departamento queda ocupado.</p>
 
+          <!-- Info box about three check-in types -->
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p class="text-sm text-blue-800 font-semibold">📋 Hay 3 formas de hacer Check-In</p>
+            <ul class="text-sm text-blue-700 mt-2 space-y-1">
+              <li>🔹 <strong>Check-In Express:</strong> Registrá una estadía sin reserva previa. Se crea la reserva y la estadía automáticamente.</li>
+              <li>🔹 <strong>Desde Reserva existente:</strong> Seleccioná una reserva y registrá la llegada. <span class="font-semibold">(Este es el que usamos en el tutorial)</span></li>
+              <li>🔹 <strong>Cargar historial (retroactivo):</strong> Para digitalizar alquileres que tenías anotados en papel, con fechas del pasado.</li>
+            </ul>
+            <p class="text-xs text-blue-600 mt-2">💡 En la app real, estas tres opciones aparecen como pestañas. En el tutorial usamos directamente la opción "Desde Reserva existente" para seguir el flujo paso a paso.</p>
+          </div>
+
           <!-- Auto-llenar arriba para que lo vean de entrada -->
           <div class="mb-4">
             <button (click)="autoFillTenantForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition animate-bounce">
@@ -607,6 +618,9 @@
             </p>
             <p class="text-xs text-amber-600 mt-2">
               Observá cómo cambia cada panel al mover la fecha: Dashboard, Reservas, Estadías...
+            </p>
+            <p class="text-xs text-amber-600 mt-1">
+              ⚠️ Si intentás hacer check-in con una fecha diferente, el sistema te pedirá justificar la diferencia.
             </p>
           </div>
 
@@ -1079,6 +1093,64 @@
                 type="button"
                 class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition">
           Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de justificación de fecha -->
+  <div *ngIf="showJustificationModal()" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
+      <h2 class="text-lg font-bold text-gray-800 mb-3">
+        ⚠️ {{ justificationContext() === 'checkout' ? 'Fecha de check-out no coincide' : 'Fecha de check-in no coincide' }}
+      </h2>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+        <p [innerHTML]="justificationMessage()" class="text-sm text-amber-800"></p>
+      </div>
+
+      <p class="text-sm text-gray-600 mb-3">¿Qué querés hacer? El motivo se agregará automáticamente al campo de comentarios de {{ justificationContext() === 'checkout' ? 'check-out' : 'check-in' }}.</p>
+
+      <!-- Opción 1: Cargar con comentario de justificación -->
+      <div class="mb-4">
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input type="radio" name="justificationOption" value="withComment"
+            [checked]="!justificationProceedWithoutComment()"
+            (change)="justificationProceedWithoutComment.set(false)"
+            class="mt-1 w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500" />
+          <div>
+            <span class="text-sm font-medium text-gray-700">Cargar de todas formas con comentario</span>
+            <p class="text-xs text-gray-500">Dejá un motivo (ej: se le averió el auto, pagó una extensión, lo despaché por irrespetuoso, le surgió una emergencia...)</p>
+            <textarea [ngModel]="justificationComment()" (ngModelChange)="justificationComment.set($event)" rows="2"
+              class="mt-2 w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic"
+              placeholder="Escribí el motivo de la diferencia de fecha..."></textarea>
+          </div>
+        </label>
+      </div>
+
+      <!-- Opción 2: Cargar sin comentario -->
+      <div class="mb-4">
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input type="radio" name="justificationOption" value="withoutComment"
+            [checked]="justificationProceedWithoutComment()"
+            (change)="justificationProceedWithoutComment.set(true)"
+            class="mt-1 w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500" />
+          <div>
+            <span class="text-sm font-medium text-gray-700">Cargar de todas formas sin comentario</span>
+            <p class="text-xs text-gray-500">Se registrará una nota genérica en los comentarios indicando la diferencia de fecha.</p>
+          </div>
+        </label>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="flex gap-2 mt-4">
+        <button (click)="confirmJustification()"
+          class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-lg transition">
+          ✅ Confirmar
+        </button>
+        <button (click)="closeJustificationModal()"
+          class="px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg transition">
+          Cancelar
         </button>
       </div>
     </div>

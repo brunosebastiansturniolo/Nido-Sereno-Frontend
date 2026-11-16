@@ -59,6 +59,25 @@ export class TutorialComponent {
   highlightDateController = signal(false);
   dateControllerHint = signal('');
 
+  // Check-In mode tabs
+  checkInMode = signal<'express' | 'existing' | 'retroactive'>('existing');
+
+  // Justification modal (same as real app)
+  showJustificationModal = signal(false);
+  justificationContext = signal<'checkIn' | 'checkout'>('checkIn');
+  justificationMessage = signal('');
+  justificationComment = signal('');
+  justificationProceedWithoutComment = signal(false);
+  // Pending data for check-in after justification
+  pendingCheckInTenant = signal({
+    documentNumber: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    dateOfBirth: ''
+  });
+
   // Form data for interactive flow
   complexForm = signal({ nombre: '', ubicacion: '', descripcion: '' });
   departmentForm = signal({
@@ -342,21 +361,31 @@ export class TutorialComponent {
       return;
     }
 
-    // Validate: simulated date must match the reservation's check-in date
     const res = this.tutorialService.reservations().find(r => r.id === this.selectedReservationId());
-    if (res) {
-      const simDate = this.dateController.simulatedDateStr();
-      if (simDate !== res.fechaCheckIn) {
-        this.showInfoModal(
-          '📅 Fecha incorrecta',
-          `No podés hacer check-in hoy. La reserva tiene fecha de check-in: <strong>${res.fechaCheckIn}</strong>.\n\n` +
-          `La fecha simulada actual es: <strong>${simDate}</strong>.\n\n` +
-          `👇 Mové la fecha simulada en el sidebar a <strong>${res.fechaCheckIn}</strong> para poder hacer check-in.`
-        );
-        return;
-      }
+    if (!res) return;
+
+    const simDate = this.dateController.simulatedDateStr();
+    if (simDate !== res.fechaCheckIn) {
+      // Show justification modal instead of blocking
+      const direction = simDate < res.fechaCheckIn ? 'antes' : 'después';
+      this.justificationContext.set('checkIn');
+      this.justificationMessage.set(
+        `📅 La reserva tiene fecha de check-in: <strong>${res.fechaCheckIn}</strong>. ` +
+        `El reservante llegó <strong>${direction}</strong> del día planeado (fecha simulada: <strong>${simDate}</strong>).`
+      );
+      this.justificationComment.set('');
+      this.justificationProceedWithoutComment.set(false);
+      this.pendingCheckInTenant.set({...tenantForm});
+      this.showJustificationModal.set(true);
+      return;
     }
 
+    // Date matches — proceed normally
+    this.executeCheckIn(tenantForm);
+  }
+
+  executeCheckIn(tenantForm: any): void {
+    const res = this.tutorialService.reservations().find(r => r.id === this.selectedReservationId());
     // Create or find tenant
     const tenant = this.tutorialService.createOrUpdateTenant(tenantForm);
 
@@ -392,6 +421,24 @@ export class TutorialComponent {
     this.prepareCheckOut();
   }
 
+  // Justification modal handlers
+  confirmJustification(): void {
+    if (this.justificationContext() === 'checkIn') {
+      const tenantForm = this.pendingCheckInTenant();
+      this.executeCheckIn(tenantForm);
+    } else if (this.justificationContext() === 'checkout') {
+      this.executeCheckOut();
+    }
+    this.closeJustificationModal();
+  }
+
+  closeJustificationModal(): void {
+    this.showJustificationModal.set(false);
+    this.justificationMessage.set('');
+    this.justificationComment.set('');
+    this.justificationProceedWithoutComment.set(false);
+  }
+
   // ==========================================
   // FLOW: CHECK-OUT
   // ==========================================
@@ -419,21 +466,32 @@ export class TutorialComponent {
   doCheckOut(): void {
     const checkout = this.checkoutForm();
     const stayId = this.selectedStayId();
-
-    // Validate: simulated date must be >= planned check-out date
     const stay = this.tutorialService.stays().find(s => s.id === stayId);
+
     if (stay && stay.fechaCheckOutPlaneada) {
       const simDate = this.dateController.simulatedDateStr();
-      if (simDate < stay.fechaCheckOutPlaneada) {
-        this.showInfoModal(
-          '📅 Fecha incorrecta',
-          `No podés hacer check-out hoy. La estadía tiene fecha de check-out planeada: <strong>${stay.fechaCheckOutPlaneada}</strong>.\n\n` +
-          `La fecha simulada actual es: <strong>${simDate}</strong>.\n\n` +
-          `👇 Mové la fecha simulada en el sidebar a <strong>${stay.fechaCheckOutPlaneada}</strong> o posterior para poder hacer check-out.`
+      if (simDate !== stay.fechaCheckOutPlaneada) {
+        // Show justification modal instead of blocking
+        const direction = simDate < stay.fechaCheckOutPlaneada ? 'antes' : 'después';
+        this.justificationContext.set('checkout');
+        this.justificationMessage.set(
+          `📅 La estadía tiene fecha de check-out planeada: <strong>${stay.fechaCheckOutPlaneada}</strong>. ` +
+          `El reservante se va <strong>${direction}</strong> del día planeado (fecha simulada: <strong>${simDate}</strong>).`
         );
+        this.justificationComment.set('');
+        this.justificationProceedWithoutComment.set(false);
+        this.showJustificationModal.set(true);
         return;
       }
     }
+
+    // Date matches — proceed normally
+    this.executeCheckOut();
+  }
+
+  executeCheckOut(): void {
+    const checkout = this.checkoutForm();
+    const stayId = this.selectedStayId();
 
     // Use the current simulated date (user should have set it manually)
     const updatedStay = this.tutorialService.checkOut(stayId, {
