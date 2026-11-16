@@ -30,7 +30,7 @@ Check-out: ${a.fechaCheckOut}
 Precio total: $${a.precioTotal.toLocaleString("es-AR")}
 Se\xF1al: $${a.montoSenia.toLocaleString("es-AR")}
 
-Una RESERVA es la solicitud de alquiler. Tiene estado PENDING hasta que se hace check-in.
+Una RESERVA es la solicitud de alquiler. Tiene estado PENDING hasta que se hace una se\xF1a (confirmada) o un check-in.
 
 Ahora simularemos el CHECK-IN cuando el reservante llega.
 
