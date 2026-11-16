@@ -195,9 +195,9 @@ export class TutorialComponent {
       'Vamos a recorrer todo el flujo de Nido Sereno paso a paso.\n\n' +
       '1️⃣ Primero crearemos un COMPLEJO (tu propiedad)\n' +
       '2️⃣ Luego agregaremos DEPARTAMENTOS para alquilar\n' +
-      '3️⃣ Crearemos una RESERVA con datos de un huésped\n' +
+      '3️⃣ Crearemos una RESERVA con datos de un reservante\n' +
       '4️⃣ Haremos CHECK-IN cuando lleguen\n' +
-      '5️⃣ Finalmente haremos CHECK-OUT y calificaremos al huésped\n\n' +
+      '5️⃣ Finalmente haremos CHECK-OUT y calificaremos al reservante\n\n' +
       'En cada paso, los campos se prellenarán con datos de ejemplo, pero podés editarlos.\n\n' +
       '¡Empecemos!'
     );
@@ -304,7 +304,7 @@ export class TutorialComponent {
       `Precio total: $${form.precioTotal.toLocaleString('es-AR')}\n` +
       `Señal: $${form.montoSenia.toLocaleString('es-AR')}\n\n` +
       'Una RESERVA es la solicitud de alquiler. Tiene estado PENDING hasta que se hace check-in.\n\n' +
-      'Ahora simularemos el CHECK-IN cuando el huésped llega.\n\n' +
+      'Ahora simularemos el CHECK-IN cuando el reservante llega.\n\n' +
       '👉 Hacé clic en "Siguiente: Check-In"'
     );
 
@@ -375,7 +375,7 @@ export class TutorialComponent {
 
     this.showInfoModal(
       '🛏️ ¡Check-In realizado!',
-      `El huésped ${tenant.firstName} ${tenant.lastName} se registró en el sistema.\n\n` +
+      `El reservante ${tenant.firstName} ${tenant.lastName} se registró en el sistema.\n\n` +
       `Estadía ID: ${stay.id}\n` +
       `Departamento: ${stay.departamentoNombre}\n` +
       `Noches: ${stay.cantidadNoches}\n` +

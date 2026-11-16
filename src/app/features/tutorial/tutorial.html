@@ -141,7 +141,7 @@
           </p>
           <p class="text-gray-600 mb-4">
             Te permite gestionar todo el ciclo de vida de un alquiler: desde crear tu propiedad hasta registrar
-            la llegada y salida de huéspedes, pasando por reservas, estadías y calificaciones.
+            la llegada y salida de reservantes, pasando por reservas, estadías y calificaciones.
           </p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
@@ -178,14 +178,14 @@
                 <span class="text-3xl">👥</span>
                 <h3 class="font-semibold text-gray-800">Inquilinos</h3>
               </div>
-              <p class="text-sm text-gray-600"><strong>El corazón del sistema:</strong> Historial de huéspedes con sus calificaciones y dónde se alojaron. Los comentarios de las clasificaciones aparecen como resumen aquí.</p>
+              <p class="text-sm text-gray-600"><strong>El corazón del sistema:</strong> Historial de reservantes con sus calificaciones y dónde se alojaron. Los comentarios de las clasificaciones aparecen como resumen aquí.</p>
             </div>
             <div class="border rounded-lg p-4 hover:shadow-md transition">
               <div class="flex items-center gap-3 mb-2">
                 <span class="text-3xl">⭐</span>
                 <h3 class="font-semibold text-gray-800">Clasificaciones</h3>
               </div>
-              <p class="text-sm text-gray-600">Calificá a tus huéspedes de 1 a 5 estrellas para tener un historial de referencia.</p>
+              <p class="text-sm text-gray-600">Calificá a tus reservantes de 1 a 5 estrellas para tener un historial de referencia.</p>
             </div>
           </div>
         </div>
@@ -212,20 +212,20 @@
               <span class="text-2xl">📝</span>
               <div>
                 <h4 class="font-semibold text-gray-800">Crear Reservas</h4>
-                <p class="text-sm text-gray-600">Registrar solicitudes de alquiler con datos del huésped, fechas y montos. <strong>Marca el departamento como ocupado</strong> para las fechas seleccionadas.</p>
+                <p class="text-sm text-gray-600">Registrar solicitudes de alquiler con datos del reservante, fechas y montos. <strong>Marca el departamento como ocupado</strong> para las fechas seleccionadas.</p>
               </div>
             </div>
             <div class="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
               <span class="text-2xl">🔑</span>
               <div>
                 <h4 class="font-semibold text-gray-800">Check-In / Check-Out</h4>
-                <p class="text-sm text-gray-600">Registrar la llegada y salida de huéspedes con 3 modos de check-in. <strong>Marca el departamento como ocupado</strong> al hacer check-in.</p>
+                <p class="text-sm text-gray-600">Registrar la llegada y salida de reservantes con 3 modos de check-in. <strong>Marca el departamento como ocupado</strong> al hacer check-in.</p>
               </div>
             </div>
             <div class="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
               <span class="text-2xl">⭐</span>
               <div>
-                <h4 class="font-semibold text-gray-800">Calificar Huéspedes</h4>
+                <h4 class="font-semibold text-gray-800">Calificar Reservantes</h4>
                 <p class="text-sm text-gray-600">Dar notas de 1 a 5 estrellas con comentarios para tener un historial de referencia.</p>
               </div>
             </div>
@@ -385,6 +385,14 @@
           </div>
           <p class="text-gray-600 mb-4">Un <strong>Complejo</strong> es tu propiedad: puede ser un hotel, un conjunto de departamentos, cabañas, etc.</p>
 
+          <!-- Auto-llenar arriba para que lo vean de entrada -->
+          <div class="mb-4">
+            <button (click)="autoFillComplexForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition animate-bounce">
+              🤖 Auto-llenar con datos de ejemplo
+            </button>
+            <p class="text-xs text-gray-500 mt-1">💡 Apretá el botón amarillo para prellenar los campos con datos de ejemplo. Podés editarlos después.</p>
+          </div>
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
@@ -407,9 +415,6 @@
           </div>
 
           <div class="flex gap-3">
-            <button (click)="autoFillComplexForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition">
-              🤖 Auto-llenar
-            </button>
             <button (click)="createComplex()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
               Crear Complejo →
             </button>
@@ -423,6 +428,14 @@
             <h2 class="text-xl font-bold text-gray-800">Crear un Departamento</h2>
           </div>
           <p class="text-gray-600 mb-4">Un <strong>Departamento</strong> es una unidad alquilable dentro de tu complejo.</p>
+
+          <!-- Auto-llenar arriba para que lo vean de entrada -->
+          <div class="mb-4">
+            <button (click)="autoFillDepartmentForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition animate-bounce">
+              🤖 Auto-llenar con datos de ejemplo
+            </button>
+            <p class="text-xs text-gray-500 mt-1">💡 Apretá el botón amarillo para prellenar los campos con datos de ejemplo. Podés editarlos después.</p>
+          </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -476,9 +489,6 @@
           </div>
 
           <div class="flex gap-3">
-            <button (click)="autoFillDepartmentForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition">
-              🤖 Auto-llenar
-            </button>
             <button (click)="createDepartment()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
               Siguiente: Crear Departamento →
             </button>
@@ -491,7 +501,15 @@
             <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">3</span>
             <h2 class="text-xl font-bold text-gray-800">Crear una Reserva</h2>
           </div>
-          <p class="text-gray-600 mb-4">Una <strong>Reserva</strong> es la solicitud de alquiler con datos del huésped, fechas y montos.</p>
+          <p class="text-gray-600 mb-4">Una <strong>Reserva</strong> es la solicitud de alquiler con datos del reservante, fechas y montos.</p>
+
+          <!-- Auto-llenar arriba para que lo vean de entrada -->
+          <div class="mb-4">
+            <button (click)="autoFillReservationForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition animate-bounce">
+              🤖 Auto-llenar con datos de ejemplo
+            </button>
+            <p class="text-xs text-gray-500 mt-1">💡 Apretá el botón amarillo para prellenar los campos con datos de ejemplo. Podés editarlos después.</p>
+          </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -550,9 +568,6 @@
           </div>
 
           <div class="flex gap-3">
-            <button (click)="autoFillReservationForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition">
-              🤖 Auto-llenar
-            </button>
             <button (click)="createReservation()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
               Siguiente: Crear Reserva →
             </button>
@@ -565,7 +580,15 @@
             <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">4</span>
             <h2 class="text-xl font-bold text-gray-800">Check-In</h2>
           </div>
-          <p class="text-gray-600 mb-4">El <strong>Check-In</strong> registra la llegada del huésped. Se crea la estadía activa y el departamento queda ocupado.</p>
+          <p class="text-gray-600 mb-4">El <strong>Check-In</strong> registra la llegada del reservante. Se crea la estadía activa y el departamento queda ocupado.</p>
+
+          <!-- Auto-llenar arriba para que lo vean de entrada -->
+          <div class="mb-4">
+            <button (click)="autoFillTenantForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition animate-bounce">
+              🤖 Auto-llenar con datos de ejemplo
+            </button>
+            <p class="text-xs text-gray-500 mt-1">💡 Apretá el botón amarillo para prellenar los campos con datos de ejemplo. Podés editarlos después.</p>
+          </div>
 
           <div class="bg-amber-50 border-2 border-amber-400 rounded-lg p-4 mb-4">
             <p class="text-sm text-amber-800 font-semibold">📅 ¡Mové la fecha simulada antes de hacer check-in!</p>
@@ -615,9 +638,6 @@
           </div>
 
           <div class="flex gap-3">
-            <button (click)="autoFillTenantForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition">
-              🤖 Auto-llenar
-            </button>
             <button (click)="doCheckIn()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
               Siguiente: Check-In →
             </button>
@@ -630,7 +650,7 @@
             <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">5</span>
             <h2 class="text-xl font-bold text-gray-800">Check-Out</h2>
           </div>
-          <p class="text-gray-600 mb-4">El <strong>Check-Out</strong> finaliza la estadía. Podés registrar el estado del departamento y calificar al huésped.</p>
+          <p class="text-gray-600 mb-4">El <strong>Check-Out</strong> finaliza la estadía. Podés registrar el estado del departamento y calificar al reservante.</p>
 
           <div class="bg-amber-50 border-2 border-amber-400 rounded-lg p-4 mb-4">
             <p class="text-sm text-amber-800 font-semibold">📅 ¡Mové la fecha simulada al día de check-out!</p>
@@ -661,7 +681,7 @@
             </div>
           </div>
 
-          <h3 class="font-semibold text-gray-700 mb-3">⭐ Clasificación del Huésped (opcional)</h3>
+          <h3 class="font-semibold text-gray-700 mb-3">⭐ Clasificación del Reservante (opcional)</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Puntuación</label>
@@ -676,7 +696,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-1">Comentario</label>
               <input type="text" [ngModel]="checkoutForm().classificationReviewComment" (ngModelChange)="setCheckoutComment($event)"
                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-                     placeholder="Ej: Excelente huésped, muy respetuoso" />
+                     placeholder="Ej: Dejó el departamento impecable / Rompió una silla / Dejó las luces encendidas..." />
             </div>
           </div>
 
