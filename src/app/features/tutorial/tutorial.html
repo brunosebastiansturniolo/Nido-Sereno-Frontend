@@ -1120,7 +1120,8 @@
             class="mt-1 w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500" />
           <div>
             <span class="text-sm font-medium text-gray-700">Cargar de todas formas con comentario</span>
-            <p class="text-xs text-gray-500">Dejá un motivo (ej: se le averió el auto, pagó una extensión, lo despaché por irrespetuoso, le surgió una emergencia...)</p>
+            <p class="text-xs text-gray-500" *ngIf="justificationContext() === 'checkIn'">Dejá un motivo (ej: se le averió el auto, necesitaba refugio, tenía una emergencia familiar...)</p>
+            <p class="text-xs text-gray-500" *ngIf="justificationContext() === 'checkout'">Dejá un motivo (ej: lo despaché por irrespetuoso, le surgió una emergencia, pagó una extensión, es un ocupa...)</p>
             <textarea [ngModel]="justificationComment()" (ngModelChange)="justificationComment.set($event)" rows="2"
               class="mt-2 w-full px-3 py-2 border rounded-lg text-sm placeholder:text-gray-400 placeholder:italic"
               placeholder="Escribí el motivo de la diferencia de fecha..."></textarea>
