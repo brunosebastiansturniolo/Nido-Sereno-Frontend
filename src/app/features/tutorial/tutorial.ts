@@ -131,6 +131,12 @@ export class TutorialComponent {
   // Available complexes for department selection
   availableComplexes = computed(() => this.tutorialService.complexes());
   availableDepartments = computed(() => this.tutorialService.departments());
+  
+  // Selected stay's planned check-out date for the banner
+  selectedStayCheckoutDate = computed(() => {
+    const stay = this.tutorialService.stays().find(s => s.id === this.selectedStayId());
+    return stay?.fechaCheckOutPlaneada || '';
+  });
 
   constructor() {
     // Set default dates for reservation form

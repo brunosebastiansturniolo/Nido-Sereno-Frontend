@@ -696,10 +696,16 @@
           <div class="bg-amber-50 border-2 border-amber-400 rounded-lg p-4 mb-4">
             <p class="text-sm text-amber-800 font-semibold">📅 ¡Mové la fecha simulada al día de check-out!</p>
             <p class="text-sm text-amber-700 mt-1">
-              👇 Usá el control de fecha iluminado en el sidebar para avanzar la fecha al día de salida planeada.
+              La estadía tiene fecha de check-out planeada: <strong>{{ selectedStayCheckoutDate() }}</strong>.
+            </p>
+            <p class="text-sm text-amber-700 mt-1">
+              👇 Usá el control de fecha iluminado en el sidebar para avanzar la fecha a ese día.
             </p>
             <p class="text-xs text-amber-600 mt-2">
               Observá cómo cambia cada panel al mover la fecha: Dashboard, Reservas, Estadías...
+            </p>
+            <p class="text-xs text-amber-600 mt-1">
+              ⚠️ Si intentás hacer check-out con una fecha diferente, el sistema te pedirá justificar la diferencia.
             </p>
           </div>
 
