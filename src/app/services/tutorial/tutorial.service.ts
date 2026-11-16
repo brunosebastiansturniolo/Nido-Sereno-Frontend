@@ -288,6 +288,33 @@ export class TutorialService {
     };
   }
 
+  autoFillCheckout(): {
+    comentariosCheckOut: string;
+    estadoDepartamento: 'GOOD' | 'MINOR_DAMAGE' | 'MAJOR_DAMAGE' | 'CLEANING_REQUIRED';
+    classificationScore: number;
+    classificationReviewComment: string;
+  } {
+    const comentarios = [
+      'Se fueron de repente en la mañana, no se despidieron',
+      'Se despidieron amablemente y dejaron las llaves en la mesa',
+      'Pagó una extensión de estadía de último momento',
+      'Le surgió una emergencia y se fue antes de lo planeado'
+    ];
+    const estados: Array<'GOOD' | 'MINOR_DAMAGE' | 'MAJOR_DAMAGE' | 'CLEANING_REQUIRED'> = ['GOOD', 'MINOR_DAMAGE', 'CLEANING_REQUIRED'];
+    const clasificaciones = [
+      'Excelente huésped, muy respetuoso y limpio',
+      'Dejó el departamento impecable',
+      'Buen huésped en general, dejó las luces encendidas',
+      'Rompió una silla pero ofreció reponerla'
+    ];
+    return {
+      comentariosCheckOut: randomFrom(comentarios),
+      estadoDepartamento: randomFrom(estados),
+      classificationScore: 3 + Math.floor(Math.random() * 3),
+      classificationReviewComment: randomFrom(clasificaciones)
+    };
+  }
+
   // ==========================================
   // STAYS
   // ==========================================

@@ -397,20 +397,20 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
               <input type="text" [ngModel]="complexForm().nombre" (ngModelChange)="setComplexNombre($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: Los Arrayanes" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación *</label>
               <input type="text" [ngModel]="complexForm().ubicacion" (ngModelChange)="setComplexUbicacion($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: Av. San Martín, Bariloche" />
             </div>
           </div>
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
             <textarea [ngModel]="complexForm().descripcion" (ngModelChange)="setComplexDescripcion($event)"
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
                       rows="2" placeholder="Descripción opcional..."></textarea>
           </div>
 
@@ -441,7 +441,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
               <input type="text" [ngModel]="departmentForm().nombre" (ngModelChange)="setDeptNombre($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: A1" />
             </div>
             <div>
@@ -455,17 +455,17 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Habitaciones</label>
               <input type="number" min="1" [ngModel]="departmentForm().numeroHabitaciones" (ngModelChange)="setDeptHabitaciones($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Precio por noche ($)</label>
               <input type="number" min="0" [ngModel]="departmentForm().precioPorNoche" (ngModelChange)="setDeptPrecio($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Tamaño (m²)</label>
               <input type="number" min="0" [ngModel]="departmentForm().tamanoM2" (ngModelChange)="setDeptTamano($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic" />
             </div>
           </div>
 
@@ -515,22 +515,26 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
               <input type="text" [ngModel]="reservationForm().firstName" (ngModelChange)="setResFirstName($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     placeholder="Ej: Juan" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Apellido *</label>
               <input type="text" [ngModel]="reservationForm().lastName" (ngModelChange)="setResLastName($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     placeholder="Ej: Pérez" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">DNI *</label>
               <input type="text" [ngModel]="reservationForm().documentNumber" (ngModelChange)="setResDNI($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     placeholder="Ej: 30123456" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
               <input type="text" [ngModel]="reservationForm().phoneNumber" (ngModelChange)="setResPhone($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     placeholder="Ej: 2615555123" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Check-in *</label>
@@ -553,17 +557,20 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Personas</label>
               <input type="number" min="1" [ngModel]="reservationForm().cantidadPersonas" (ngModelChange)="setResPersonas($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     placeholder="Ej: 2" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Precio Total ($)</label>
               <input type="number" min="0" [ngModel]="reservationForm().precioTotal" (ngModelChange)="setResPrecio($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     placeholder="Ej: 45000" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Señal ($)</label>
               <input type="number" min="0" [ngModel]="reservationForm().montoSenia" (ngModelChange)="setResSenia($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     placeholder="Ej: 10000" />
             </div>
           </div>
 
@@ -608,27 +615,32 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">DNI *</label>
               <input type="text" [ngModel]="tenantForm().documentNumber" (ngModelChange)="setTenantDNI($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     placeholder="Ej: 30123456" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
               <input type="text" [ngModel]="tenantForm().firstName" (ngModelChange)="setTenantFirstName($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     placeholder="Ej: Juan" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Apellido *</label>
               <input type="text" [ngModel]="tenantForm().lastName" (ngModelChange)="setTenantLastName($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     placeholder="Ej: Pérez" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input type="email" [ngModel]="tenantForm().email" (ngModelChange)="setTenantEmail($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     placeholder="Ej: juan@email.com" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
               <input type="text" [ngModel]="tenantForm().phoneNumber" (ngModelChange)="setTenantPhone($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     placeholder="Ej: 2615555123" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de nacimiento</label>
@@ -652,6 +664,14 @@
           </div>
           <p class="text-gray-600 mb-4">El <strong>Check-Out</strong> finaliza la estadía. Podés registrar el estado del departamento y calificar al reservante.</p>
 
+          <!-- Auto-llenar arriba para que lo vean de entrada -->
+          <div class="mb-4">
+            <button (click)="autoFillCheckoutForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition animate-bounce">
+              🤖 Auto-llenar con datos de ejemplo
+            </button>
+            <p class="text-xs text-gray-500 mt-1">💡 Apretá el botón amarillo para prellenar los campos con datos de ejemplo. Podés editarlos después.</p>
+          </div>
+
           <div class="bg-amber-50 border-2 border-amber-400 rounded-lg p-4 mb-4">
             <p class="text-sm text-amber-800 font-semibold">📅 ¡Mové la fecha simulada al día de check-out!</p>
             <p class="text-sm text-amber-700 mt-1">
@@ -666,8 +686,8 @@
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">Comentarios de salida</label>
               <textarea [ngModel]="checkoutForm().comentariosCheckOut" (ngModelChange)="setCheckoutComentarios($event)"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-                        rows="2" placeholder="Comentarios sobre la estadía..."></textarea>
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                        rows="2" placeholder="Ej: Se fueron de repente en la mañana / No se despidieron / Pagó una extensión de estadía..."></textarea>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Estado del departamento</label>
@@ -695,7 +715,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Comentario</label>
               <input type="text" [ngModel]="checkoutForm().classificationReviewComment" (ngModelChange)="setCheckoutComment($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: Dejó el departamento impecable / Rompió una silla / Dejó las luces encendidas..." />
             </div>
           </div>

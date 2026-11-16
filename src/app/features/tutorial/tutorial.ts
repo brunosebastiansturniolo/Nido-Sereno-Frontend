@@ -396,6 +396,11 @@ export class TutorialComponent {
   // FLOW: CHECK-OUT
   // ==========================================
 
+  autoFillCheckoutForm(): void {
+    const filled = this.tutorialService.autoFillCheckout();
+    this.checkoutForm.set(filled);
+  }
+
   // Prepare for check-out step - guide user to set the date manually
   prepareCheckOut(): void {
     const stay = this.tutorialService.stays().find(s => s.id === this.selectedStayId());
