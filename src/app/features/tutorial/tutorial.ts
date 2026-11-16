@@ -322,7 +322,7 @@ export class TutorialComponent {
       `Check-out: ${form.fechaCheckOut}\n` +
       `Precio total: $${form.precioTotal.toLocaleString('es-AR')}\n` +
       `Señal: $${form.montoSenia.toLocaleString('es-AR')}\n\n` +
-      'Una RESERVA es la solicitud de alquiler. Tiene estado PENDING hasta que se hace check-in.\n\n' +
+      'Una RESERVA es la solicitud de alquiler. Tiene estado PENDING hasta que se hace una seña (confirmada) o un check-in.\n\n' +
       'Ahora simularemos el CHECK-IN cuando el reservante llega.\n\n' +
       '👉 Hacé clic en "Siguiente: Check-In"'
     );
