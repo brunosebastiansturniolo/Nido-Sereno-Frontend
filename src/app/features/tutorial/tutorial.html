@@ -1,0 +1,1030 @@
+<div class="flex h-screen bg-gray-100">
+  <!-- Sidebar -->
+  <aside [class.w-64]="sidebarOpen()" [class.w-16]="!sidebarOpen()" class="bg-emerald-800 text-white flex flex-col transition-all duration-300">
+    <!-- Logo -->
+    <div class="p-4 flex items-center justify-between border-b border-emerald-700">
+      <span *ngIf="sidebarOpen()" class="text-xl font-bold">🌿 Tutorial</span>
+      <button (click)="toggleSidebar()" class="p-1 hover:bg-emerald-700 rounded">
+        {{ sidebarOpen() ? '◀' : '▶' }}
+      </button>
+    </div>
+
+    <!-- Tutorial Info -->
+    <div *ngIf="sidebarOpen()" class="p-3 mx-3 mb-3 bg-emerald-700/50 rounded-lg">
+      <p class="text-xs text-emerald-200">¿Qué es Nido Sereno?</p>
+      <p class="text-xs text-emerald-300 mt-1">Sistema de gestión de alquileres temporarios para propietarios.</p>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 py-2">
+      <a (click)="navigate('welcome')" [class.bg-emerald-700]="currentSection() === 'welcome'"
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
+        <span class="text-lg">🏠</span>
+        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Inicio</span>
+      </a>
+
+      <a (click)="navigate('hierarchy')" [class.bg-emerald-700]="currentSection() === 'hierarchy'"
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
+        <span class="text-lg">📐</span>
+        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Jerarquía</span>
+      </a>
+
+      <a (click)="navigate('flow')" [class.bg-emerald-700]="currentSection() === 'flow'"
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
+        <span class="text-lg">🔄</span>
+        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Flujo Interactivo</span>
+      </a>
+
+      <div *ngIf="sidebarOpen()" class="mx-4 my-2 border-t border-emerald-600"></div>
+
+      <a (click)="navigate('dashboard')" [class.bg-emerald-700]="currentSection() === 'dashboard'"
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
+        <span class="text-lg">📊</span>
+        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Dashboard</span>
+      </a>
+
+      <a (click)="navigate('complexes')" [class.bg-emerald-700]="currentSection() === 'complexes'"
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
+        <span class="text-lg">🏢</span>
+        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Complejos</span>
+      </a>
+
+      <a (click)="navigate('departments')" [class.bg-emerald-700]="currentSection() === 'departments'"
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
+        <span class="text-lg">🚪</span>
+        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Departamentos</span>
+      </a>
+
+      <a (click)="navigate('reservations')" [class.bg-emerald-700]="currentSection() === 'reservations'"
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
+        <span class="text-lg">📋</span>
+        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Reservas</span>
+      </a>
+
+      <a (click)="navigate('stays')" [class.bg-emerald-700]="currentSection() === 'stays'"
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
+        <span class="text-lg">🛏️</span>
+        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Estadías</span>
+      </a>
+
+      <a (click)="navigate('tenants')" [class.bg-emerald-700]="currentSection() === 'tenants'"
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
+        <span class="text-lg">👥</span>
+        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Inquilinos</span>
+      </a>
+    </nav>
+
+    <!-- Date Controller -->
+    <div class="p-3 mx-3 mb-2 bg-emerald-700/50 rounded-lg">
+      <div *ngIf="sidebarOpen()">
+        <p class="text-xs font-semibold text-emerald-200 mb-1">📅 Fecha simulada</p>
+        <p class="text-xs text-emerald-300 capitalize">{{ simulatedDateDisplay() }}</p>
+        <input
+          type="date"
+          [ngModel]="simulatedDateStr()"
+          (ngModelChange)="setDateFromString($event)"
+          class="w-full mt-2 px-2 py-1 text-xs bg-emerald-600 text-white rounded border border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+        />
+        <div class="flex gap-1 mt-2">
+          <button (click)="addDays(-1)" class="flex-1 px-1 py-0.5 text-xs bg-emerald-600 hover:bg-emerald-500 rounded" title="Ayer">-1d</button>
+          <button (click)="addDays(1)" class="flex-1 px-1 py-0.5 text-xs bg-emerald-600 hover:bg-emerald-500 rounded" title="Mañana">+1d</button>
+          <button (click)="addDays(7)" class="flex-1 px-1 py-0.5 text-xs bg-emerald-600 hover:bg-emerald-500 rounded" title="Una semana">+7d</button>
+          <button (click)="resetDate()" class="flex-1 px-1 py-0.5 text-xs bg-emerald-600 hover:bg-emerald-500 rounded" title="Fecha real">↺</button>
+        </div>
+      </div>
+      <div *ngIf="!sidebarOpen()" class="text-center">
+        <p class="text-xs text-emerald-300">📅</p>
+        <input
+          type="date"
+          [ngModel]="simulatedDateStr()"
+          (ngModelChange)="setDateFromString($event)"
+          class="w-full mt-1 px-1 py-0.5 text-xs bg-emerald-600 text-white rounded border border-emerald-500"
+        />
+      </div>
+    </div>
+
+    <!-- Reset -->
+    <div class="p-3">
+      <button (click)="resetTutorial()" class="w-full bg-red-600 hover:bg-red-700 text-white text-xs py-1.5 rounded transition">
+        <span *ngIf="sidebarOpen()">🔄 Reiniciar Tutorial</span>
+        <span *ngIf="!sidebarOpen()">🔄</span>
+      </button>
+      <button (click)="goToLogin()" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white text-xs py-1.5 rounded transition">
+        <span *ngIf="sidebarOpen()">🚪 Ir a App Real</span>
+        <span *ngIf="!sidebarOpen()">🚪</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="flex-1 overflow-auto">
+    <!-- WELCOME SECTION -->
+    <div *ngIf="currentSection() === 'welcome'" class="p-6">
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-8">
+          <h1 class="text-4xl font-bold text-emerald-700 mb-2">🌿 Nido Sereno</h1>
+          <p class="text-xl text-gray-600">Tutorial Interactivo</p>
+          <p class="text-sm text-gray-400 mt-1">Aprendé a usar el sistema sin riesgo — todo se guarda en memoria</p>
+        </div>
+
+        <!-- What is Nido Sereno -->
+        <div class="bg-white rounded-xl shadow p-6 mb-6">
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">¿Qué es Nido Sereno?</h2>
+          <p class="text-gray-600 mb-4">
+            Nido Sereno es un sistema de gestión de <strong>alquileres temporarios</strong> diseñado para propietarios
+            que tienen complejos con departamentos para alquilar por noche (tipo Airbnb).
+          </p>
+          <p class="text-gray-600 mb-4">
+            Te permite gestionar todo el ciclo de vida de un alquiler: desde crear tu propiedad hasta registrar
+            la llegada y salida de huéspedes, pasando por reservas, estadías y calificaciones.
+          </p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <div class="border rounded-lg p-4 hover:shadow-md transition">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="text-3xl">🏢</span>
+                <h3 class="font-semibold text-gray-800">Complejos</h3>
+              </div>
+              <p class="text-sm text-gray-600">Registrá tus propiedades: hoteles, conjuntos de departamentos, cabañas, etc.</p>
+            </div>
+            <div class="border rounded-lg p-4 hover:shadow-md transition">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="text-3xl">🚪</span>
+                <h3 class="font-semibold text-gray-800">Departamentos</h3>
+              </div>
+              <p class="text-sm text-gray-600">Unidades alquilables dentro de cada complejo con precio, amenities y disponibilidad.</p>
+            </div>
+            <div class="border rounded-lg p-4 hover:shadow-md transition">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="text-3xl">📋</span>
+                <h3 class="font-semibold text-gray-800">Reservas</h3>
+              </div>
+              <p class="text-sm text-gray-600">Solicitudes de alquiler con datos del reservante, fechas y montos.</p>
+            </div>
+            <div class="border rounded-lg p-4 hover:shadow-md transition">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="text-3xl">🛏️</span>
+                <h3 class="font-semibold text-gray-800">Estadías</h3>
+              </div>
+              <p class="text-sm text-gray-600">El corazón del sistema: check-in, check-out y registro de inquilinos.</p>
+            </div>
+            <div class="border rounded-lg p-4 hover:shadow-md transition">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="text-3xl">👥</span>
+                <h3 class="font-semibold text-gray-800">Inquilinos</h3>
+              </div>
+              <p class="text-sm text-gray-600">Historial de huéspedes con sus calificaciones y dónde se alojaron.</p>
+            </div>
+            <div class="border rounded-lg p-4 hover:shadow-md transition">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="text-3xl">⭐</span>
+                <h3 class="font-semibold text-gray-800">Clasificaciones</h3>
+              </div>
+              <p class="text-sm text-gray-600">Calificá a tus huéspedes de 1 a 5 estrellas para tener un historial de referencia.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Owner capabilities -->
+        <div class="bg-white rounded-xl shadow p-6 mb-6">
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">¿Qué puede hacer un Owner?</h2>
+          <div class="space-y-3">
+            <div class="flex items-start gap-3 p-3 bg-emerald-50 rounded-lg">
+              <span class="text-2xl">📊</span>
+              <div>
+                <h4 class="font-semibold text-gray-800">Dashboard</h4>
+                <p class="text-sm text-gray-600">Vista general de todos tus complejos, reservas y estadías con resumen en tiempo real.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+              <span class="text-2xl">🏗️</span>
+              <div>
+                <h4 class="font-semibold text-gray-800">Gestionar Propiedades</h4>
+                <p class="text-sm text-gray-600">Crear complejos y departamentos con precios, amenities y disponibilidad.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
+              <span class="text-2xl">📝</span>
+              <div>
+                <h4 class="font-semibold text-gray-800">Crear Reservas</h4>
+                <p class="text-sm text-gray-600">Registrar solicitudes de alquiler con datos del huésped, fechas y montos.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
+              <span class="text-2xl">🔑</span>
+              <div>
+                <h4 class="font-semibold text-gray-800">Check-In / Check-Out</h4>
+                <p class="text-sm text-gray-600">Registrar la llegada y salida de huéspedes con 3 modos de check-in.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
+              <span class="text-2xl">⭐</span>
+              <div>
+                <h4 class="font-semibold text-gray-800">Calificar Huéspedes</h4>
+                <p class="text-sm text-gray-600">Dar notas de 1 a 5 estrellas con comentarios para tener un historial de referencia.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="text-center">
+          <button (click)="startInteractiveFlow()"
+                  class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl text-lg transition shadow-lg hover:shadow-xl">
+            🚀 Comenzar Flujo Interactivo
+          </button>
+          <p class="text-sm text-gray-500 mt-3">Recorré todo el sistema paso a paso con datos de ejemplo</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- HIERARCHY SECTION -->
+    <div *ngIf="currentSection() === 'hierarchy'" class="p-6">
+      <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">📐 Jerarquía de Entidades</h1>
+
+        <div class="bg-white rounded-xl shadow p-6 mb-6">
+          <p class="text-gray-600 mb-6">
+            Nido Sereno organiza la información en una jerarquía clara. Cada nivel depende del anterior:
+          </p>
+
+          <!-- Hierarchy Diagram -->
+          <div class="flex flex-col items-center">
+            <!-- Owner -->
+            <div class="bg-emerald-600 text-white rounded-xl px-8 py-4 text-center shadow-lg mb-2">
+              <span class="text-3xl block mb-1">👤</span>
+              <span class="font-bold text-lg">Owner</span>
+              <span class="text-sm block text-emerald-200">(Propietario)</span>
+            </div>
+
+            <!-- Arrow -->
+            <div class="text-emerald-400 text-2xl my-1">↓</div>
+
+            <!-- Complex -->
+            <div class="bg-blue-600 text-white rounded-xl px-8 py-4 text-center shadow-lg mb-2">
+              <span class="text-3xl block mb-1">🏢</span>
+              <span class="font-bold text-lg">Complejo</span>
+              <span class="text-sm block text-blue-200">(Tu propiedad)</span>
+            </div>
+
+            <!-- Arrow -->
+            <div class="text-blue-400 text-2xl my-1">↓</div>
+
+            <!-- Department -->
+            <div class="bg-indigo-600 text-white rounded-xl px-8 py-4 text-center shadow-lg mb-2">
+              <span class="text-3xl block mb-1">🚪</span>
+              <span class="font-bold text-lg">Departamento</span>
+              <span class="text-sm block text-indigo-200">(Unidad alquilable)</span>
+            </div>
+
+            <!-- Arrow -->
+            <div class="text-indigo-400 text-2xl my-1">↓</div>
+
+            <!-- Reservation -->
+            <div class="bg-yellow-500 text-white rounded-xl px-8 py-4 text-center shadow-lg mb-2">
+              <span class="text-3xl block mb-1">📋</span>
+              <span class="font-bold text-lg">Reserva</span>
+              <span class="text-sm block text-yellow-100">(Solicitud de alquiler)</span>
+            </div>
+
+            <!-- Arrow -->
+            <div class="text-yellow-400 text-2xl my-1">↓</div>
+
+            <!-- Stay -->
+            <div class="bg-green-600 text-white rounded-xl px-8 py-4 text-center shadow-lg mb-2">
+              <span class="text-3xl block mb-1">🛏️</span>
+              <span class="font-bold text-lg">Estadía</span>
+              <span class="text-sm block text-green-200">(Check-in real)</span>
+            </div>
+
+            <!-- Arrow -->
+            <div class="text-green-400 text-2xl my-1">↓</div>
+
+            <!-- Classification -->
+            <div class="bg-purple-600 text-white rounded-xl px-8 py-4 text-center shadow-lg mb-2">
+              <span class="text-3xl block mb-1">⭐</span>
+              <span class="font-bold text-lg">Clasificación</span>
+              <span class="text-sm block text-purple-200">(Calificación 1-5)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reservation States -->
+        <div class="bg-white rounded-xl shadow p-6 mb-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">Estados de una Reserva</h2>
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg font-semibold text-sm">PENDING</div>
+            <span class="text-gray-400">→</span>
+            <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-semibold text-sm">CONFIRMED</div>
+            <span class="text-gray-400">→</span>
+            <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-semibold text-sm">CHECKED_IN</div>
+            <span class="text-gray-400">→</span>
+            <div class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold text-sm">COMPLETED</div>
+            <div class="ml-4">
+              <span class="text-gray-400">o</span>
+              <div class="bg-red-100 text-red-800 px-4 py-2 rounded-lg font-semibold text-sm inline-block ml-2">CANCELLED</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stay Modes -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">3 Formas de hacer Check-In</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="border-2 border-green-200 rounded-lg p-4">
+              <h3 class="font-bold text-green-700 mb-2">A. Check-In Express</h3>
+              <p class="text-sm text-gray-600">Sin reserva previa. Registrás directamente el check-in, el departamento, las fechas y los inquilinos. El sistema crea la Reserva y la Estadía automáticamente.</p>
+            </div>
+            <div class="border-2 border-blue-200 rounded-lg p-4">
+              <h3 class="font-bold text-blue-700 mb-2">B. Desde Reserva</h3>
+              <p class="text-sm text-gray-600">Seleccionás una reserva existente (PENDING/CONFIRMED) y le hacés check-in, registrando a los inquilinos que llegan.</p>
+            </div>
+            <div class="border-2 border-purple-200 rounded-lg p-4">
+              <h3 class="font-bold text-purple-700 mb-2">C. Retroactivo</h3>
+              <p class="text-sm text-gray-600">Para digitalizar alquileres que se hicieron "en papel" en el pasado. Permitís cargar fechas históricas.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLOW SECTION - Interactive -->
+    <div *ngIf="currentSection() === 'flow'" class="p-6">
+      <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">🔄 Flujo Interactivo</h1>
+        <p class="text-gray-500 mb-6">Recorré todo el ciclo de vida de un alquiler paso a paso</p>
+
+        <!-- Progress bar -->
+        <div class="bg-white rounded-xl shadow p-4 mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-gray-600">Progreso del tutorial</span>
+            <span class="text-sm text-gray-400">{{ flowStep() }} / 5 pasos</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-3">
+            <div class="bg-emerald-500 h-3 rounded-full transition-all duration-500" [style.width]="(flowStep() / 5 * 100) + '%'"></div>
+          </div>
+          <div class="flex justify-between mt-2 text-xs text-gray-500">
+            <span [class.text-emerald-600]="flowStep() >= 1" [class.font-bold]="flowStep() >= 1">🏢 Complejo</span>
+            <span [class.text-emerald-600]="flowStep() >= 2" [class.font-bold]="flowStep() >= 2">🚪 Depto</span>
+            <span [class.text-emerald-600]="flowStep() >= 3" [class.font-bold]="flowStep() >= 3">📋 Reserva</span>
+            <span [class.text-emerald-600]="flowStep() >= 4" [class.font-bold]="flowStep() >= 4">🛏️ Check-in</span>
+            <span [class.text-emerald-600]="flowStep() >= 5" [class.font-bold]="flowStep() >= 5">✅ Check-out</span>
+          </div>
+        </div>
+
+        <!-- Step 1: Create Complex -->
+        <div *ngIf="flowStep() === 0" class="bg-white rounded-xl shadow p-6 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">1</span>
+            <h2 class="text-xl font-bold text-gray-800">Crear un Complejo</h2>
+          </div>
+          <p class="text-gray-600 mb-4">Un <strong>Complejo</strong> es tu propiedad: puede ser un hotel, un conjunto de departamentos, cabañas, etc.</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+              <input type="text" [ngModel]="complexForm().nombre" (ngModelChange)="setComplexNombre($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                     placeholder="Ej: Los Arrayanes" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación *</label>
+              <input type="text" [ngModel]="complexForm().ubicacion" (ngModelChange)="setComplexUbicacion($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                     placeholder="Ej: Av. San Martín, Bariloche" />
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+            <textarea [ngModel]="complexForm().descripcion" (ngModelChange)="setComplexDescripcion($event)"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                      rows="2" placeholder="Descripción opcional..."></textarea>
+          </div>
+
+          <div class="flex gap-3">
+            <button (click)="autoFillComplexForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition">
+              🤖 Auto-llenar
+            </button>
+            <button (click)="createComplex()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+              Crear Complejo →
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Create Department -->
+        <div *ngIf="flowStep() === 1" class="bg-white rounded-xl shadow p-6 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">2</span>
+            <h2 class="text-xl font-bold text-gray-800">Crear un Departamento</h2>
+          </div>
+          <p class="text-gray-600 mb-4">Un <strong>Departamento</strong> es una unidad alquilable dentro de tu complejo.</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+              <input type="text" [ngModel]="departmentForm().nombre" (ngModelChange)="setDeptNombre($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                     placeholder="Ej: A1" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Complejo</label>
+              <select [ngModel]="departmentForm().complexId" (ngModelChange)="setDeptComplexId($event)"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                <option [ngValue]="0">Seleccionar complejo...</option>
+                <option *ngFor="let c of complexes()" [ngValue]="c.id">{{ c.nombre }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Habitaciones</label>
+              <input type="number" min="1" [ngModel]="departmentForm().numeroHabitaciones" (ngModelChange)="setDeptHabitaciones($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Precio por noche ($)</label>
+              <input type="number" min="0" [ngModel]="departmentForm().precioPorNoche" (ngModelChange)="setDeptPrecio($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tamaño (m²)</label>
+              <input type="number" min="0" [ngModel]="departmentForm().tamanoM2" (ngModelChange)="setDeptTamano($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <label class="flex items-center gap-2">
+              <input type="checkbox" [ngModel]="departmentForm().tieneWifi" (ngModelChange)="setDeptWifi($event)" class="rounded" />
+              <span class="text-sm">📶 WiFi</span>
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" [ngModel]="departmentForm().incluyeCochera" (ngModelChange)="setDeptCochera($event)" class="rounded" />
+              <span class="text-sm">🚗 Cochera</span>
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" [ngModel]="departmentForm().incluyeDesayuno" (ngModelChange)="setDeptDesayuno($event)" class="rounded" />
+              <span class="text-sm">🍳 Desayuno</span>
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" [ngModel]="departmentForm().tienePileta" (ngModelChange)="setDeptPileta($event)" class="rounded" />
+              <span class="text-sm">🏊 Pileta</span>
+            </label>
+          </div>
+
+          <div class="flex gap-3">
+            <button (click)="autoFillDepartmentForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition">
+              🤖 Auto-llenar
+            </button>
+            <button (click)="createDepartment()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+              Siguiente: Crear Departamento →
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Create Reservation -->
+        <div *ngIf="flowStep() === 2" class="bg-white rounded-xl shadow p-6 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">3</span>
+            <h2 class="text-xl font-bold text-gray-800">Crear una Reserva</h2>
+          </div>
+          <p class="text-gray-600 mb-4">Una <strong>Reserva</strong> es la solicitud de alquiler con datos del huésped, fechas y montos.</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+              <input type="text" [ngModel]="reservationForm().firstName" (ngModelChange)="setResFirstName($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Apellido *</label>
+              <input type="text" [ngModel]="reservationForm().lastName" (ngModelChange)="setResLastName($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">DNI *</label>
+              <input type="text" [ngModel]="reservationForm().documentNumber" (ngModelChange)="setResDNI($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+              <input type="text" [ngModel]="reservationForm().phoneNumber" (ngModelChange)="setResPhone($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Check-in *</label>
+              <input type="date" [ngModel]="reservationForm().fechaCheckIn" (ngModelChange)="setResCheckIn($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Check-out *</label>
+              <input type="date" [ngModel]="reservationForm().fechaCheckOut" (ngModelChange)="setResCheckOut($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Departamento *</label>
+              <select [ngModel]="reservationForm().departmentId" (ngModelChange)="setResDeptId($event)"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                <option [ngValue]="0">Seleccionar...</option>
+                <option *ngFor="let d of departments()" [ngValue]="d.id">{{ d.complejoNombre }} - {{ d.nombre }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Personas</label>
+              <input type="number" min="1" [ngModel]="reservationForm().cantidadPersonas" (ngModelChange)="setResPersonas($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Precio Total ($)</label>
+              <input type="number" min="0" [ngModel]="reservationForm().precioTotal" (ngModelChange)="setResPrecio($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Señal ($)</label>
+              <input type="number" min="0" [ngModel]="reservationForm().montoSenia" (ngModelChange)="setResSenia($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button (click)="autoFillReservationForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition">
+              🤖 Auto-llenar
+            </button>
+            <button (click)="createReservation()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+              Siguiente: Crear Reserva →
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 4: Check-In -->
+        <div *ngIf="flowStep() === 3" class="bg-white rounded-xl shadow p-6 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">4</span>
+            <h2 class="text-xl font-bold text-gray-800">Check-In</h2>
+          </div>
+          <p class="text-gray-600 mb-4">El <strong>Check-In</strong> registra la llegada del huésped. Se crea la estadía activa y el departamento queda ocupado.</p>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p class="text-sm text-blue-800">
+              📅 La fecha simulada se moverá automáticamente al día de check-in: <strong>{{ getReservationCheckInDate(selectedReservationId()) }}</strong>
+            </p>
+          </div>
+
+          <h3 class="font-semibold text-gray-700 mb-3">Datos del Inquilino</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">DNI *</label>
+              <input type="text" [ngModel]="tenantForm().documentNumber" (ngModelChange)="setTenantDNI($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+              <input type="text" [ngModel]="tenantForm().firstName" (ngModelChange)="setTenantFirstName($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Apellido *</label>
+              <input type="text" [ngModel]="tenantForm().lastName" (ngModelChange)="setTenantLastName($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" [ngModel]="tenantForm().email" (ngModelChange)="setTenantEmail($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+              <input type="text" [ngModel]="tenantForm().phoneNumber" (ngModelChange)="setTenantPhone($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de nacimiento</label>
+              <input type="date" [ngModel]="tenantForm().dateOfBirth" (ngModelChange)="setTenantDOB($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button (click)="autoFillTenantForm()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition">
+              🤖 Auto-llenar
+            </button>
+            <button (click)="doCheckIn()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+              Siguiente: Check-In →
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 5: Check-Out -->
+        <div *ngIf="flowStep() === 4" class="bg-white rounded-xl shadow p-6 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">5</span>
+            <h2 class="text-xl font-bold text-gray-800">Check-Out</h2>
+          </div>
+          <p class="text-gray-600 mb-4">El <strong>Check-Out</strong> finaliza la estadía. Podés registrar el estado del departamento y calificar al huésped.</p>
+
+          <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+            <p class="text-sm text-green-800">
+              📅 La fecha simulada se avanzará automáticamente para simular el día de salida.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Comentarios de salida</label>
+              <textarea [ngModel]="checkoutForm().comentariosCheckOut" (ngModelChange)="setCheckoutComentarios($event)"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                        rows="2" placeholder="Comentarios sobre la estadía..."></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Estado del departamento</label>
+              <select [ngModel]="checkoutForm().estadoDepartamento" (ngModelChange)="setCheckoutEstado($event)"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                <option value="GOOD">✅ Buen estado</option>
+                <option value="MINOR_DAMAGE">⚠️ Daño menor</option>
+                <option value="MAJOR_DAMAGE">❌ Daño mayor</option>
+                <option value="CLEANING_REQUIRED">🧹 Necesita limpieza</option>
+              </select>
+            </div>
+          </div>
+
+          <h3 class="font-semibold text-gray-700 mb-3">⭐ Clasificación del Huésped (opcional)</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Puntuación</label>
+              <div class="flex gap-2">
+                <button *ngFor="let i of [1,2,3,4,5]" (click)="setCheckoutScore(i)"
+                        [class.text-yellow-400]="i <= checkoutForm().classificationScore"
+                        [class.text-gray-300]="i > checkoutForm().classificationScore"
+                        class="text-2xl hover:scale-110 transition cursor-pointer">★</button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Comentario</label>
+              <input type="text" [ngModel]="checkoutForm().classificationReviewComment" (ngModelChange)="setCheckoutComment($event)"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                     placeholder="Ej: Excelente huésped, muy respetuoso" />
+            </div>
+          </div>
+
+          <button (click)="doCheckOut()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+            ✅ Finalizar Check-Out
+          </button>
+        </div>
+
+        <!-- Flow Complete -->
+        <div *ngIf="flowStep() === 5" class="bg-white rounded-xl shadow p-6 mb-6 text-center">
+          <span class="text-6xl block mb-4">🎉</span>
+          <h2 class="text-2xl font-bold text-gray-800 mb-2">¡Tutorial Completado!</h2>
+          <p class="text-gray-600 mb-6">
+            Recorriste todo el flujo básico de Nido Sereno. Ahora explorá los diferentes paneles para ver cómo se reflejan los datos.
+          </p>
+          <div class="flex flex-wrap justify-center gap-3">
+            <button (click)="navigate('dashboard')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+              📊 Ver Dashboard
+            </button>
+            <button (click)="navigate('reservations')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+              📋 Ver Reservas
+            </button>
+            <button (click)="navigate('stays')" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+              🛏️ Ver Estadías
+            </button>
+            <button (click)="navigate('tenants')" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+              👥 Ver Inquilinos
+            </button>
+            <button (click)="resetTutorial()" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition">
+              🔄 Reiniciar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD SECTION -->
+    <div *ngIf="currentSection() === 'dashboard'" class="p-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-6">📊 Dashboard</h1>
+
+      <div *ngIf="complexes().length === 0 && departments().length === 0" class="bg-white rounded-xl shadow p-6 text-center">
+        <span class="text-5xl mb-4 block">🏗️</span>
+        <h3 class="text-lg font-semibold text-gray-700 mb-2">No hay datos aún</h3>
+        <p class="text-gray-500 mb-4">Comenzá el flujo interactivo para ver cómo se llena el dashboard.</p>
+        <button (click)="startInteractiveFlow()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+          🚀 Comenzar Tutorial
+        </button>
+      </div>
+
+      <div *ngIf="complexes().length > 0 || departments().length > 0">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <!-- Complejos Card -->
+          <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center mb-4">
+              <span class="text-4xl mr-4">🏢</span>
+              <div>
+                <p class="text-gray-500 text-sm">Complejos</p>
+                <p class="text-2xl font-bold text-gray-800">{{ complexes().length }}</p>
+              </div>
+            </div>
+            <div class="border-t pt-3">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Total departamentos</span>
+                <span class="font-semibold">{{ getTotalDepartments() }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reservas Card -->
+          <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center mb-4">
+              <span class="text-4xl mr-4">📋</span>
+              <div>
+                <p class="text-gray-500 text-sm">Reservas</p>
+                <p class="text-2xl font-bold text-gray-800">{{ reservationSummary().total }}</p>
+              </div>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+                  <span class="text-gray-600">Pendientes</span>
+                </span>
+                <span class="font-semibold">{{ reservationSummary().pending }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-green-400"></span>
+                  <span class="text-gray-600">Confirmadas</span>
+                </span>
+                <span class="font-semibold">{{ reservationSummary().confirmed }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-blue-400"></span>
+                  <span class="text-gray-600">Check-in</span>
+                </span>
+                <span class="font-semibold">{{ reservationSummary().checkedIn }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-gray-400"></span>
+                  <span class="text-gray-600">Completadas</span>
+                </span>
+                <span class="font-semibold">{{ reservationSummary().completed }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-red-400"></span>
+                  <span class="text-gray-600">Canceladas</span>
+                </span>
+                <span class="font-semibold">{{ reservationSummary().cancelled }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estadías Card -->
+          <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center mb-4">
+              <span class="text-4xl mr-4">🛏️</span>
+              <div>
+                <p class="text-gray-500 text-sm">Estadías</p>
+                <p class="text-2xl font-bold text-gray-800">{{ staySummary().total }}</p>
+              </div>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-green-400"></span>
+                  <span class="text-gray-600">Activas</span>
+                </span>
+                <span class="font-semibold">{{ staySummary().active }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-blue-400"></span>
+                  <span class="text-gray-600">Finalizadas</span>
+                </span>
+                <span class="font-semibold">{{ staySummary().completed }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Complexes Detail -->
+        <div *ngIf="complexSummaries().length > 0" class="bg-white rounded-xl shadow p-6">
+          <h2 class="text-lg font-semibold text-gray-700 mb-4">Detalle por complejo</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div *ngFor="let cs of complexSummaries()" class="border rounded-lg p-4 hover:shadow-md transition">
+              <h3 class="font-semibold text-gray-800 mb-1">{{ cs.complex.nombre }}</h3>
+              <p class="text-sm text-gray-500 mb-3">{{ cs.complex.ubicacion }}</p>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Total departamentos</span>
+                  <span class="font-semibold">{{ cs.totalDepartments }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-red-400"></span>
+                    <span class="text-gray-600">Ocupados</span>
+                  </span>
+                  <span class="font-semibold text-red-600">{{ cs.occupiedDepartments }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                    <span class="text-gray-600">Libres</span>
+                  </span>
+                  <span class="font-semibold text-green-600">{{ cs.freeDepartments }}</span>
+                </div>
+              </div>
+              <div class="mt-3">
+                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                  <span>Ocupación</span>
+                  <span>{{ cs.totalDepartments > 0 ? (cs.occupiedDepartments / cs.totalDepartments * 100 | number:'1.0-0') : 0 }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-emerald-500 h-2 rounded-full" [style.width]="(cs.totalDepartments > 0 ? cs.occupiedDepartments / cs.totalDepartments * 100 : 0) + '%'"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPLEXES SECTION -->
+    <div *ngIf="currentSection() === 'complexes'" class="p-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-6">🏢 Complejos</h1>
+
+      <div *ngIf="complexes().length === 0" class="bg-white rounded-xl shadow p-6 text-center">
+        <span class="text-5xl mb-4 block">🏗️</span>
+        <p class="text-gray-500">No hay complejos creados aún.</p>
+      </div>
+
+      <div *ngIf="complexes().length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div *ngFor="let c of complexes()" class="bg-white rounded-xl shadow p-6">
+          <h3 class="font-semibold text-gray-800 text-lg">{{ c.nombre }}</h3>
+          <p class="text-sm text-gray-500">{{ c.ubicacion }}</p>
+          <p *ngIf="c.descripcion" class="text-sm text-gray-600 mt-2">{{ c.descripcion }}</p>
+          <div class="mt-3 text-sm">
+            <span class="text-gray-500">Departamentos: </span>
+            <span class="font-semibold">{{ getDeptCountForComplex(c.id) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEPARTMENTS SECTION -->
+    <div *ngIf="currentSection() === 'departments'" class="p-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-6">🚪 Departamentos</h1>
+
+      <div *ngIf="departments().length === 0" class="bg-white rounded-xl shadow p-6 text-center">
+        <span class="text-5xl mb-4 block">🚪</span>
+        <p class="text-gray-500">No hay departamentos creados aún.</p>
+      </div>
+
+      <div *ngIf="departments().length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div *ngFor="let d of departments()" class="bg-white rounded-xl shadow p-6">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold text-gray-800 text-lg">{{ d.nombre }}</h3>
+            <span [class]="d.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                  class="px-2 py-0.5 rounded text-xs font-semibold">
+              {{ d.disponible ? 'Disponible' : 'Ocupado' }}
+            </span>
+          </div>
+          <p class="text-sm text-gray-500">{{ d.complejoNombre }}</p>
+          <div class="mt-3 grid grid-cols-2 gap-2 text-sm">
+            <div><span class="text-gray-500">Precio/noche:</span> <span class="font-semibold">{{ formatCurrency(d.precioPorNoche) }}</span></div>
+            <div><span class="text-gray-500">Habitaciones:</span> <span class="font-semibold">{{ d.numeroHabitaciones }}</span></div>
+            <div><span class="text-gray-500">Tamaño:</span> <span class="font-semibold">{{ d.tamanoM2 }}m²</span></div>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <span *ngIf="d.tieneWifi" class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">📶 WiFi</span>
+            <span *ngIf="d.incluyeCochera" class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">🚗 Cochera</span>
+            <span *ngIf="d.incluyeDesayuno" class="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">🍳 Desayuno</span>
+            <span *ngIf="d.tienePileta" class="text-xs bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded">🏊 Pileta</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESERVATIONS SECTION -->
+    <div *ngIf="currentSection() === 'reservations'" class="p-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-6">📋 Reservas</h1>
+
+      <div *ngIf="reservations().length === 0" class="bg-white rounded-xl shadow p-6 text-center">
+        <span class="text-5xl mb-4 block">📋</span>
+        <p class="text-gray-500">No hay reservas creadas aún.</p>
+      </div>
+
+      <div *ngIf="reservations().length > 0" class="space-y-4">
+        <div *ngFor="let r of reservations()" class="bg-white rounded-xl shadow p-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-gray-800">{{ r.firstName }} {{ r.lastName }}</h3>
+            <span [class]="getEstadoBadgeClass(r.estado)" class="px-3 py-1 rounded-full text-xs font-semibold">
+              {{ r.estado }}
+            </span>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div><span class="text-gray-500">DNI:</span> <span class="font-medium">{{ r.documentNumber }}</span></div>
+            <div><span class="text-gray-500">Tel:</span> <span class="font-medium">{{ r.phoneNumber }}</span></div>
+            <div><span class="text-gray-500">Check-in:</span> <span class="font-medium">{{ r.fechaCheckIn }}</span></div>
+            <div><span class="text-gray-500">Check-out:</span> <span class="font-medium">{{ r.fechaCheckOut }}</span></div>
+            <div><span class="text-gray-500">Noches:</span> <span class="font-medium">{{ r.cantidadNoches }}</span></div>
+            <div><span class="text-gray-500">Depto:</span> <span class="font-medium">{{ r.departamentoNombre }}</span></div>
+            <div><span class="text-gray-500">Total:</span> <span class="font-medium">{{ formatCurrency(r.precioTotal) }}</span></div>
+            <div><span class="text-gray-500">Señal:</span> <span class="font-medium">{{ formatCurrency(r.montoSenia) }}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAYS SECTION -->
+    <div *ngIf="currentSection() === 'stays'" class="p-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-6">🛏️ Estadías</h1>
+
+      <div *ngIf="stays().length === 0" class="bg-white rounded-xl shadow p-6 text-center">
+        <span class="text-5xl mb-4 block">🛏️</span>
+        <p class="text-gray-500">No hay estadías registradas aún.</p>
+      </div>
+
+      <div *ngIf="stays().length > 0" class="space-y-4">
+        <div *ngFor="let s of stays()" class="bg-white rounded-xl shadow p-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-gray-800">{{ s.departamentoNombre }}</h3>
+            <span [class]="getEstadoBadgeClassStay(s.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
+              {{ s.status === 'ACTIVE' ? 'Activa' : 'Finalizada' }}
+            </span>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm mb-3">
+            <div><span class="text-gray-500">Check-in:</span> <span class="font-medium">{{ s.fechaHoraCheckInReal?.slice(0, 16) }}</span></div>
+            <div><span class="text-gray-500">Check-out:</span> <span class="font-medium">{{ s.fechaHoraCheckOutReal?.slice(0, 16) || '—' }}</span></div>
+            <div><span class="text-gray-500">Noches:</span> <span class="font-medium">{{ s.cantidadNoches }}</span></div>
+          </div>
+          <div *ngIf="s.tenants && s.tenants.length > 0" class="mb-3">
+            <span class="text-gray-500 text-sm">Inquilinos: </span>
+            <span *ngFor="let t of s.tenants; let last = last" class="text-sm font-medium">
+              {{ t.firstName }} {{ t.lastName }}<span *ngIf="!last">, </span>
+            </span>
+          </div>
+          <div *ngIf="s.classificationScore" class="mb-2">
+            <span class="text-sm text-gray-500">Clasificación: </span>
+            <span class="text-yellow-400">{{ getStars(s.classificationScore) }}</span>
+            <span *ngIf="s.classificationReviewComment" class="text-sm text-gray-600 ml-2">"{{ s.classificationReviewComment }}"</span>
+          </div>
+          <div *ngIf="s.estadoDepartamento" class="text-sm">
+            <span class="text-gray-500">Estado depto: </span>
+            <span class="font-medium">{{ getEstadoDepartamentoLabel(s.estadoDepartamento) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TENANTS SECTION -->
+    <div *ngIf="currentSection() === 'tenants'" class="p-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-6">👥 Inquilinos</h1>
+
+      <div *ngIf="tenants().length === 0" class="bg-white rounded-xl shadow p-6 text-center">
+        <span class="text-5xl mb-4 block">👥</span>
+        <p class="text-gray-500">No hay inquilinos registrados aún.</p>
+      </div>
+
+      <div *ngIf="tenants().length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div *ngFor="let t of tenants()" class="bg-white rounded-xl shadow p-6">
+          <h3 class="font-semibold text-gray-800 text-lg">{{ t.firstName }} {{ t.lastName }}</h3>
+          <div class="mt-2 space-y-1 text-sm">
+            <div><span class="text-gray-500">DNI:</span> <span class="font-medium">{{ t.documentNumber }}</span></div>
+            <div><span class="text-gray-500">Email:</span> <span class="font-medium">{{ t.email }}</span></div>
+            <div><span class="text-gray-500">Tel:</span> <span class="font-medium">{{ t.phoneNumber }}</span></div>
+          </div>
+          <div *ngIf="t.averageScore !== null && t.averageScore !== undefined" class="mt-3">
+            <span class="text-sm text-gray-500">Nota promedio: </span>
+            <span class="text-yellow-400">{{ getStarsSafe(t.averageScore) }}</span>
+            <span class="text-sm text-gray-600 ml-1">({{ t.averageScore | number:'1.1-1' }})</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Tutorial Modal -->
+  <div *ngIf="showTutorialModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-6 relative">
+      <button (click)="closeTutorialModal()"
+              class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              type="button">✕</button>
+
+      <div class="mb-4">
+        <h2 class="text-xl font-bold text-gray-800">{{ tutorialModalTitle() }}</h2>
+      </div>
+
+      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+        <p class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{{ tutorialModalContent() }}</p>
+      </div>
+
+      <div class="flex justify-end">
+        <button (click)="closeTutorialModal()"
+                type="button"
+                class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
