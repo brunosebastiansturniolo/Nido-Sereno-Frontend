@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { StayService } from '../../services/stay.service';
 import { StayResponse, StayRequest, StayFinalizationRequest, CheckInRequest, RetroactiveStayRequest } from '../../models/stay.models';
 import { TenantRequest, TenantSearchResponse } from '../../models/tenant.models';
@@ -16,7 +17,7 @@ import { of } from 'rxjs';
 @Component({
   selector: 'app-stays',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ErrorModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ErrorModalComponent],
   templateUrl: './stays.html',
   styleUrl: './stays.css'
 })
@@ -36,6 +37,17 @@ export class StaysComponent implements OnInit {
   checkoutStayId: number | null = null;
   showErrorModal = false;
   errorMessage = '';
+
+  // Modal de justificación de fecha
+  showJustificationModal = false;
+  justificationContext = ''; // 'checkIn' | 'checkout'
+  justificationMessage = '';
+  justificationComment = '';
+  justificationProceedWithoutComment = false;
+  // Datos temporales para procesar después del modal
+  pendingCheckInRequest: CheckInRequest | null = null;
+  pendingCheckoutStayId: number | null = null;
+  pendingCheckoutRequest: StayFinalizationRequest | null = null;
 
   // Mapa de inquilinos encontrados por DNI, claveado por índice de tenant
   // Ej: { 0: TenantSearchResponse, 2: TenantSearchResponse }
@@ -213,17 +225,7 @@ export class StaysComponent implements OnInit {
     if (this.expressForm.invalid) return;
     const formValue = this.expressForm.value;
 
-    // Validate: check-in date must not be in the future
-    const checkInDate = new Date(formValue.fechaHoraCheckInReal);
-    const today = new Date();
-    today.setHours(23, 59, 59, 999);
-    if (checkInDate > today) {
-      this.errorMessage = `📅 Fecha incorrecta. No se puede registrar un check-in en una fecha futura. ` +
-        `La fecha de check-in debe ser hoy o una fecha pasada.`;
-      this.showErrorModal = true;
-      return;
-    }
-
+    // La fecha ya viene automática (no editable), no necesita validación
     const request: StayRequest = {
       departmentId: formValue.departmentId,
       fechaHoraCheckInReal: formValue.fechaHoraCheckInReal,
@@ -364,23 +366,41 @@ export class StaysComponent implements OnInit {
     if (this.existingForm.invalid) return;
     const formValue = this.existingForm.value;
 
-    // Validate: check-in date must match the reservation's check-in date
+    // Check if check-in date matches the reservation's check-in date
     if (this.selectedReservation) {
       const checkInDateFromForm = formValue.fechaHoraCheckInReal.slice(0, 10); // YYYY-MM-DD
       if (checkInDateFromForm !== this.selectedReservation.fechaCheckIn) {
-        this.errorMessage = `📅 Fecha incorrecta. La reserva tiene fecha de check-in: ${this.selectedReservation.fechaCheckIn}. ` +
-          `El check-in solo puede realizarse el día de la reserva.`;
-        this.showErrorModal = true;
+        // Show justification modal instead of blocking
+        const direction = checkInDateFromForm < this.selectedReservation.fechaCheckIn ? 'antes' : 'después';
+        this.justificationContext = 'checkIn';
+        this.justificationMessage =
+          `📅 La reserva tiene fecha de check-in: <strong>${this.selectedReservation.fechaCheckIn}</strong>. ` +
+          `El huésped llegó <strong>${direction}</strong> del día planeado (fecha de check-in: <strong>${checkInDateFromForm}</strong>).`;
+        this.justificationComment = '';
+        this.justificationProceedWithoutComment = false;
+
+        // Prepare the pending request
+        this.pendingCheckInRequest = {
+          reservationId: formValue.reservationId,
+          fechaHoraCheckInReal: formValue.fechaHoraCheckInReal,
+          comentariosCheckIn: formValue.comentariosCheckIn,
+          tenants: formValue.tenants as TenantRequest[]
+        };
+        this.showJustificationModal = true;
         return;
       }
     }
 
-    const request: CheckInRequest = {
+    // Date matches — proceed normally
+    this.executeCheckInFromReservation({
       reservationId: formValue.reservationId,
       fechaHoraCheckInReal: formValue.fechaHoraCheckInReal,
       comentariosCheckIn: formValue.comentariosCheckIn,
       tenants: formValue.tenants as TenantRequest[]
-    };
+    });
+  }
+
+  executeCheckInFromReservation(request: CheckInRequest): void {
     this.error = '';
     this.success = '';
     this.stayService.checkInFromReservation(request).subscribe({
@@ -471,26 +491,45 @@ export class StaysComponent implements OnInit {
     if (this.checkoutForm.invalid) return;
     const formValue = this.checkoutForm.value;
 
-    // Validate: check-out date must be >= planned check-out date of the stay
+    // Check if check-out date matches the planned check-out date
     const stay = this.stays.find(s => s.id === stayId);
     if (stay && stay.fechaCheckOutPlaneada) {
       const checkOutDateFromForm = formValue.fechaHoraCheckOutReal.slice(0, 10); // YYYY-MM-DD
-      if (checkOutDateFromForm < stay.fechaCheckOutPlaneada) {
-        this.errorMessage = `📅 Fecha incorrecta. La estadía tiene fecha de check-out planeada: ${stay.fechaCheckOutPlaneada}. ` +
-          `El check-out no puede realizarse antes de la fecha planeada.`;
-        this.showErrorModal = true;
+      if (checkOutDateFromForm !== stay.fechaCheckOutPlaneada) {
+        // Show justification modal instead of blocking
+        const direction = checkOutDateFromForm < stay.fechaCheckOutPlaneada ? 'antes' : 'después';
+        this.justificationContext = 'checkout';
+        this.justificationMessage =
+          `📅 La estadía tiene fecha de check-out planeada: <strong>${stay.fechaCheckOutPlaneada}</strong>. ` +
+          `El huésped se va <strong>${direction}</strong> del día planeado (fecha de check-out: <strong>${checkOutDateFromForm}</strong>).`;
+        this.justificationComment = '';
+        this.justificationProceedWithoutComment = false;
+
+        // Prepare the pending request
+        this.pendingCheckoutStayId = stayId;
+        this.pendingCheckoutRequest = {
+          fechaHoraCheckOutReal: formValue.fechaHoraCheckOutReal,
+          comentariosCheckOut: formValue.comentariosCheckOut,
+          estadoDepartamento: formValue.estadoDepartamento,
+          classificationScore: formValue.classificationScore,
+          classificationReviewComment: formValue.classificationScore ? formValue.classificationReviewComment : undefined
+        };
+        this.showJustificationModal = true;
         return;
       }
     }
 
-    // La clasificación es opcional: solo se envía si hay puntuación
-    const request: StayFinalizationRequest = {
+    // Date matches — proceed normally
+    this.executeCheckout(stayId, {
       fechaHoraCheckOutReal: formValue.fechaHoraCheckOutReal,
       comentariosCheckOut: formValue.comentariosCheckOut,
       estadoDepartamento: formValue.estadoDepartamento,
       classificationScore: formValue.classificationScore,
       classificationReviewComment: formValue.classificationScore ? formValue.classificationReviewComment : undefined
-    };
+    });
+  }
+
+  executeCheckout(stayId: number, request: StayFinalizationRequest): void {
     this.error = '';
     this.success = '';
     this.stayService.finalizeStay(stayId, request).subscribe({
@@ -508,6 +547,54 @@ export class StaysComponent implements OnInit {
         console.error(err);
       }
     });
+  }
+
+  // ----------------------------------------------------------------------
+  // Modal de justificación de fecha
+  // ----------------------------------------------------------------------
+
+  confirmJustification(): void {
+    if (this.justificationContext === 'checkIn' && this.pendingCheckInRequest) {
+      // Construir la nota de justificación para agregar a comentariosCheckIn
+      let justificationNote = '';
+      if (!this.justificationProceedWithoutComment && this.justificationComment.trim()) {
+        justificationNote = '[FECHA JUSTIFICADA] Motivo: ' + this.justificationComment.trim();
+      } else {
+        justificationNote = '[FECHA JUSTIFICADA] El huésped llegó en fecha diferente a la planeada.';
+      }
+      // Agregar la nota a los comentarios de check-in
+      const existingComment = this.pendingCheckInRequest.comentariosCheckIn;
+      this.pendingCheckInRequest.comentariosCheckIn = existingComment && existingComment.trim()
+        ? existingComment + ' ' + justificationNote
+        : justificationNote;
+      this.executeCheckInFromReservation(this.pendingCheckInRequest);
+    } else if (this.justificationContext === 'checkout' && this.pendingCheckoutRequest && this.pendingCheckoutStayId) {
+      // Construir la nota de justificación para agregar a comentariosCheckOut
+      let justificationNote = '';
+      if (!this.justificationProceedWithoutComment && this.justificationComment.trim()) {
+        justificationNote = '[FECHA JUSTIFICADA] Motivo: ' + this.justificationComment.trim();
+      } else {
+        justificationNote = '[FECHA JUSTIFICADA] El huésped se fue en fecha diferente a la planeada.';
+      }
+      // Agregar la nota a los comentarios de check-out
+      const existingComment = this.pendingCheckoutRequest.comentariosCheckOut;
+      this.pendingCheckoutRequest.comentariosCheckOut = existingComment && existingComment.trim()
+        ? existingComment + ' ' + justificationNote
+        : justificationNote;
+      this.executeCheckout(this.pendingCheckoutStayId, this.pendingCheckoutRequest);
+    }
+    this.closeJustificationModal();
+  }
+
+  closeJustificationModal(): void {
+    this.showJustificationModal = false;
+    this.justificationContext = '';
+    this.justificationMessage = '';
+    this.justificationComment = '';
+    this.justificationProceedWithoutComment = false;
+    this.pendingCheckInRequest = null;
+    this.pendingCheckoutStayId = null;
+    this.pendingCheckoutRequest = null;
   }
 
   closeErrorModal(): void {
