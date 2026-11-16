@@ -24,6 +24,7 @@ export interface StayResponse {
   id: number;
   fechaHoraCheckInReal: string;
   fechaHoraCheckOutReal?: string;
+  fechaCheckOutPlaneada?: string;
   comentariosCheckIn?: string;
   comentariosCheckOut?: string;
   estadoDepartamento?: string;

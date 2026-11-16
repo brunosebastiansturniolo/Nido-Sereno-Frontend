@@ -212,6 +212,18 @@ export class StaysComponent implements OnInit {
   onCheckInExpress(): void {
     if (this.expressForm.invalid) return;
     const formValue = this.expressForm.value;
+
+    // Validate: check-in date must not be in the future
+    const checkInDate = new Date(formValue.fechaHoraCheckInReal);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (checkInDate > today) {
+      this.errorMessage = `📅 Fecha incorrecta. No se puede registrar un check-in en una fecha futura. ` +
+        `La fecha de check-in debe ser hoy o una fecha pasada.`;
+      this.showErrorModal = true;
+      return;
+    }
+
     const request: StayRequest = {
       departmentId: formValue.departmentId,
       fechaHoraCheckInReal: formValue.fechaHoraCheckInReal,
@@ -351,6 +363,18 @@ export class StaysComponent implements OnInit {
   onCheckInFromReservation(): void {
     if (this.existingForm.invalid) return;
     const formValue = this.existingForm.value;
+
+    // Validate: check-in date must match the reservation's check-in date
+    if (this.selectedReservation) {
+      const checkInDateFromForm = formValue.fechaHoraCheckInReal.slice(0, 10); // YYYY-MM-DD
+      if (checkInDateFromForm !== this.selectedReservation.fechaCheckIn) {
+        this.errorMessage = `📅 Fecha incorrecta. La reserva tiene fecha de check-in: ${this.selectedReservation.fechaCheckIn}. ` +
+          `El check-in solo puede realizarse el día de la reserva.`;
+        this.showErrorModal = true;
+        return;
+      }
+    }
+
     const request: CheckInRequest = {
       reservationId: formValue.reservationId,
       fechaHoraCheckInReal: formValue.fechaHoraCheckInReal,
@@ -446,6 +470,18 @@ export class StaysComponent implements OnInit {
   onCheckout(stayId: number): void {
     if (this.checkoutForm.invalid) return;
     const formValue = this.checkoutForm.value;
+
+    // Validate: check-out date must be >= planned check-out date of the stay
+    const stay = this.stays.find(s => s.id === stayId);
+    if (stay && stay.fechaCheckOutPlaneada) {
+      const checkOutDateFromForm = formValue.fechaHoraCheckOutReal.slice(0, 10); // YYYY-MM-DD
+      if (checkOutDateFromForm < stay.fechaCheckOutPlaneada) {
+        this.errorMessage = `📅 Fecha incorrecta. La estadía tiene fecha de check-out planeada: ${stay.fechaCheckOutPlaneada}. ` +
+          `El check-out no puede realizarse antes de la fecha planeada.`;
+        this.showErrorModal = true;
+        return;
+      }
+    }
 
     // La clasificación es opcional: solo se envía si hay puntuación
     const request: StayFinalizationRequest = {

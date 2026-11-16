@@ -327,9 +327,9 @@ export class TutorialComponent {
     if (res) {
       this.dateControllerHint.set(
         `📅 La reserva tiene fecha de check-in: ${res.fechaCheckIn}. \n\n` +
-        `👇 Usá el control de fecha en el sidebar para mover la fecha simulada a ese día.\n\n` +
-        `Podés usar el calendario, los botones +/- o escribir la fecha directamente.\n\n` +
-        `Una vez que la fecha esté en ${res.fechaCheckIn}, podés hacer check-in.`
+        `⚠️ El check-in SOLO se puede hacer el día exacto de la reserva.\n\n` +
+        `👇 Mové la fecha simulada a ${res.fechaCheckIn} usando el calendario, los botones +/- o escribiendo la fecha.\n\n` +
+        `Si intentás hacer check-in con otra fecha, el sistema te lo impedirá.`
       );
       this.highlightDateController.set(true);
     }
@@ -342,11 +342,23 @@ export class TutorialComponent {
       return;
     }
 
+    // Validate: simulated date must match the reservation's check-in date
+    const res = this.tutorialService.reservations().find(r => r.id === this.selectedReservationId());
+    if (res) {
+      const simDate = this.dateController.simulatedDateStr();
+      if (simDate !== res.fechaCheckIn) {
+        this.showInfoModal(
+          '📅 Fecha incorrecta',
+          `No podés hacer check-in hoy. La reserva tiene fecha de check-in: <strong>${res.fechaCheckIn}</strong>.\n\n` +
+          `La fecha simulada actual es: <strong>${simDate}</strong>.\n\n` +
+          `👇 Mové la fecha simulada en el sidebar a <strong>${res.fechaCheckIn}</strong> para poder hacer check-in.`
+        );
+        return;
+      }
+    }
+
     // Create or find tenant
     const tenant = this.tutorialService.createOrUpdateTenant(tenantForm);
-
-    // Use the current simulated date (user should have set it manually)
-    const res = this.tutorialService.reservations().find(r => r.id === this.selectedReservationId());
 
     const stay = this.tutorialService.checkIn({
       reservationId: this.selectedReservationId(),
@@ -391,9 +403,9 @@ export class TutorialComponent {
       const checkOutDate = stay.fechaCheckOutPlaneada;
       this.dateControllerHint.set(
         `📅 La estadía tiene fecha de check-out planeada: ${checkOutDate}. \n\n` +
-        `👇 Usá el control de fecha en el sidebar para mover la fecha simulada a ese día o posterior.\n\n` +
-        `Observá cómo cambia el Dashboard, las Reservas y las Estadías al mover la fecha.\n\n` +
-        `Una vez que la fecha esté en el día de salida, podés hacer check-out.`
+        `⚠️ El check-out SOLO se puede hacer en el día de salida o después.\n\n` +
+        `👇 Mové la fecha simulada a ${checkOutDate} o posterior usando el calendario, los botones +/- o escribiendo la fecha.\n\n` +
+        `Si intentás hacer check-out antes de esa fecha, el sistema te lo impedirá.`
       );
       this.highlightDateController.set(true);
     }
@@ -402,6 +414,21 @@ export class TutorialComponent {
   doCheckOut(): void {
     const checkout = this.checkoutForm();
     const stayId = this.selectedStayId();
+
+    // Validate: simulated date must be >= planned check-out date
+    const stay = this.tutorialService.stays().find(s => s.id === stayId);
+    if (stay && stay.fechaCheckOutPlaneada) {
+      const simDate = this.dateController.simulatedDateStr();
+      if (simDate < stay.fechaCheckOutPlaneada) {
+        this.showInfoModal(
+          '📅 Fecha incorrecta',
+          `No podés hacer check-out hoy. La estadía tiene fecha de check-out planeada: <strong>${stay.fechaCheckOutPlaneada}</strong>.\n\n` +
+          `La fecha simulada actual es: <strong>${simDate}</strong>.\n\n` +
+          `👇 Mové la fecha simulada en el sidebar a <strong>${stay.fechaCheckOutPlaneada}</strong> o posterior para poder hacer check-out.`
+        );
+        return;
+      }
+    }
 
     // Use the current simulated date (user should have set it manually)
     const updatedStay = this.tutorialService.checkOut(stayId, {
