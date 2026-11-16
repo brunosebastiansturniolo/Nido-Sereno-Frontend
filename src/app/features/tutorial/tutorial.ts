@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TutorialService } from '../../services/tutorial/tutorial.service';
 import { DateControllerService } from '../../services/tutorial/date-controller.service';
+import { ReplaceNewlinesPipe } from '../../shared/replace-newlines-pipe/replace-newlines-pipe';
 import {
   TutorialComplex,
   TutorialDepartment,
@@ -17,7 +18,7 @@ export type TutorialSection = 'welcome' | 'hierarchy' | 'flow' | 'dashboard' | '
 @Component({
   selector: 'app-tutorial',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReplaceNewlinesPipe],
   templateUrl: './tutorial.html',
   styleUrl: './tutorial.css'
 })
@@ -53,6 +54,10 @@ export class TutorialComponent {
   tutorialModalContent = signal('');
   tutorialModalStep = signal(0);
   tutorialModalTotalSteps = signal(0);
+
+  // Date controller highlight - guides user to manually change the date
+  highlightDateController = signal(false);
+  dateControllerHint = signal('');
 
   // Form data for interactive flow
   complexForm = signal({ nombre: '', ubicacion: '', descripcion: '' });
@@ -302,6 +307,9 @@ export class TutorialComponent {
       'Ahora simularemos el CHECK-IN cuando el huésped llega.\n\n' +
       '👉 Hacé clic en "Siguiente: Check-In"'
     );
+
+    // Prepare the date controller highlight for the next step
+    this.prepareCheckIn();
   }
 
   // ==========================================
@@ -311,6 +319,20 @@ export class TutorialComponent {
   autoFillTenantForm(): void {
     const filled = this.tutorialService.autoFillTenant();
     this.tenantForm.set(filled);
+  }
+
+  // Prepare for check-in step - guide user to set the date manually
+  prepareCheckIn(): void {
+    const res = this.tutorialService.reservations().find(r => r.id === this.selectedReservationId());
+    if (res) {
+      this.dateControllerHint.set(
+        `📅 La reserva tiene fecha de check-in: ${res.fechaCheckIn}. \n\n` +
+        `👇 Usá el control de fecha en el sidebar para mover la fecha simulada a ese día.\n\n` +
+        `Podés usar el calendario, los botones +/- o escribir la fecha directamente.\n\n` +
+        `Una vez que la fecha esté en ${res.fechaCheckIn}, podés hacer check-in.`
+      );
+      this.highlightDateController.set(true);
+    }
   }
 
   doCheckIn(): void {
@@ -323,11 +345,8 @@ export class TutorialComponent {
     // Create or find tenant
     const tenant = this.tutorialService.createOrUpdateTenant(tenantForm);
 
-    // Advance date to check-in date
+    // Use the current simulated date (user should have set it manually)
     const res = this.tutorialService.reservations().find(r => r.id === this.selectedReservationId());
-    if (res) {
-      this.dateController.setDateFromString(res.fechaCheckIn);
-    }
 
     const stay = this.tutorialService.checkIn({
       reservationId: this.selectedReservationId(),
@@ -340,6 +359,7 @@ export class TutorialComponent {
 
     this.selectedStayId.set(stay.id);
     this.flowStep.set(4);
+    this.highlightDateController.set(false);
 
     this.showInfoModal(
       '🛏️ ¡Check-In realizado!',
@@ -352,22 +372,38 @@ export class TutorialComponent {
       '• La reserva cambia a estado CHECKED_IN\n' +
       '• El departamento se marca como OCUPADO\n' +
       '• Se crea una ESTADÍA activa\n\n' +
-      'Ahora avancemos la fecha y hagamos CHECK-OUT.\n\n' +
+      'Ahora mové la fecha simulada al día de check-out y hacé CHECK-OUT.\n\n' +
       '👉 Hacé clic en "Siguiente: Check-Out"'
     );
+
+    // Prepare the date controller highlight for the next step
+    this.prepareCheckOut();
   }
 
   // ==========================================
   // FLOW: CHECK-OUT
   // ==========================================
 
+  // Prepare for check-out step - guide user to set the date manually
+  prepareCheckOut(): void {
+    const stay = this.tutorialService.stays().find(s => s.id === this.selectedStayId());
+    if (stay) {
+      const checkOutDate = stay.fechaCheckOutPlaneada;
+      this.dateControllerHint.set(
+        `📅 La estadía tiene fecha de check-out planeada: ${checkOutDate}. \n\n` +
+        `👇 Usá el control de fecha en el sidebar para mover la fecha simulada a ese día o posterior.\n\n` +
+        `Observá cómo cambia el Dashboard, las Reservas y las Estadías al mover la fecha.\n\n` +
+        `Una vez que la fecha esté en el día de salida, podés hacer check-out.`
+      );
+      this.highlightDateController.set(true);
+    }
+  }
+
   doCheckOut(): void {
     const checkout = this.checkoutForm();
     const stayId = this.selectedStayId();
 
-    // Advance date past check-out
-    this.dateController.addDays(1);
-
+    // Use the current simulated date (user should have set it manually)
     const updatedStay = this.tutorialService.checkOut(stayId, {
       fechaHoraCheckOutReal: this.dateController.simulatedDateTimeStr(),
       comentariosCheckOut: checkout.comentariosCheckOut || 'Check-out desde tutorial',
@@ -377,6 +413,7 @@ export class TutorialComponent {
     });
 
     this.flowStep.set(5);
+    this.highlightDateController.set(false);
 
     const scoreText = checkout.classificationScore
       ? `\n\n⭐ Clasificación: ${'★'.repeat(checkout.classificationScore)}${'☆'.repeat(5 - checkout.classificationScore)}\nComentario: ${checkout.classificationReviewComment || 'Sin comentario'}`

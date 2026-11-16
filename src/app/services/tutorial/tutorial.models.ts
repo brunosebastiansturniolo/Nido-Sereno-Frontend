@@ -55,6 +55,7 @@ export interface TutorialStay {
   id: number;
   fechaHoraCheckInReal: string;
   fechaHoraCheckOutReal: string | null;
+  fechaCheckOutPlaneada: string;
   comentariosCheckIn: string;
   comentariosCheckOut: string;
   estadoDepartamento: string | null;

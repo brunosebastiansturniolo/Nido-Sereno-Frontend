@@ -309,6 +309,7 @@ export class TutorialService {
       id: ++this._stayId,
       fechaHoraCheckInReal: req.fechaHoraCheckInReal,
       fechaHoraCheckOutReal: null,
+      fechaCheckOutPlaneada: req.fechaCheckOutPlaneada,
       comentariosCheckIn: req.comentariosCheckIn,
       comentariosCheckOut: '',
       estadoDepartamento: null,
