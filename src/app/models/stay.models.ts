@@ -14,6 +14,8 @@ export interface StayRequest {
   fechaCheckOutPlaneada?: string;
   cantidadPersonas?: number;
   cantidadVehiculos?: number;
+  precioTotal?: number;
+  montoSenia?: number;
   comentariosCheckIn?: string;
   tenants: TenantRequest[];
   reservanteFirstName?: string;
@@ -48,10 +50,12 @@ export interface StayFinalizationRequest {
 
 export interface RetroactiveStayRequest {
   departmentId: number;
-  fechaHoraCheckInReal: string;
-  fechaCheckOutPlaneada: string;
+  fechaCheckIn: string;
+  fechaCheckOut: string;
   cantidadPersonas: number;
   cantidadVehiculos?: number;
+  precioTotal?: number;
+  montoSenia?: number;
   comentariosCheckIn?: string;
   tenants: TenantRequest[];
   reservanteFirstName?: string;

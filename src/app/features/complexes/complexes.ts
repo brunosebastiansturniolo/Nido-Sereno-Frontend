@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ComplexService } from '../../services/complex.service';
 import { ComplexRequest, ComplexResponse } from '../../models/complex.models';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
@@ -24,8 +24,8 @@ export class ComplexesComponent implements OnInit {
   errorMessage = '';
 
   createForm = this.fb.group({
-    nombre: [''],
-    ubicacion: [''],
+    nombre: ['', Validators.required],
+    ubicacion: ['', Validators.required],
     descripcion: ['']
   });
 

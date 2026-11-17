@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { StayService } from '../../services/stay.service';
 import { StayResponse, StayRequest, StayFinalizationRequest, CheckInRequest, RetroactiveStayRequest } from '../../models/stay.models';
@@ -68,6 +68,11 @@ export class StaysComponent implements OnInit {
   // Checkbox para usar el reservante como inquilino
   useReservanteAsTenant = false;
 
+  // Variables para cálculo de precio en express
+  selectedDepartmentPrice: number | null = null;
+  calculatedNights: number | null = null;
+  calculatedTotal: number | null = null;
+
   ngOnInit(): void {
     this.loadStays();
     this.loadReservations();
@@ -79,8 +84,21 @@ export class StaysComponent implements OnInit {
       fechaCheckOutPlaneada: ['', [Validators.required]],
       cantidadPersonas: [1, [Validators.required, Validators.min(1)]],
       cantidadVehiculos: [0, [Validators.min(0)]],
+      precioTotal: [null],
+      montoSenia: [null],
       comentariosCheckIn: [''],
       tenants: this.fb.array([this.createTenant()])
+    });
+
+    // Calcular precio total automáticamente cuando cambian departamento o fechas
+    const expressControlsToWatch = [
+      this.expressForm.get('departmentId')!,
+      this.expressForm.get('fechaCheckOutPlaneada')!
+    ];
+    expressControlsToWatch.forEach(control => {
+      control?.valueChanges.subscribe(() => {
+        this.calculateExpressPricing();
+      });
     });
 
     this.existingForm = this.fb.group({
@@ -97,20 +115,20 @@ export class StaysComponent implements OnInit {
 
     this.retroactiveForm = this.fb.group({
       departmentId: [null, [Validators.required]],
-      fechaHoraCheckInReal: [''],
-      fechaCheckOutPlaneada: ['', [Validators.required]],
+      fechaCheckIn: ['', [Validators.required]],
+      fechaCheckOut: ['', [Validators.required]],
       cantidadNoches: [null, [Validators.min(1)]],
       cantidadPersonas: [1, [Validators.required, Validators.min(1)]],
       cantidadVehiculos: [0, [Validators.min(0)]],
       comentariosCheckIn: [''],
       tenants: this.fb.array([this.createTenant()])
-    });
+    }, { validators: this.checkoutAfterCheckInValidator() });
 
     // Cuando cambian las fechas del retroactivo, calcular las noches
-    this.retroactiveForm.get('fechaHoraCheckInReal')!.valueChanges.subscribe(() => {
+    this.retroactiveForm.get('fechaCheckIn')!.valueChanges.subscribe(() => {
       this.calculateRetroactiveNights();
     });
-    this.retroactiveForm.get('fechaCheckOutPlaneada')!.valueChanges.subscribe(() => {
+    this.retroactiveForm.get('fechaCheckOut')!.valueChanges.subscribe(() => {
       this.calculateRetroactiveNights();
     });
     // Cuando cambia la cantidad de noches, ajustar el check-out
@@ -122,7 +140,7 @@ export class StaysComponent implements OnInit {
       fechaHoraCheckOutReal: [new Date().toISOString().slice(0, 16)],
       comentariosCheckOut: [''],
       estadoDepartamento: ['GOOD', [Validators.required]],
-      classificationScore: [null],
+      classificationScore: [null, [Validators.required, Validators.min(1), Validators.max(5)]],
       classificationReviewComment: ['']
     });
 
@@ -137,10 +155,29 @@ export class StaysComponent implements OnInit {
       documentNumber: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(20)]],
       firstName: ['', [Validators.required, Validators.maxLength(50)]],
       lastName: ['', [Validators.required, Validators.maxLength(50)]],
-      email: ['', [Validators.email]],
-      phoneNumber: ['', [Validators.required]],
-      dateOfBirth: ['']
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
+      phoneNumber: ['', [Validators.required, Validators.maxLength(30)]],
+      dateOfBirth: ['', { validators: [Validators.maxLength(10)], asyncValidators: [this.dateNotInFuture()] }]
     });
+  }
+
+  /**
+   * Validador: la fecha de nacimiento no puede ser posterior a la fecha actual.
+   */
+  dateNotInFuture(): (control: AbstractControl) => Promise<ValidationErrors | null> {
+    return (control: AbstractControl): Promise<ValidationErrors | null> => {
+      return Promise.resolve(() => {
+        const value = control.value;
+        if (!value) return null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const birthDate = new Date(value);
+        if (birthDate > today) {
+          return { dateInFuture: true };
+        }
+        return null;
+      })();
+    };
   }
 
   get expressTenants(): FormArray {
@@ -221,17 +258,73 @@ export class StaysComponent implements OnInit {
     });
   }
 
+  /**
+   * Devuelve la fecha mínima para el check-out en express (día después del check-in).
+   */
+  getExpressCheckOutMinDate(): string {
+    const checkIn = this.expressForm.get('fechaHoraCheckInReal')?.value;
+    if (!checkIn) return '';
+    const dateIn = new Date(checkIn);
+    dateIn.setDate(dateIn.getDate() + 1);
+    return dateIn.toISOString().slice(0, 10);
+  }
+
+  /**
+   * Calcula el precio total automáticamente para el check-in express.
+   * Usa el precioPorNoche del departamento seleccionado y la cantidad de noches.
+   */
+  calculateExpressPricing(): void {
+    const deptId = this.expressForm.get('departmentId')?.value;
+    const checkOut = this.expressForm.get('fechaCheckOutPlaneada')?.value;
+    const checkIn = this.expressForm.get('fechaHoraCheckInReal')?.value;
+
+    if (!deptId || !checkOut || !checkIn) {
+      this.selectedDepartmentPrice = null;
+      this.calculatedNights = null;
+      this.calculatedTotal = null;
+      return;
+    }
+
+    // Buscar el precio por noche del departamento seleccionado
+    const dept = this.departments.find(d => d.id === deptId);
+    if (!dept || !dept.precioPorNoche) {
+      this.selectedDepartmentPrice = null;
+      this.calculatedNights = null;
+      this.calculatedTotal = null;
+      return;
+    }
+
+    this.selectedDepartmentPrice = dept.precioPorNoche;
+
+    // Calcular la cantidad de noches
+    const dateIn = new Date(checkIn);
+    const dateOut = new Date(checkOut);
+    const diffTime = dateOut.getTime() - dateIn.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 0) {
+      this.calculatedNights = diffDays;
+      this.calculatedTotal = diffDays * dept.precioPorNoche;
+      this.expressForm.get('precioTotal')?.setValue(this.calculatedTotal, { emitEvent: false });
+    } else {
+      this.calculatedNights = null;
+      this.calculatedTotal = null;
+      this.expressForm.get('precioTotal')?.setValue(null, { emitEvent: false });
+    }
+  }
+
   onCheckInExpress(): void {
     if (this.expressForm.invalid) return;
     const formValue = this.expressForm.value;
 
-    // La fecha ya viene automática (no editable), no necesita validación
     const request: StayRequest = {
       departmentId: formValue.departmentId,
       fechaHoraCheckInReal: formValue.fechaHoraCheckInReal,
       fechaCheckOutPlaneada: formValue.fechaCheckOutPlaneada,
       cantidadPersonas: formValue.cantidadPersonas,
       cantidadVehiculos: formValue.cantidadVehiculos,
+      precioTotal: formValue.precioTotal,
+      montoSenia: formValue.montoSenia,
       comentariosCheckIn: formValue.comentariosCheckIn,
       tenants: formValue.tenants as TenantRequest[]
     };
@@ -427,8 +520,8 @@ export class StaysComponent implements OnInit {
     const formValue = this.retroactiveForm.value;
     const request: RetroactiveStayRequest = {
       departmentId: formValue.departmentId,
-      fechaHoraCheckInReal: formValue.fechaHoraCheckInReal,
-      fechaCheckOutPlaneada: formValue.fechaCheckOutPlaneada,
+      fechaCheckIn: formValue.fechaCheckIn,
+      fechaCheckOut: formValue.fechaCheckOut,
       cantidadPersonas: formValue.cantidadPersonas,
       cantidadVehiculos: formValue.cantidadVehiculos,
       comentariosCheckIn: formValue.comentariosCheckIn,
@@ -456,11 +549,37 @@ export class StaysComponent implements OnInit {
   }
 
   /**
+   * Validador personalizado: la fecha de check-out debe ser posterior a la de check-in.
+   */
+  checkoutAfterCheckInValidator(): (control: AbstractControl) => ValidationErrors | null {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const checkIn = control.get('fechaCheckIn')?.value;
+      const checkOut = control.get('fechaCheckOut')?.value;
+      if (!checkIn || !checkOut) return null;
+      if (new Date(checkOut) <= new Date(checkIn)) {
+        return { checkoutAfterCheckIn: true };
+      }
+      return null;
+    };
+  }
+
+  /**
+   * Devuelve la fecha mínima para el check-out en retroactivo (día después del check-in).
+   */
+  getRetroactiveCheckOutMinDate(): string {
+    const checkIn = this.retroactiveForm.get('fechaCheckIn')?.value;
+    if (!checkIn) return '';
+    const dateIn = new Date(checkIn);
+    dateIn.setDate(dateIn.getDate() + 1);
+    return dateIn.toISOString().slice(0, 10);
+  }
+
+  /**
    * Calcula la cantidad de noches del formulario retroactivo a partir de las fechas.
    */
   calculateRetroactiveNights(): void {
-    const checkIn = this.retroactiveForm.get('fechaHoraCheckInReal')?.value;
-    const checkOut = this.retroactiveForm.get('fechaCheckOutPlaneada')?.value;
+    const checkIn = this.retroactiveForm.get('fechaCheckIn')?.value;
+    const checkOut = this.retroactiveForm.get('fechaCheckOut')?.value;
     if (!checkIn || !checkOut) return;
 
     const dateIn = new Date(checkIn);
@@ -477,14 +596,14 @@ export class StaysComponent implements OnInit {
    * ajustar la fecha de check-out.
    */
   onRetroactiveNightsChange(nights: number | null): void {
-    const checkIn = this.retroactiveForm.get('fechaHoraCheckInReal')?.value;
+    const checkIn = this.retroactiveForm.get('fechaCheckIn')?.value;
     if (!checkIn || !nights || nights < 1) return;
 
     const dateIn = new Date(checkIn);
     const dateOut = new Date(dateIn);
     dateOut.setDate(dateOut.getDate() + nights);
 
-    this.retroactiveForm.get('fechaCheckOutPlaneada')?.setValue(dateOut.toISOString().slice(0, 10), { emitEvent: false });
+    this.retroactiveForm.get('fechaCheckOut')?.setValue(dateOut.toISOString().slice(0, 10), { emitEvent: false });
   }
 
   onCheckout(stayId: number): void {

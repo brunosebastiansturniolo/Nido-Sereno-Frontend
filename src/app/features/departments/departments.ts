@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { DepartmentService } from '../../services/department.service';
 import { ComplexService } from '../../services/complex.service';
 import { DepartmentRequest, DepartmentResponse } from '../../models/department.models';
@@ -28,15 +28,15 @@ export class DepartmentsComponent implements OnInit {
   errorMessage = '';
 
   createForm = this.fb.group({
-    nombre: [''],
-    numeroHabitaciones: [0],
-    precioPorNoche: [0],
-    tamañoM2: [0],
+    nombre: ['', Validators.required],
+    numeroHabitaciones: [null, Validators.required],
+    precioPorNoche: [null, Validators.required],
+    tamañoM2: [null, Validators.required],
     incluyeCochera: [false],
     incluyeDesayuno: [false],
     tieneWifi: [false],
     tienePileta: [false],
-    complexId: [0]
+    complexId: [null, Validators.required]
   });
 
   ngOnInit(): void {

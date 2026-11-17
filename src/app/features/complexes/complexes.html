@@ -10,8 +10,14 @@
   <div class="bg-white rounded-xl shadow p-6 mb-6">
     <h2 class="text-lg font-semibold text-gray-700 mb-4">Crear complejo</h2>
     <form (ngSubmit)="onCreate()" [formGroup]="createForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <input formControlName="nombre" class="px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Nombre" />
-      <input formControlName="ubicacion" class="px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Ubicación" />
+      <div>
+        <input formControlName="nombre" class="px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Nombre" />
+        <p *ngIf="createForm.get('nombre')?.touched && createForm.get('nombre')?.errors?.['required']" class="text-red-500 text-xs mt-1">El nombre es obligatorio.</p>
+      </div>
+      <div>
+        <input formControlName="ubicacion" class="px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Ubicación" />
+        <p *ngIf="createForm.get('ubicacion')?.touched && createForm.get('ubicacion')?.errors?.['required']" class="text-red-500 text-xs mt-1">La ubicación es obligatoria.</p>
+      </div>
       <input formControlName="descripcion" class="px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Descripción (opcional)" />
       <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg md:col-span-3">Crear complejo</button>
     </form>
