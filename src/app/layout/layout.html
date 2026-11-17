@@ -1,65 +1,83 @@
-<div class="flex h-screen bg-gray-100">
+<div class="flex h-screen bg-gray-100 overflow-hidden">
+  <!-- Overlay para móvil cuando el sidebar está abierto -->
+  <div *ngIf="sidebarOpen && isMobile" class="fixed inset-0 bg-black/50 z-20 lg:hidden" (click)="sidebarOpen = false"></div>
+
   <!-- Sidebar -->
-  <aside [class.w-64]="sidebarOpen" [class.w-16]="!sidebarOpen" class="bg-emerald-800 text-white flex flex-col transition-all duration-300">
+  <aside 
+    [class]="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+    class="fixed lg:static inset-y-0 left-0 z-30 w-64 bg-emerald-800 text-white flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:flex-shrink-0"
+  >
     <!-- Logo -->
     <div class="p-4 flex items-center justify-between border-b border-emerald-700">
-      <span *ngIf="sidebarOpen" class="text-xl font-bold">🌿 Nido Sereno</span>
-      <button (click)="sidebarOpen = !sidebarOpen" class="p-1 hover:bg-emerald-700 rounded">
+      <span class="text-lg lg:text-xl font-bold truncate">🌿 Nido Sereno</span>
+      <button (click)="sidebarOpen = !sidebarOpen" class="p-1 hover:bg-emerald-700 rounded lg:hidden">
+        ✕
+      </button>
+      <button (click)="sidebarOpen = !sidebarOpen" class="p-1 hover:bg-emerald-700 rounded hidden lg:block">
         {{ sidebarOpen ? '◀' : '▶' }}
       </button>
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 py-4">
-      <a *ngIf="hasRole('SUPER_ADMIN')" routerLink="/dashboard/admin" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
+    <nav class="flex-1 py-4 overflow-y-auto">
+      <a *ngIf="hasRole('SUPER_ADMIN')" routerLink="/dashboard/admin" (click)="sidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
         <span class="text-lg">📊</span>
-        <span *ngIf="sidebarOpen" class="ml-3">Dashboard (Admin)</span>
+        <span class="ml-3 text-sm">Dashboard (Admin)</span>
       </a>
 
-      <a *ngIf="hasRole('OWNER')" routerLink="/dashboard" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
+      <a *ngIf="hasRole('OWNER')" routerLink="/dashboard" (click)="sidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
         <span class="text-lg">📊</span>
-        <span *ngIf="sidebarOpen" class="ml-3">Dashboard (Owner)</span>
+        <span class="ml-3 text-sm">Dashboard (Owner)</span>
       </a>
 
-      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/complexes" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
+      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/complexes" (click)="sidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
         <span class="text-lg">🏢</span>
-        <span *ngIf="sidebarOpen" class="ml-3">Complejos</span>
+        <span class="ml-3 text-sm">Complejos</span>
       </a>
 
-      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/departments" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
+      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/departments" (click)="sidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
         <span class="text-lg">🚪</span>
-        <span *ngIf="sidebarOpen" class="ml-3">Departamentos</span>
+        <span class="ml-3 text-sm">Departamentos</span>
       </a>
 
-      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/reservations" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
+      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/reservations" (click)="sidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
         <span class="text-lg">📋</span>
-        <span *ngIf="sidebarOpen" class="ml-3">Reservas</span>
+        <span class="ml-3 text-sm">Reservas</span>
       </a>
 
-      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/stays" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
+      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/stays" (click)="sidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
         <span class="text-lg">🛏️</span>
-        <span *ngIf="sidebarOpen" class="ml-3">Estadías</span>
+        <span class="ml-3 text-sm">Estadías</span>
       </a>
 
-      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/tenants" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
+      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/tenants" (click)="sidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer">
         <span class="text-lg">👥</span>
-        <span *ngIf="sidebarOpen" class="ml-3">Inquilinos</span>
+        <span class="ml-3 text-sm">Inquilinos</span>
       </a>
     </nav>
 
     <!-- User info -->
     <div class="p-4 border-t border-emerald-700">
-      <p *ngIf="sidebarOpen" class="text-sm truncate">{{ user?.fullName }}</p>
-      <p *ngIf="sidebarOpen" class="text-xs text-emerald-300 truncate">{{ user?.email }}</p>
-      <button (click)="logout()" class="mt-2 w-full bg-red-600 hover:bg-red-700 text-white text-sm py-1 rounded transition">
-        <span *ngIf="sidebarOpen">Cerrar sesión</span>
-        <span *ngIf="!sidebarOpen">🚪</span>
+      <p class="text-sm truncate">{{ user?.fullName }}</p>
+      <p class="text-xs text-emerald-300 truncate">{{ user?.email }}</p>
+      <button (click)="logout()" class="mt-2 w-full bg-red-600 hover:bg-red-700 text-white text-sm py-2 rounded transition">
+        Cerrar sesión
       </button>
     </div>
   </aside>
 
+  <!-- Top bar para móvil -->
+  <div class="lg:hidden fixed top-0 left-0 right-0 h-14 bg-emerald-800 text-white flex items-center px-4 z-10">
+    <button (click)="sidebarOpen = true" class="p-2 hover:bg-emerald-700 rounded">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+    <span class="ml-3 font-bold text-sm">🌿 Nido Sereno</span>
+  </div>
+
   <!-- Main content -->
-  <main class="flex-1 overflow-auto">
+  <main class="flex-1 overflow-auto lg:pt-0 pt-14">
     <router-outlet></router-outlet>
   </main>
 </div>

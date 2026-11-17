@@ -1,5 +1,5 @@
-<div class="p-6">
-  <h1 class="text-2xl font-bold text-gray-800 mb-6">🏢 Complejos</h1>
+<div class="p-4 lg:p-6">
+  <h1 class="text-xl lg:text-2xl font-bold text-gray-800 mb-4 lg:mb-6">🏢 Complejos</h1>
 
   <!-- Modal de error -->
   <app-error-modal [visible]="showErrorModal" [message]="errorMessage" (closed)="closeErrorModal()"></app-error-modal>
@@ -7,42 +7,60 @@
   <p *ngIf="success" class="text-emerald-500 text-sm bg-emerald-50 p-2 rounded mb-4">✅ {{ success }}</p>
 
   <!-- Formulario crear -->
-  <div class="bg-white rounded-xl shadow p-6 mb-6">
-    <h2 class="text-lg font-semibold text-gray-700 mb-4">Crear complejo</h2>
-    <form (ngSubmit)="onCreate()" [formGroup]="createForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="bg-white rounded-xl shadow p-4 lg:p-6 mb-4 lg:mb-6">
+    <h2 class="text-base lg:text-lg font-semibold text-gray-700 mb-3 lg:mb-4">Crear complejo</h2>
+    <form (ngSubmit)="onCreate()" [formGroup]="createForm" class="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4">
       <div>
-        <input formControlName="nombre" class="px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Nombre" />
+        <input formControlName="nombre" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Nombre" />
         <p *ngIf="createForm.get('nombre')?.touched && createForm.get('nombre')?.errors?.['required']" class="text-red-500 text-xs mt-1">El nombre es obligatorio.</p>
       </div>
       <div>
-        <input formControlName="ubicacion" class="px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Ubicación" />
+        <input formControlName="ubicacion" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ubicación" />
         <p *ngIf="createForm.get('ubicacion')?.touched && createForm.get('ubicacion')?.errors?.['required']" class="text-red-500 text-xs mt-1">La ubicación es obligatoria.</p>
       </div>
-      <input formControlName="descripcion" class="px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Descripción (opcional)" />
-      <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-lg md:col-span-3">Crear complejo</button>
+      <input formControlName="descripcion" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Descripción (opcional)" />
+      <button type="submit" class="w-full md:w-auto bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 lg:py-2 rounded-lg md:col-span-3 text-base lg:text-sm">Crear complejo</button>
     </form>
   </div>
 
   <!-- Lista -->
-  <div class="bg-white rounded-xl shadow p-6">
-    <h2 class="text-lg font-semibold text-gray-700 mb-4">Mis complejos</h2>
+  <div class="bg-white rounded-xl shadow p-4 lg:p-6">
+    <h2 class="text-base lg:text-lg font-semibold text-gray-700 mb-3 lg:mb-4">Mis complejos</h2>
     <div *ngIf="loading" class="text-gray-500">Cargando...</div>
-    <div *ngIf="!loading && complexes.length === 0" class="text-gray-400">No tenés complejos aún.</div>
-    <table *ngIf="!loading && complexes.length > 0" class="w-full text-left">
-      <thead>
-        <tr class="border-b">
-          <th class="py-2 px-3 text-sm text-gray-500">Nombre</th>
-          <th class="py-2 px-3 text-sm text-gray-500">Ubicación</th>
-          <th class="py-2 px-3 text-sm text-gray-500">Descripción</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let c of complexes" class="border-b hover:bg-gray-50">
-          <td class="py-2 px-3">{{ c.nombre }}</td>
-          <td class="py-2 px-3">{{ c.ubicacion }}</td>
-          <td class="py-2 px-3">{{ c.descripcion || '—' }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div *ngIf="!loading && complexes.length === 0" class="text-gray-400 text-sm">No tenés complejos aún.</div>
+    
+    <!-- Vista móvil: cards -->
+    <div *ngIf="!loading && complexes.length > 0" class="space-y-3 md:hidden">
+      <div *ngFor="let c of complexes" class="border rounded-lg p-3 hover:bg-gray-50 transition">
+        <div class="flex items-start justify-between">
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-gray-800 truncate">{{ c.nombre }}</h3>
+            <p class="text-sm text-gray-500 mt-1">📍 {{ c.ubicacion }}</p>
+            <p *ngIf="c.descripcion" class="text-sm text-gray-400 mt-1 truncate">{{ c.descripcion }}</p>
+            <p *ngIf="!c.descripcion" class="text-sm text-gray-400 mt-1">—</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista desktop: tabla -->
+    <div *ngIf="!loading && complexes.length > 0" class="hidden md:block overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="border-b">
+            <th class="py-2 px-3 text-sm text-gray-500">Nombre</th>
+            <th class="py-2 px-3 text-sm text-gray-500">Ubicación</th>
+            <th class="py-2 px-3 text-sm text-gray-500">Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of complexes" class="border-b hover:bg-gray-50">
+            <td class="py-2 px-3 text-sm">{{ c.nombre }}</td>
+            <td class="py-2 px-3 text-sm">{{ c.ubicacion }}</td>
+            <td class="py-2 px-3 text-sm">{{ c.descripcion || '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

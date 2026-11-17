@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -10,12 +10,28 @@ import { AuthService } from '../services/auth.service';
   templateUrl: './layout.html',
   styleUrl: './layout.css'
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnInit {
   private auth = inject(AuthService);
   private router = inject(Router);
 
   user = this.auth.getUser();
-  sidebarOpen = true;
+  sidebarOpen = false;
+  isMobile = false;
+
+  ngOnInit(): void {
+    this.isMobile = window.innerWidth < 1024;
+    if (!this.isMobile) {
+      this.sidebarOpen = true;
+    }
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.isMobile = window.innerWidth < 1024;
+    if (!this.isMobile) {
+      this.sidebarOpen = true;
+    }
+  }
 
   logout(): void {
     this.auth.logout();

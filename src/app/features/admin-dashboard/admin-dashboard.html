@@ -1,6 +1,6 @@
-<div class="p-6">
-  <h1 class="text-2xl font-bold text-gray-800 mb-2">Panel de Administración 📊</h1>
-  <p class="text-gray-500 mb-6">Bienvenido, {{ user?.fullName }} — Vista global de todos los complejos</p>
+<div class="p-4 lg:p-6">
+  <h1 class="text-xl lg:text-2xl font-bold text-gray-800 mb-2">Panel de Administración 📊</h1>
+  <p class="text-gray-500 mb-4 lg:mb-6 text-sm lg:text-base">Bienvenido, {{ user?.fullName }} — Vista global de todos los complejos</p>
 
   <!-- Loading state -->
   <div *ngIf="loading" class="flex justify-center items-center py-12">
@@ -15,14 +15,14 @@
 
   <div *ngIf="!loading">
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-4 lg:mb-6">
       <!-- Complejos -->
-      <div class="bg-white rounded-xl shadow p-6">
-        <div class="flex items-center mb-4">
-          <span class="text-4xl mr-4">🏢</span>
+      <div class="bg-white rounded-xl shadow p-4 lg:p-6">
+        <div class="flex items-center mb-3 lg:mb-4">
+          <span class="text-3xl lg:text-4xl mr-3 lg:mr-4">🏢</span>
           <div>
-            <p class="text-gray-500 text-sm">Complejos</p>
-            <p class="text-2xl font-bold text-gray-800">{{ statistics.totalComplexes }}</p>
+            <p class="text-gray-500 text-xs lg:text-sm">Complejos</p>
+            <p class="text-xl lg:text-2xl font-bold text-gray-800">{{ statistics.totalComplexes }}</p>
           </div>
         </div>
         <div class="border-t pt-3 space-y-2 text-sm">
@@ -38,12 +38,12 @@
       </div>
 
       <!-- Reservas -->
-      <div class="bg-white rounded-xl shadow p-6">
-        <div class="flex items-center mb-4">
-          <span class="text-4xl mr-4">📋</span>
+      <div class="bg-white rounded-xl shadow p-4 lg:p-6">
+        <div class="flex items-center mb-3 lg:mb-4">
+          <span class="text-3xl lg:text-4xl mr-3 lg:mr-4">📋</span>
           <div>
-            <p class="text-gray-500 text-sm">Reservas</p>
-            <p class="text-2xl font-bold text-gray-800">{{ statistics.totalReservations }}</p>
+            <p class="text-gray-500 text-xs lg:text-sm">Reservas</p>
+            <p class="text-xl lg:text-2xl font-bold text-gray-800">{{ statistics.totalReservations }}</p>
           </div>
         </div>
         <div class="space-y-2 text-sm">
@@ -86,12 +86,12 @@
       </div>
 
       <!-- Estadías -->
-      <div class="bg-white rounded-xl shadow p-6">
-        <div class="flex items-center mb-4">
-          <span class="text-4xl mr-4">🛏️</span>
+      <div class="bg-white rounded-xl shadow p-4 lg:p-6">
+        <div class="flex items-center mb-3 lg:mb-4">
+          <span class="text-3xl lg:text-4xl mr-3 lg:mr-4">🛏️</span>
           <div>
-            <p class="text-gray-500 text-sm">Estadías</p>
-            <p class="text-2xl font-bold text-gray-800">{{ statistics.totalStays }}</p>
+            <p class="text-gray-500 text-xs lg:text-sm">Estadías</p>
+            <p class="text-xl lg:text-2xl font-bold text-gray-800">{{ statistics.totalStays }}</p>
           </div>
         </div>
         <div class="space-y-2 text-sm">
@@ -113,12 +113,12 @@
       </div>
 
       <!-- Ocupación -->
-      <div class="bg-white rounded-xl shadow p-6">
-        <div class="flex items-center mb-4">
-          <span class="text-4xl mr-4">📈</span>
+      <div class="bg-white rounded-xl shadow p-4 lg:p-6">
+        <div class="flex items-center mb-3 lg:mb-4">
+          <span class="text-3xl lg:text-4xl mr-3 lg:mr-4">📈</span>
           <div>
-            <p class="text-gray-500 text-sm">Ocupación</p>
-            <p class="text-2xl font-bold text-gray-800">{{ statistics.occupancyRate | number:'1.1-1' }}%</p>
+            <p class="text-gray-500 text-xs lg:text-sm">Ocupación</p>
+            <p class="text-xl lg:text-2xl font-bold text-gray-800">{{ statistics.occupancyRate | number:'1.1-1' }}%</p>
           </div>
         </div>
         <div class="space-y-2 text-sm">
@@ -147,12 +147,12 @@
     </div>
 
     <!-- Clasificaciones -->
-    <div class="bg-white rounded-xl shadow p-6 mb-6">
-      <div class="flex items-center mb-4">
-        <span class="text-4xl mr-4">⭐</span>
+    <div class="bg-white rounded-xl shadow p-4 lg:p-6 mb-4 lg:mb-6">
+      <div class="flex items-center mb-3 lg:mb-4">
+        <span class="text-3xl lg:text-4xl mr-3 lg:mr-4">⭐</span>
         <div>
-          <p class="text-gray-500 text-sm">Clasificaciones</p>
-          <p class="text-2xl font-bold text-gray-800">
+          <p class="text-gray-500 text-xs lg:text-sm">Clasificaciones</p>
+          <p class="text-xl lg:text-2xl font-bold text-gray-800">
             {{ statistics.totalClassifications > 0 ? (statistics.averageClassificationScore | number:'1.1-1') : '—' }}
             <span class="text-sm text-gray-400">/ 5</span>
           </p>
@@ -162,16 +162,16 @@
     </div>
 
     <!-- Ranking por complejo -->
-    <div class="bg-white rounded-xl shadow p-6">
-      <h2 class="text-lg font-semibold text-gray-700 mb-4">Ranking por complejo</h2>
+    <div class="bg-white rounded-xl shadow p-4 lg:p-6">
+      <h2 class="text-base lg:text-lg font-semibold text-gray-700 mb-3 lg:mb-4">Ranking por complejo</h2>
       <div *ngIf="complexStatistics.length === 0" class="text-center py-6">
         <span class="text-5xl mb-4 block">🏗️</span>
         <p class="text-gray-500">No hay complejos registrados aún.</p>
       </div>
-      <div *ngIf="complexStatistics.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div *ngFor="let cs of complexStatistics" class="border rounded-lg p-4 hover:shadow-md transition">
-          <h3 class="font-semibold text-gray-800 mb-1">{{ cs.complexName }}</h3>
-          <p class="text-sm text-gray-500 mb-3">{{ cs.complexLocation }}</p>
+      <div *ngIf="complexStatistics.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+        <div *ngFor="let cs of complexStatistics" class="border rounded-lg p-3 lg:p-4 hover:shadow-md transition">
+          <h3 class="font-semibold text-gray-800 text-sm lg:text-base mb-1">{{ cs.complexName }}</h3>
+          <p class="text-xs lg:text-sm text-gray-500 mb-2 lg:mb-3">{{ cs.complexLocation }}</p>
           <div class="space-y-2 text-sm">
             <div class="flex justify-between">
               <span class="text-gray-600">Departamentos</span>

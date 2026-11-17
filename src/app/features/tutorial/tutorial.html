@@ -1,10 +1,19 @@
-<div class="flex h-screen bg-gray-100">
+<div class="flex h-screen bg-gray-100 overflow-hidden">
+  <!-- Overlay para móvil cuando el sidebar está abierto -->
+  <div *ngIf="sidebarOpen()" class="fixed inset-0 bg-black/50 z-20 lg:hidden" (click)="sidebarOpen.set(false)"></div>
+
   <!-- Sidebar -->
-  <aside [class.w-64]="sidebarOpen()" [class.w-16]="!sidebarOpen()" class="bg-emerald-800 text-white flex flex-col transition-all duration-300">
+  <aside 
+    [class]="sidebarOpen() ? 'translate-x-0' : '-translate-x-full'"
+    class="fixed lg:static inset-y-0 left-0 z-30 w-64 bg-emerald-800 text-white flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:flex-shrink-0 overflow-y-auto"
+  >
     <!-- Logo -->
     <div class="p-4 flex items-center justify-between border-b border-emerald-700">
-      <span *ngIf="sidebarOpen()" class="text-xl font-bold">🌿 Tutorial</span>
-      <button (click)="toggleSidebar()" class="p-1 hover:bg-emerald-700 rounded">
+      <span class="text-lg lg:text-xl font-bold truncate">🌿 Tutorial</span>
+      <button (click)="toggleSidebar()" class="p-1 hover:bg-emerald-700 rounded lg:hidden">
+        ✕
+      </button>
+      <button (click)="toggleSidebar()" class="p-1 hover:bg-emerald-700 rounded hidden lg:block">
         {{ sidebarOpen() ? '◀' : '▶' }}
       </button>
     </div>
@@ -120,11 +129,21 @@
       </button>
     </div>
   </aside>
+ 
+  <!-- Top bar para móvil -->
+  <div class="lg:hidden fixed top-0 left-0 right-0 h-14 bg-emerald-800 text-white flex items-center px-4 z-10">
+    <button (click)="sidebarOpen.set(true)" class="p-2 hover:bg-emerald-700 rounded">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+    <span class="ml-3 font-bold text-sm">🌿 Tutorial</span>
+  </div>
 
   <!-- Main content -->
-  <main class="flex-1 overflow-auto">
+  <main class="flex-1 overflow-auto lg:pt-0 pt-14">
     <!-- WELCOME SECTION -->
-    <div *ngIf="currentSection() === 'welcome'" class="p-6">
+    <div *ngIf="currentSection() === 'welcome'" class="p-4 lg:p-6">
       <div class="max-w-4xl mx-auto">
         <div class="text-center mb-8">
           <h1 class="text-4xl font-bold text-emerald-500 mb-2">🌿 Nido Sereno</h1>
@@ -251,9 +270,9 @@
     </div>
 
     <!-- HIERARCHY SECTION -->
-    <div *ngIf="currentSection() === 'hierarchy'" class="p-6">
+    <div *ngIf="currentSection() === 'hierarchy'" class="p-4 lg:p-6">
       <div class="max-w-4xl mx-auto">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">📐 Jerarquía de Entidades</h1>
+        <h1 class="text-xl lg:text-2xl font-bold text-gray-800 mb-4 lg:mb-6">📐 Jerarquía de Entidades</h1>
 
         <div class="bg-white rounded-xl shadow p-6 mb-6">
           <p class="text-gray-600 mb-6">
@@ -361,9 +380,9 @@
     </div>
 
     <!-- FLOW SECTION - Interactive -->
-    <div *ngIf="currentSection() === 'flow'" class="p-6">
+    <div *ngIf="currentSection() === 'flow'" class="p-4 lg:p-6">
       <div class="max-w-4xl mx-auto">
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">🔄 Flujo Interactivo</h1>
+        <h1 class="text-xl lg:text-2xl font-bold text-gray-800 mb-2">🔄 Flujo Interactivo</h1>
         <p class="text-gray-500 mb-6">Recorré todo el ciclo de vida de un alquiler paso a paso</p>
 
         <!-- Progress bar -->
@@ -781,8 +800,8 @@
     </div>
 
     <!-- DASHBOARD SECTION -->
-    <div *ngIf="currentSection() === 'dashboard'" class="p-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-6">📊 Dashboard</h1>
+    <div *ngIf="currentSection() === 'dashboard'" class="p-4 lg:p-6">
+      <h1 class="text-xl lg:text-2xl font-bold text-gray-800 mb-4 lg:mb-6">📊 Dashboard</h1>
 
       <div *ngIf="complexes().length === 0 && departments().length === 0" class="bg-white rounded-xl shadow p-6 text-center">
         <span class="text-5xl mb-4 block">🏗️</span>
@@ -932,8 +951,8 @@
     </div>
 
     <!-- COMPLEXES SECTION -->
-    <div *ngIf="currentSection() === 'complexes'" class="p-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-6">🏢 Complejos</h1>
+    <div *ngIf="currentSection() === 'complexes'" class="p-4 lg:p-6">
+      <h1 class="text-xl lg:text-2xl font-bold text-gray-800 mb-4 lg:mb-6">🏢 Complejos</h1>
 
       <div *ngIf="complexes().length === 0" class="bg-white rounded-xl shadow p-6 text-center">
         <span class="text-5xl mb-4 block">🏗️</span>
@@ -954,8 +973,8 @@
     </div>
 
     <!-- DEPARTMENTS SECTION -->
-    <div *ngIf="currentSection() === 'departments'" class="p-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-6">🚪 Departamentos</h1>
+    <div *ngIf="currentSection() === 'departments'" class="p-4 lg:p-6">
+      <h1 class="text-xl lg:text-2xl font-bold text-gray-800 mb-4 lg:mb-6">🚪 Departamentos</h1>
 
       <div *ngIf="departments().length === 0" class="bg-white rounded-xl shadow p-6 text-center">
         <span class="text-5xl mb-4 block">🚪</span>
@@ -988,8 +1007,8 @@
     </div>
 
     <!-- RESERVATIONS SECTION -->
-    <div *ngIf="currentSection() === 'reservations'" class="p-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-6">📋 Reservas</h1>
+    <div *ngIf="currentSection() === 'reservations'" class="p-4 lg:p-6">
+      <h1 class="text-xl lg:text-2xl font-bold text-gray-800 mb-4 lg:mb-6">📋 Reservas</h1>
 
       <div *ngIf="reservations().length === 0" class="bg-white rounded-xl shadow p-6 text-center">
         <span class="text-5xl mb-4 block">📋</span>
@@ -1019,8 +1038,8 @@
     </div>
 
     <!-- STAYS SECTION -->
-    <div *ngIf="currentSection() === 'stays'" class="p-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-6">🛏️ Estadías</h1>
+    <div *ngIf="currentSection() === 'stays'" class="p-4 lg:p-6">
+      <h1 class="text-xl lg:text-2xl font-bold text-gray-800 mb-4 lg:mb-6">🛏️ Estadías</h1>
 
       <div *ngIf="stays().length === 0" class="bg-white rounded-xl shadow p-6 text-center">
         <span class="text-5xl mb-4 block">🛏️</span>
@@ -1060,8 +1079,8 @@
     </div>
 
     <!-- TENANTS SECTION -->
-    <div *ngIf="currentSection() === 'tenants'" class="p-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-6">👥 Inquilinos</h1>
+    <div *ngIf="currentSection() === 'tenants'" class="p-4 lg:p-6">
+      <h1 class="text-xl lg:text-2xl font-bold text-gray-800 mb-4 lg:mb-6">👥 Inquilinos</h1>
 
       <div *ngIf="tenants().length === 0" class="bg-white rounded-xl shadow p-6 text-center">
         <span class="text-5xl mb-4 block">👥</span>

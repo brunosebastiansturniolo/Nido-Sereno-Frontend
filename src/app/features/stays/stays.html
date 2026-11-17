@@ -1,5 +1,5 @@
-<div class="p-6">
-  <h1 class="text-2xl font-bold text-gray-800 mb-6">🛏️ Estadías</h1>
+<div class="p-4 lg:p-6">
+  <h1 class="text-xl lg:text-2xl font-bold text-gray-800 mb-4 lg:mb-6">🛏️ Estadías</h1>
 
   <!-- Mensajes de éxito -->
   <p *ngIf="success" class="text-emerald-500 text-sm bg-emerald-50 p-2 rounded mb-4">✅ {{ success }}</p>
@@ -9,12 +9,12 @@
 
   <!-- Modal de justificación de fecha -->
   <div *ngIf="showJustificationModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
-      <h2 class="text-lg font-bold text-gray-800 mb-3">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-4 lg:p-6 max-h-[90vh] overflow-y-auto">
+      <h2 class="text-base lg:text-lg font-bold text-gray-800 mb-3">
         ⚠️ {{ justificationContext === 'checkout' ? 'Fecha de check-out no coincide' : 'Fecha de check-in no coincide' }}
       </h2>
 
-      <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 lg:p-4 mb-4">
         <p [innerHTML]="justificationMessage" class="text-sm text-amber-700"></p>
       </div>
 
@@ -52,13 +52,13 @@
       </div>
 
       <!-- Botones de acción -->
-      <div class="flex gap-2 mt-4">
+      <div class="flex flex-col sm:flex-row gap-2 mt-4">
         <button (click)="confirmJustification()"
-          class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 rounded-lg transition">
+          class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 lg:py-2 rounded-lg transition text-sm">
           ✅ Confirmar
         </button>
         <button (click)="closeJustificationModal()"
-          class="px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg transition">
+          class="px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 lg:py-2 rounded-lg transition text-sm">
           Cancelar
         </button>
       </div>
@@ -66,19 +66,19 @@
   </div>
 
   <!-- Check-In -->
-  <div class="bg-white rounded-xl shadow p-6 mb-6">
-    <h2 class="text-lg font-semibold text-gray-700 mb-4">Check-In</h2>
+  <div class="bg-white rounded-xl shadow p-4 lg:p-6 mb-4 lg:mb-6">
+    <h2 class="text-base lg:text-lg font-semibold text-gray-700 mb-3 lg:mb-4">Check-In</h2>
 
     <!-- Tabs -->
-    <div class="flex gap-2 mb-4">
-      <button (click)="checkInMode = 'express'" [class.bg-emerald-600]="checkInMode === 'express'" [class.text-white]="checkInMode === 'express'" [class.bg-gray-200]="checkInMode !== 'express'" class="px-4 py-2 rounded-lg text-sm font-medium transition">
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button (click)="checkInMode = 'express'" [class.bg-emerald-600]="checkInMode === 'express'" [class.text-white]="checkInMode === 'express'" [class.bg-gray-200]="checkInMode !== 'express'" class="px-3 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition flex-1 sm:flex-initial text-center">
         Check-In Express
       </button>
-      <button (click)="checkInMode = 'existing'" [class.bg-emerald-600]="checkInMode === 'existing'" [class.text-white]="checkInMode === 'existing'" [class.bg-gray-200]="checkInMode !== 'existing'" class="px-4 py-2 rounded-lg text-sm font-medium transition">
-        Desde Reserva existente
+      <button (click)="checkInMode = 'existing'" [class.bg-emerald-600]="checkInMode === 'existing'" [class.text-white]="checkInMode === 'existing'" [class.bg-gray-200]="checkInMode !== 'existing'" class="px-3 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition flex-1 sm:flex-initial text-center">
+        Desde Reserva
       </button>
-      <button (click)="checkInMode = 'retroactive'" [class.bg-emerald-600]="checkInMode === 'retroactive'" [class.text-white]="checkInMode === 'retroactive'" [class.bg-gray-200]="checkInMode !== 'retroactive'" class="px-4 py-2 rounded-lg text-sm font-medium transition">
-        Cargar historial (retroactivo)
+      <button (click)="checkInMode = 'retroactive'" [class.bg-emerald-600]="checkInMode === 'retroactive'" [class.text-white]="checkInMode === 'retroactive'" [class.bg-gray-200]="checkInMode !== 'retroactive'" class="px-3 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition flex-1 sm:flex-initial text-center">
+        Retroactivo
       </button>
     </div>
 
@@ -627,51 +627,84 @@
   </div>
 
   <!-- Lista de estadías -->
-  <div class="bg-white rounded-xl shadow p-6">
-    <h2 class="text-lg font-semibold text-gray-700 mb-4">Mis estadías</h2>
+  <div class="bg-white rounded-xl shadow p-4 lg:p-6">
+    <h2 class="text-base lg:text-lg font-semibold text-gray-700 mb-3 lg:mb-4">Mis estadías</h2>
     <div *ngIf="loading" class="text-gray-500">Cargando...</div>
-    <div *ngIf="!loading && stays.length === 0" class="text-gray-400">No tenés estadías aún.</div>
-    <div *ngIf="!loading && stays.length > 0" class="overflow-x-auto">
-    <table class="w-full text-left">
-      <thead><tr class="border-b">
-        <th class="py-2 px-3 text-sm text-gray-500">Check-in</th>
-        <th class="py-2 px-3 text-sm text-gray-500">Check-out</th>
-        <th class="py-2 px-3 text-sm text-gray-500">Estado</th>
-        <th class="py-2 px-3 text-sm text-gray-500">Inquilinos</th>
-        <th class="py-2 px-3 text-sm text-gray-500">Clasificación</th>
-        <th class="py-2 px-3 text-sm text-gray-500">Acciones</th>
-      </tr></thead>
-      <tbody>
-        <tr *ngFor="let s of stays" class="border-b hover:bg-gray-50">
-          <td class="py-2 px-3">{{ formatDate(s.fechaHoraCheckInReal) }}</td>
-          <td class="py-2 px-3">{{ s.fechaHoraCheckOutReal ? formatDate(s.fechaHoraCheckOutReal) : '—' }}</td>
-          <td class="py-2 px-3">
-            <span class="px-2 py-1 rounded text-xs font-semibold"
-              [class.bg-green-100]="s.status==='ACTIVE'"
-              [class.bg-blue-100]="s.status==='COMPLETED'">
-              {{ s.status === 'ACTIVE' ? 'En curso' : 'Finalizado' }}
-            </span>
-          </td>
-          <td class="py-2 px-3">
-            <span *ngIf="s.tenants && s.tenants.length">
-              {{ s.tenants[0].firstName }} {{ s.tenants[0].lastName }}
-              <span *ngIf="s.tenants.length > 1">(+{{ s.tenants.length - 1 }} más)</span>
-            </span>
-            <span *ngIf="!s.tenants || !s.tenants.length">—</span>
-          </td>
-          <td class="py-2 px-3">
-            <span *ngIf="s.classificationScore" class="text-sm">
-              {{ '⭐'.repeat(s.classificationScore) }} ({{ s.classificationScore }}/5)
-            </span>
-            <span *ngIf="!s.classificationScore" class="text-gray-400 text-sm">—</span>
-          </td>
-          <td class="py-2 px-3">
-            <button *ngIf="s.status === 'ACTIVE'"
-              (click)="checkoutStayId = s.id" class="text-blue-600 hover:underline text-sm">Check-out</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div *ngIf="!loading && stays.length === 0" class="text-gray-400 text-sm">No tenés estadías aún.</div>
+    
+    <!-- Vista móvil: cards -->
+    <div *ngIf="!loading && stays.length > 0" class="space-y-3 md:hidden">
+      <div *ngFor="let s of stays" class="border rounded-lg p-3 hover:bg-gray-50 transition">
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-gray-800 text-sm">
+              <span *ngIf="s.tenants && s.tenants.length">{{ s.tenants[0].firstName }} {{ s.tenants[0].lastName }}</span>
+              <span *ngIf="!s.tenants || !s.tenants.length">Sin inquilino</span>
+              <span *ngIf="s.tenants && s.tenants.length > 1" class="text-xs text-gray-500">(+{{ s.tenants.length - 1 }} más)</span>
+            </h3>
+          </div>
+          <span class="px-2 py-1 rounded text-xs font-semibold ml-2 flex-shrink-0"
+            [class.bg-green-100]="s.status==='ACTIVE'"
+            [class.bg-blue-100]="s.status==='COMPLETED'">
+            {{ s.status === 'ACTIVE' ? 'En curso' : 'Finalizado' }}
+          </span>
+        </div>
+        <div class="flex flex-wrap gap-2 text-xs text-gray-600">
+          <span class="px-2 py-1 bg-gray-100 rounded">📅 {{ formatDate(s.fechaHoraCheckInReal) }}</span>
+          <span *ngIf="s.fechaHoraCheckOutReal" class="px-2 py-1 bg-gray-100 rounded">→ {{ formatDate(s.fechaHoraCheckOutReal) }}</span>
+          <span *ngIf="s.classificationScore" class="px-2 py-1 bg-amber-50 rounded text-amber-600">
+            {{ '⭐'.repeat(s.classificationScore) }} ({{ s.classificationScore }}/5)
+          </span>
+        </div>
+        <div class="mt-2 flex justify-end">
+          <button *ngIf="s.status === 'ACTIVE'"
+            (click)="checkoutStayId = s.id" class="text-blue-600 hover:underline text-xs font-medium">Check-out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista desktop: tabla -->
+    <div *ngIf="!loading && stays.length > 0" class="hidden md:block overflow-x-auto">
+      <table class="w-full text-left">
+        <thead><tr class="border-b">
+          <th class="py-2 px-3 text-sm text-gray-500">Check-in</th>
+          <th class="py-2 px-3 text-sm text-gray-500">Check-out</th>
+          <th class="py-2 px-3 text-sm text-gray-500">Estado</th>
+          <th class="py-2 px-3 text-sm text-gray-500">Inquilinos</th>
+          <th class="py-2 px-3 text-sm text-gray-500">Clasificación</th>
+          <th class="py-2 px-3 text-sm text-gray-500">Acciones</th>
+        </tr></thead>
+        <tbody>
+          <tr *ngFor="let s of stays" class="border-b hover:bg-gray-50">
+            <td class="py-2 px-3 text-sm">{{ formatDate(s.fechaHoraCheckInReal) }}</td>
+            <td class="py-2 px-3 text-sm">{{ s.fechaHoraCheckOutReal ? formatDate(s.fechaHoraCheckOutReal) : '—' }}</td>
+            <td class="py-2 px-3">
+              <span class="px-2 py-1 rounded text-xs font-semibold"
+                [class.bg-green-100]="s.status==='ACTIVE'"
+                [class.bg-blue-100]="s.status==='COMPLETED'">
+                {{ s.status === 'ACTIVE' ? 'En curso' : 'Finalizado' }}
+              </span>
+            </td>
+            <td class="py-2 px-3 text-sm">
+              <span *ngIf="s.tenants && s.tenants.length">
+                {{ s.tenants[0].firstName }} {{ s.tenants[0].lastName }}
+                <span *ngIf="s.tenants.length > 1">(+{{ s.tenants.length - 1 }} más)</span>
+              </span>
+              <span *ngIf="!s.tenants || !s.tenants.length">—</span>
+            </td>
+            <td class="py-2 px-3">
+              <span *ngIf="s.classificationScore" class="text-sm">
+                {{ '⭐'.repeat(s.classificationScore) }} ({{ s.classificationScore }}/5)
+              </span>
+              <span *ngIf="!s.classificationScore" class="text-gray-400 text-sm">—</span>
+            </td>
+            <td class="py-2 px-3">
+              <button *ngIf="s.status === 'ACTIVE'"
+                (click)="checkoutStayId = s.id" class="text-blue-600 hover:underline text-sm">Check-out</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

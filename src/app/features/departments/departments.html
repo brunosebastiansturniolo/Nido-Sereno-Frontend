@@ -1,64 +1,86 @@
-<div class="p-6">
-  <h1 class="text-2xl font-bold text-gray-800 mb-6">🚪 Departamentos</h1>
+<div class="p-4 lg:p-6">
+  <h1 class="text-xl lg:text-2xl font-bold text-gray-800 mb-4 lg:mb-6">🚪 Departamentos</h1>
 
   <!-- Modal de error -->
   <app-error-modal [visible]="showErrorModal" [message]="errorMessage" (closed)="closeErrorModal()"></app-error-modal>
 
   <p *ngIf="success" class="text-emerald-500 text-sm bg-emerald-50 p-2 rounded mb-4">✅ {{ success }}</p>
 
-  <div class="bg-white rounded-xl shadow p-6 mb-6">
-    <h2 class="text-lg font-semibold text-gray-700 mb-4">Crear departamento</h2>
-    <form (ngSubmit)="onCreate()" [formGroup]="createForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="bg-white rounded-xl shadow p-4 lg:p-6 mb-4 lg:mb-6">
+    <h2 class="text-base lg:text-lg font-semibold text-gray-700 mb-3 lg:mb-4">Crear departamento</h2>
+    <form (ngSubmit)="onCreate()" [formGroup]="createForm" class="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-        <input formControlName="nombre" class="w-full px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Ej: Planta baja" />
+        <input formControlName="nombre" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ej: Planta baja" />
         <p *ngIf="createForm.get('nombre')?.touched && createForm.get('nombre')?.errors?.['required']" class="text-red-500 text-xs mt-1">El nombre es obligatorio.</p>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Habitaciones</label>
-        <input formControlName="numeroHabitaciones" type="number" class="w-full px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Ej: 2" />
+        <input formControlName="numeroHabitaciones" type="number" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ej: 2" />
         <p *ngIf="createForm.get('numeroHabitaciones')?.touched && createForm.get('numeroHabitaciones')?.errors?.['required']" class="text-red-500 text-xs mt-1">El número de habitaciones es obligatorio.</p>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Precio/noche ($)</label>
-        <input formControlName="precioPorNoche" type="number" class="w-full px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Ej: 15000" />
+        <input formControlName="precioPorNoche" type="number" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ej: 15000" />
         <p *ngIf="createForm.get('precioPorNoche')?.touched && createForm.get('precioPorNoche')?.errors?.['required']" class="text-red-500 text-xs mt-1">El precio por noche es obligatorio.</p>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Tamaño (m²)</label>
-        <input formControlName="tamañoM2" type="number" class="w-full px-4 py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic" placeholder="Ej: 65" />
+        <input formControlName="tamañoM2" type="number" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ej: 65" />
         <p *ngIf="createForm.get('tamañoM2')?.touched && createForm.get('tamañoM2')?.errors?.['required']" class="text-red-500 text-xs mt-1">El tamaño en m² es obligatorio.</p>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Complejo</label>
-        <select formControlName="complexId" class="w-full px-4 py-2 border rounded-lg">
+        <select formControlName="complexId" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg text-base lg:text-sm">
           <option [ngValue]="null" disabled>Seleccionar complejo...</option>
           <option *ngFor="let c of complexes" [ngValue]="c.id">{{ c.nombre }}</option>
         </select>
         <p *ngIf="createForm.get('complexId')?.touched && createForm.get('complexId')?.errors?.['required']" class="text-red-500 text-xs mt-1">Debe seleccionar un complejo.</p>
       </div>
-      <label class="flex items-center gap-2"><input type="checkbox" formControlName="incluyeCochera" /> Cochera</label>
-      <label class="flex items-center gap-2"><input type="checkbox" formControlName="incluyeDesayuno" /> Desayuno</label>
-      <label class="flex items-center gap-2"><input type="checkbox" formControlName="tieneWifi" /> WiFi</label>
-      <label class="flex items-center gap-2"><input type="checkbox" formControlName="tienePileta" /> Pileta</label>
-      <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-lg md:col-span-3">Crear departamento</button>
+      <label class="flex items-center gap-2"><input type="checkbox" formControlName="incluyeCochera" class="w-4 h-4" /> Cochera</label>
+      <label class="flex items-center gap-2"><input type="checkbox" formControlName="incluyeDesayuno" class="w-4 h-4" /> Desayuno</label>
+      <label class="flex items-center gap-2"><input type="checkbox" formControlName="tieneWifi" class="w-4 h-4" /> WiFi</label>
+      <label class="flex items-center gap-2"><input type="checkbox" formControlName="tienePileta" class="w-4 h-4" /> Pileta</label>
+      <button type="submit" class="w-full md:w-auto bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 lg:py-2 rounded-lg md:col-span-3 text-base lg:text-sm">Crear departamento</button>
     </form>
   </div>
 
-  <div class="bg-white rounded-xl shadow p-6">
-    <h2 class="text-lg font-semibold text-gray-700 mb-4">Mis departamentos</h2>
+  <div class="bg-white rounded-xl shadow p-4 lg:p-6">
+    <h2 class="text-base lg:text-lg font-semibold text-gray-700 mb-3 lg:mb-4">Mis departamentos</h2>
     <div *ngIf="loading" class="text-gray-500">Cargando...</div>
-    <div *ngIf="!loading && departments.length === 0" class="text-gray-400">No tenés departamentos aún.</div>
-    <table *ngIf="!loading && departments.length > 0" class="w-full text-left">
-      <thead><tr class="border-b"><th class="py-2 px-3 text-sm text-gray-500">Nombre</th><th class="py-2 px-3 text-sm text-gray-500">Habitaciones</th><th class="py-2 px-3 text-sm text-gray-500">Precio/noche</th><th class="py-2 px-3 text-sm text-gray-500">Disponible</th></tr></thead>
-      <tbody>
-        <tr *ngFor="let d of departments" class="border-b hover:bg-gray-50">
-          <td class="py-2 px-3">{{ d.nombre }}</td>
-          <td class="py-2 px-3">{{ d.numeroHabitaciones }}</td>
-          <td class="py-2 px-3">$ {{ d.precioPorNoche }}</td>
-          <td class="py-2 px-3">{{ d.disponible ? '✅' : '❌' }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div *ngIf="!loading && departments.length === 0" class="text-gray-400 text-sm">No tenés departamentos aún.</div>
+
+    <!-- Vista móvil: cards -->
+    <div *ngIf="!loading && departments.length > 0" class="space-y-3 md:hidden">
+      <div *ngFor="let d of departments" class="border rounded-lg p-3 hover:bg-gray-50 transition">
+        <div class="flex items-start justify-between">
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-gray-800">{{ d.nombre }}</h3>
+            <div class="flex flex-wrap gap-2 mt-2 text-xs">
+              <span class="px-2 py-1 bg-gray-100 rounded text-gray-600">🛏️ {{ d.numeroHabitaciones }} hab</span>
+              <span class="px-2 py-1 bg-emerald-50 rounded text-emerald-600">$ {{ d.precioPorNoche }}/noche</span>
+              <span [class]="d.disponible ? 'px-2 py-1 bg-green-50 rounded text-green-600' : 'px-2 py-1 bg-red-50 rounded text-red-600'">
+                {{ d.disponible ? '✅ Disponible' : '❌ Ocupado' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista desktop: tabla -->
+    <div *ngIf="!loading && departments.length > 0" class="hidden md:block overflow-x-auto">
+      <table class="w-full text-left">
+        <thead><tr class="border-b"><th class="py-2 px-3 text-sm text-gray-500">Nombre</th><th class="py-2 px-3 text-sm text-gray-500">Habitaciones</th><th class="py-2 px-3 text-sm text-gray-500">Precio/noche</th><th class="py-2 px-3 text-sm text-gray-500">Disponible</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let d of departments" class="border-b hover:bg-gray-50">
+            <td class="py-2 px-3 text-sm">{{ d.nombre }}</td>
+            <td class="py-2 px-3 text-sm">{{ d.numeroHabitaciones }}</td>
+            <td class="py-2 px-3 text-sm">$ {{ d.precioPorNoche }}</td>
+            <td class="py-2 px-3 text-sm">{{ d.disponible ? '✅' : '❌' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
