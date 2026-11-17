@@ -83,7 +83,7 @@
           type="date"
           [ngModel]="simulatedDateStr()"
           (ngModelChange)="setDateFromString($event)"
-          class="w-full mt-2 px-2 py-1 text-xs bg-emerald-600 text-white rounded border border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+          class="w-full mt-2 px-2 py-1 text-xs bg-emerald-600 text-white rounded border border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
         />
         <div class="flex gap-1 mt-2">
           <button (click)="addDays(-1)" class="flex-1 px-1 py-0.5 text-xs bg-emerald-600 hover:bg-emerald-500 rounded" title="Ayer">-1d</button>
@@ -103,7 +103,7 @@
           type="date"
           [ngModel]="simulatedDateStr()"
           (ngModelChange)="setDateFromString($event)"
-          class="w-full mt-1 px-1 py-0.5 text-xs bg-emerald-600 text-white rounded border border-emerald-500"
+          class="w-full mt-1 px-1 py-0.5 text-xs bg-emerald-600 text-white rounded border border-emerald-400"
         />
       </div>
     </div>
@@ -127,7 +127,7 @@
     <div *ngIf="currentSection() === 'welcome'" class="p-6">
       <div class="max-w-4xl mx-auto">
         <div class="text-center mb-8">
-          <h1 class="text-4xl font-bold text-emerald-700 mb-2">🌿 Nido Sereno</h1>
+          <h1 class="text-4xl font-bold text-emerald-500 mb-2">🌿 Nido Sereno</h1>
           <p class="text-xl text-gray-600">Tutorial Interactivo</p>
           <p class="text-sm text-gray-400 mt-1">Aprendé a usar el sistema sin riesgo — y simulando el paso del tiempo</p>
         </div>
@@ -242,7 +242,7 @@
         <!-- CTA -->
         <div class="text-center">
           <button (click)="startInteractiveFlow()"
-                  class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl text-lg transition shadow-lg hover:shadow-xl">
+                  class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-8 rounded-xl text-lg transition shadow-lg hover:shadow-xl">
             🚀 Comenzar Flujo Interactivo
           </button>
           <p class="text-sm text-gray-500 mt-3">Recorré todo el sistema paso a paso con datos de ejemplo</p>
@@ -376,18 +376,18 @@
             <div class="bg-emerald-500 h-3 rounded-full transition-all duration-500" [style.width]="(flowStep() / 5 * 100) + '%'"></div>
           </div>
           <div class="flex justify-between mt-2 text-xs text-gray-500">
-            <span [class.text-emerald-600]="flowStep() >= 1" [class.font-bold]="flowStep() >= 1">🏢 Complejo</span>
-            <span [class.text-emerald-600]="flowStep() >= 2" [class.font-bold]="flowStep() >= 2">🚪 Depto</span>
-            <span [class.text-emerald-600]="flowStep() >= 3" [class.font-bold]="flowStep() >= 3">📋 Reserva</span>
-            <span [class.text-emerald-600]="flowStep() >= 4" [class.font-bold]="flowStep() >= 4">🛏️ Check-in</span>
-            <span [class.text-emerald-600]="flowStep() >= 5" [class.font-bold]="flowStep() >= 5">✅ Check-out</span>
+            <span [class.text-emerald-500]="flowStep() >= 1" [class.font-bold]="flowStep() >= 1">🏢 Complejo</span>
+            <span [class.text-emerald-500]="flowStep() >= 2" [class.font-bold]="flowStep() >= 2">🚪 Depto</span>
+            <span [class.text-emerald-500]="flowStep() >= 3" [class.font-bold]="flowStep() >= 3">📋 Reserva</span>
+            <span [class.text-emerald-500]="flowStep() >= 4" [class.font-bold]="flowStep() >= 4">🛏️ Check-in</span>
+            <span [class.text-emerald-500]="flowStep() >= 5" [class.font-bold]="flowStep() >= 5">✅ Check-out</span>
           </div>
         </div>
 
         <!-- Step 1: Create Complex -->
         <div *ngIf="flowStep() === 0" class="bg-white rounded-xl shadow p-6 mb-6">
           <div class="flex items-center gap-3 mb-4">
-            <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">1</span>
+            <span class="bg-emerald-100 text-emerald-500 w-8 h-8 rounded-full flex items-center justify-center font-bold">1</span>
             <h2 class="text-xl font-bold text-gray-800">Crear un Complejo</h2>
           </div>
           <p class="text-gray-600 mb-4">Un <strong>Complejo</strong> es tu propiedad: puede ser un hotel, un conjunto de departamentos, cabañas, etc.</p>
@@ -404,25 +404,25 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
               <input type="text" [ngModel]="complexForm().nombre" (ngModelChange)="setComplexNombre($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: Los Arrayanes" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación *</label>
               <input type="text" [ngModel]="complexForm().ubicacion" (ngModelChange)="setComplexUbicacion($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: Av. San Martín, Bariloche" />
             </div>
           </div>
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
             <textarea [ngModel]="complexForm().descripcion" (ngModelChange)="setComplexDescripcion($event)"
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                       rows="2" placeholder="Descripción opcional..."></textarea>
           </div>
 
           <div class="flex gap-3">
-            <button (click)="createComplex()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+            <button (click)="createComplex()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-6 rounded-lg transition">
               Crear Complejo →
             </button>
           </div>
@@ -431,7 +431,7 @@
         <!-- Step 2: Create Department -->
         <div *ngIf="flowStep() === 1" class="bg-white rounded-xl shadow p-6 mb-6">
           <div class="flex items-center gap-3 mb-4">
-            <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">2</span>
+            <span class="bg-emerald-100 text-emerald-500 w-8 h-8 rounded-full flex items-center justify-center font-bold">2</span>
             <h2 class="text-xl font-bold text-gray-800">Crear un Departamento</h2>
           </div>
           <p class="text-gray-600 mb-4">Un <strong>Departamento</strong> es una unidad alquilable dentro de tu complejo.</p>
@@ -448,13 +448,13 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
               <input type="text" [ngModel]="departmentForm().nombre" (ngModelChange)="setDeptNombre($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: A1" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Complejo</label>
               <select [ngModel]="departmentForm().complexId" (ngModelChange)="setDeptComplexId($event)"
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none">
                 <option [ngValue]="0">Seleccionar complejo...</option>
                 <option *ngFor="let c of complexes()" [ngValue]="c.id">{{ c.nombre }}</option>
               </select>
@@ -462,17 +462,17 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Habitaciones</label>
               <input type="number" min="1" [ngModel]="departmentForm().numeroHabitaciones" (ngModelChange)="setDeptHabitaciones($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Precio por noche ($)</label>
               <input type="number" min="0" [ngModel]="departmentForm().precioPorNoche" (ngModelChange)="setDeptPrecio($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Tamaño (m²)</label>
               <input type="number" min="0" [ngModel]="departmentForm().tamanoM2" (ngModelChange)="setDeptTamano($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic" />
             </div>
           </div>
 
@@ -496,7 +496,7 @@
           </div>
 
           <div class="flex gap-3">
-            <button (click)="createDepartment()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+            <button (click)="createDepartment()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-6 rounded-lg transition">
               Siguiente: Crear Departamento →
             </button>
           </div>
@@ -505,7 +505,7 @@
         <!-- Step 3: Create Reservation -->
         <div *ngIf="flowStep() === 2" class="bg-white rounded-xl shadow p-6 mb-6">
           <div class="flex items-center gap-3 mb-4">
-            <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">3</span>
+            <span class="bg-emerald-100 text-emerald-500 w-8 h-8 rounded-full flex items-center justify-center font-bold">3</span>
             <h2 class="text-xl font-bold text-gray-800">Crear una Reserva</h2>
           </div>
           <p class="text-gray-600 mb-4">Una <strong>Reserva</strong> es la solicitud de alquiler con datos del reservante, fechas y montos.</p>
@@ -522,41 +522,41 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
               <input type="text" [ngModel]="reservationForm().firstName" (ngModelChange)="setResFirstName($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: Juan" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Apellido *</label>
               <input type="text" [ngModel]="reservationForm().lastName" (ngModelChange)="setResLastName($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: Pérez" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">DNI *</label>
               <input type="text" [ngModel]="reservationForm().documentNumber" (ngModelChange)="setResDNI($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: 30123456" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
               <input type="text" [ngModel]="reservationForm().phoneNumber" (ngModelChange)="setResPhone($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: 2615555123" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Check-in *</label>
               <input type="date" [ngModel]="reservationForm().fechaCheckIn" (ngModelChange)="setResCheckIn($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Check-out *</label>
               <input type="date" [ngModel]="reservationForm().fechaCheckOut" (ngModelChange)="setResCheckOut($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Departamento *</label>
               <select [ngModel]="reservationForm().departmentId" (ngModelChange)="setResDeptId($event)"
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none">
                 <option [ngValue]="0">Seleccionar...</option>
                 <option *ngFor="let d of departments()" [ngValue]="d.id">{{ d.complejoNombre }} - {{ d.nombre }}</option>
               </select>
@@ -564,25 +564,25 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Personas</label>
               <input type="number" min="1" [ngModel]="reservationForm().cantidadPersonas" (ngModelChange)="setResPersonas($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: 2" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Precio Total ($)</label>
               <input type="number" min="0" [ngModel]="reservationForm().precioTotal" (ngModelChange)="setResPrecio($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: 45000" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Señal ($)</label>
               <input type="number" min="0" [ngModel]="reservationForm().montoSenia" (ngModelChange)="setResSenia($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: 10000" />
             </div>
           </div>
 
           <div class="flex gap-3">
-            <button (click)="createReservation()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+            <button (click)="createReservation()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-6 rounded-lg transition">
               Siguiente: Crear Reserva →
             </button>
           </div>
@@ -591,7 +591,7 @@
         <!-- Step 4: Check-In -->
         <div *ngIf="flowStep() === 3" class="bg-white rounded-xl shadow p-6 mb-6">
           <div class="flex items-center gap-3 mb-4">
-            <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">4</span>
+            <span class="bg-emerald-100 text-emerald-500 w-8 h-8 rounded-full flex items-center justify-center font-bold">4</span>
             <h2 class="text-xl font-bold text-gray-800">Check-In</h2>
           </div>
           <p class="text-gray-600 mb-4">El <strong>Check-In</strong> registra la llegada del reservante. Se crea la estadía activa y el departamento queda ocupado.</p>
@@ -615,18 +615,18 @@
             <p class="text-xs text-gray-500 mt-1">💡 Apretá el botón amarillo para prellenar los campos con datos de ejemplo. Podés editarlos después.</p>
           </div>
 
-          <div class="bg-amber-50 border-2 border-amber-400 rounded-lg p-4 mb-4">
-            <p class="text-sm text-amber-800 font-semibold">📅 ¡Mové la fecha simulada antes de hacer check-in!</p>
+          <div class="bg-amber-50 border-2 border-amber-300 rounded-lg p-4 mb-4">
+            <p class="text-sm text-amber-700 font-semibold">📅 ¡Mové la fecha simulada antes de hacer check-in!</p>
             <p class="text-sm text-amber-700 mt-1">
               La reserva tiene fecha de check-in: <strong>{{ getReservationCheckInDate(selectedReservationId()) }}</strong>.
             </p>
             <p class="text-sm text-amber-700 mt-1">
               👇 Usá el control de fecha iluminado en el sidebar para mover la fecha a ese día.
             </p>
-            <p class="text-xs text-amber-600 mt-2">
+            <p class="text-xs text-amber-500 mt-2">
               Observá cómo cambia cada panel al mover la fecha: Dashboard, Reservas, Estadías...
             </p>
-            <p class="text-xs text-amber-600 mt-1">
+            <p class="text-xs text-amber-500 mt-1">
               ⚠️ Si intentás hacer check-in con una fecha diferente, el sistema te pedirá justificar la diferencia.
             </p>
           </div>
@@ -636,42 +636,42 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">DNI *</label>
               <input type="text" [ngModel]="tenantForm().documentNumber" (ngModelChange)="setTenantDNI($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: 30123456" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
               <input type="text" [ngModel]="tenantForm().firstName" (ngModelChange)="setTenantFirstName($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: Juan" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Apellido *</label>
               <input type="text" [ngModel]="tenantForm().lastName" (ngModelChange)="setTenantLastName($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: Pérez" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input type="email" [ngModel]="tenantForm().email" (ngModelChange)="setTenantEmail($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: juan@email.com" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
               <input type="text" [ngModel]="tenantForm().phoneNumber" (ngModelChange)="setTenantPhone($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: 2615555123" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de nacimiento</label>
               <input type="date" [ngModel]="tenantForm().dateOfBirth" (ngModelChange)="setTenantDOB($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none" />
             </div>
           </div>
 
           <div class="flex gap-3">
-            <button (click)="doCheckIn()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+            <button (click)="doCheckIn()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-6 rounded-lg transition">
               Siguiente: Check-In →
             </button>
           </div>
@@ -680,7 +680,7 @@
         <!-- Step 5: Check-Out -->
         <div *ngIf="flowStep() === 4" class="bg-white rounded-xl shadow p-6 mb-6">
           <div class="flex items-center gap-3 mb-4">
-            <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">5</span>
+            <span class="bg-emerald-100 text-emerald-500 w-8 h-8 rounded-full flex items-center justify-center font-bold">5</span>
             <h2 class="text-xl font-bold text-gray-800">Check-Out</h2>
           </div>
           <p class="text-gray-600 mb-4">El <strong>Check-Out</strong> finaliza la estadía. Podés registrar el estado del departamento y calificar al reservante.</p>
@@ -693,18 +693,18 @@
             <p class="text-xs text-gray-500 mt-1">💡 Apretá el botón amarillo para prellenar los campos con datos de ejemplo. Podés editarlos después.</p>
           </div>
 
-          <div class="bg-amber-50 border-2 border-amber-400 rounded-lg p-4 mb-4">
-            <p class="text-sm text-amber-800 font-semibold">📅 ¡Mové la fecha simulada al día de check-out!</p>
+          <div class="bg-amber-50 border-2 border-amber-300 rounded-lg p-4 mb-4">
+            <p class="text-sm text-amber-700 font-semibold">📅 ¡Mové la fecha simulada al día de check-out!</p>
             <p class="text-sm text-amber-700 mt-1">
               La estadía tiene fecha de check-out planeada: <strong>{{ selectedStayCheckoutDate() }}</strong>.
             </p>
             <p class="text-sm text-amber-700 mt-1">
               👇 Usá el control de fecha iluminado en el sidebar para avanzar la fecha a ese día.
             </p>
-            <p class="text-xs text-amber-600 mt-2">
+            <p class="text-xs text-amber-500 mt-2">
               Observá cómo cambia cada panel al mover la fecha: Dashboard, Reservas, Estadías...
             </p>
-            <p class="text-xs text-amber-600 mt-1">
+            <p class="text-xs text-amber-500 mt-1">
               ⚠️ Si intentás hacer check-out con una fecha diferente, el sistema te pedirá justificar la diferencia.
             </p>
           </div>
@@ -713,13 +713,13 @@
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">Comentarios de salida</label>
               <textarea [ngModel]="checkoutForm().comentariosCheckOut" (ngModelChange)="setCheckoutComentarios($event)"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                         rows="2" placeholder="Ej: Se fueron de repente en la mañana / No se despidieron / Pagó una extensión de estadía..."></textarea>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Estado del departamento</label>
               <select [ngModel]="checkoutForm().estadoDepartamento" (ngModelChange)="setCheckoutEstado($event)"
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none">
                 <option value="GOOD">✅ Buen estado</option>
                 <option value="MINOR_DAMAGE">⚠️ Daño menor</option>
                 <option value="MAJOR_DAMAGE">❌ Daño mayor</option>
@@ -742,12 +742,12 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Comentario</label>
               <input type="text" [ngModel]="checkoutForm().classificationReviewComment" (ngModelChange)="setCheckoutComment($event)"
-                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-gray-400 placeholder:italic"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none placeholder:text-gray-400 placeholder:italic"
                      placeholder="Ej: Dejó el departamento impecable / Rompió una silla / Dejó las luces encendidas..." />
             </div>
           </div>
 
-          <button (click)="doCheckOut()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+          <button (click)="doCheckOut()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-6 rounded-lg transition">
             ✅ Finalizar Check-Out
           </button>
         </div>
@@ -760,7 +760,7 @@
             Recorriste todo el flujo básico de Nido Sereno. Ahora explorá los diferentes paneles para ver cómo se reflejan los datos.
           </p>
           <div class="flex flex-wrap justify-center gap-3">
-            <button (click)="navigate('dashboard')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+            <button (click)="navigate('dashboard')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-6 rounded-lg transition">
               📊 Ver Dashboard
             </button>
             <button (click)="navigate('reservations')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition">
@@ -788,7 +788,7 @@
         <span class="text-5xl mb-4 block">🏗️</span>
         <h3 class="text-lg font-semibold text-gray-700 mb-2">No hay datos aún</h3>
         <p class="text-gray-500 mb-4">Comenzá el flujo interactivo para ver cómo se llena el dashboard.</p>
-        <button (click)="startInteractiveFlow()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+        <button (click)="startInteractiveFlow()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-6 rounded-lg transition">
           🚀 Comenzar Tutorial
         </button>
       </div>
@@ -1097,14 +1097,14 @@
         <h2 class="text-xl font-bold text-gray-800">{{ tutorialModalTitle() }}</h2>
       </div>
 
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+      <div class="bg-emerald-50 border border-emerald-400 rounded-lg p-4 mb-4">
         <p class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{{ tutorialModalContent() }}</p>
       </div>
 
       <div class="flex justify-end">
         <button (click)="closeTutorialModal()"
                 type="button"
-                class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition">
+                class="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition">
           Entendido
         </button>
       </div>
@@ -1119,7 +1119,7 @@
       </h2>
 
       <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-        <p [innerHTML]="justificationMessage()" class="text-sm text-amber-800"></p>
+        <p [innerHTML]="justificationMessage()" class="text-sm text-amber-700"></p>
       </div>
 
       <p class="text-sm text-gray-600 mb-3">¿Qué querés hacer? El motivo se agregará automáticamente al campo de comentarios de {{ justificationContext() === 'checkout' ? 'check-out' : 'check-in' }}.</p>
@@ -1130,7 +1130,7 @@
           <input type="radio" name="justificationOption" value="withComment"
             [checked]="!justificationProceedWithoutComment()"
             (change)="justificationProceedWithoutComment.set(false)"
-            class="mt-1 w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500" />
+            class="mt-1 w-4 h-4 text-emerald-500 border-gray-300 focus:ring-emerald-400" />
           <div>
             <span class="text-sm font-medium text-gray-700">Cargar de todas formas con comentario</span>
             <p class="text-xs text-gray-500" *ngIf="justificationContext() === 'checkIn'">Dejá un motivo (ej: se le averió el auto, necesitaba refugio, tenía una emergencia familiar...)</p>
@@ -1148,7 +1148,7 @@
           <input type="radio" name="justificationOption" value="withoutComment"
             [checked]="justificationProceedWithoutComment()"
             (change)="justificationProceedWithoutComment.set(true)"
-            class="mt-1 w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500" />
+            class="mt-1 w-4 h-4 text-emerald-500 border-gray-300 focus:ring-emerald-400" />
           <div>
             <span class="text-sm font-medium text-gray-700">Cargar de todas formas sin comentario</span>
             <p class="text-xs text-gray-500">Se registrará una nota genérica en los comentarios indicando la diferencia de fecha.</p>
@@ -1159,7 +1159,7 @@
       <!-- Botones de acción -->
       <div class="flex gap-2 mt-4">
         <button (click)="confirmJustification()"
-          class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-lg transition">
+          class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 rounded-lg transition">
           ✅ Confirmar
         </button>
         <button (click)="closeJustificationModal()"

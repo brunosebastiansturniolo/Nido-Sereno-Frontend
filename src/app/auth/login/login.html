@@ -1,16 +1,17 @@
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 px-4">
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 px-4">
   <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
     <!-- Tutorial Banner - Arriba, grande y llamativo -->
-    <div class="mb-6 p-4 bg-gradient-to-r from-amber-100 to-yellow-100 border-2 border-amber-400 rounded-xl text-center">
-      <p class="text-lg font-bold text-amber-800">🎓 ¿Primera vez en Nido Sereno?</p>
-      <a routerLink="/tutorial" class="inline-block mt-2 px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition shadow-md text-base">
+    <div class="mb-6 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-xl text-center">
+      <p class="text-lg font-bold text-amber-700">🎓 ¿Primera vez en Nido Sereno?</p>
+      <a routerLink="/tutorial" class="inline-block mt-2 px-6 py-2 bg-amber-400 hover:bg-amber-500 text-white font-bold rounded-lg transition shadow-md text-base">
         ¡Probá el tutorial sin necesidad de registrarte!
       </a>
-      <p class="text-xs text-amber-600 mt-1">Aprendé a usar Nido Sereno paso a paso con datos de ejemplo</p>
+      <p class="text-xs text-amber-500 mt-1">Aprendé a usar Nido Sereno paso a paso con datos de ejemplo</p>
     </div>
 
     <div class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-emerald-700">🌿 Nido Sereno</h1>
+      <h1 class="text-3xl font-bold text-emerald-500">🌿 Nido Sereno</h1>
+      <span class="inline-block mt-1 px-2 py-0.5 text-xs font-medium text-gray-400 bg-gray-100 rounded">v0.1.0</span>
       <p class="text-gray-500 mt-2">Iniciá sesión para continuar</p>
     </div>
 
@@ -20,7 +21,7 @@
         <input
           type="email"
           formControlName="email"
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition placeholder:text-gray-400 placeholder:italic"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 outline-none transition placeholder:text-gray-400 placeholder:italic"
           placeholder="tu@email.com"
         />
         <p *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="text-red-500 text-xs mt-1">
@@ -33,7 +34,7 @@
         <input
           type="password"
           formControlName="password"
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition placeholder:text-gray-400 placeholder:italic"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 outline-none transition placeholder:text-gray-400 placeholder:italic"
           placeholder="••••••••"
         />
         <p *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="text-red-500 text-xs mt-1">
@@ -46,7 +47,7 @@
       <button
         type="submit"
         [disabled]="loginForm.invalid || loading"
-        class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition"
+        class="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition"
       >
         <span *ngIf="!loading">Iniciar sesión</span>
         <span *ngIf="loading" class="flex items-center justify-center gap-2">
@@ -60,8 +61,8 @@
     </form>
 
     <div class="space-y-2 text-center text-sm text-gray-500 mt-6">
-      <p>¿No tenés cuenta? <a routerLink="/register" class="text-emerald-600 hover:underline">Registrate</a></p>
-      <p>¿No activaste tu cuenta? <a routerLink="/activate-account" class="text-emerald-600 hover:underline">Activar cuenta</a></p>
+      <p>¿No tenés cuenta? <a routerLink="/register" class="text-emerald-500 hover:underline">Registrate</a></p>
+      <p>¿No activaste tu cuenta? <a routerLink="/activate-account" class="text-emerald-500 hover:underline">Activar cuenta</a></p>
     </div>
 
   </div>
