@@ -166,17 +166,19 @@ export class StaysComponent implements OnInit {
    */
   dateNotInFuture(): (control: AbstractControl) => Promise<ValidationErrors | null> {
     return (control: AbstractControl): Promise<ValidationErrors | null> => {
-      return Promise.resolve(() => {
-        const value = control.value;
-        if (!value) return null;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const birthDate = new Date(value);
-        if (birthDate > today) {
-          return { dateInFuture: true };
-        }
-        return null;
-      })();
+      return Promise.resolve(
+        (() => {
+          const value = control.value;
+          if (!value) return null;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const birthDate = new Date(value);
+          if (birthDate > today) {
+            return { dateInFuture: true };
+          }
+          return null;
+        })()
+      );
     };
   }
 

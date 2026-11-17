@@ -60,7 +60,18 @@ export class DepartmentsComponent implements OnInit {
   }
 
   onCreate(): void {
-    const request: DepartmentRequest = this.createForm.value as DepartmentRequest;
+    const formVal = this.createForm.value;
+    const request: DepartmentRequest = {
+      nombre: formVal.nombre || '',
+      numeroHabitaciones: formVal.numeroHabitaciones || 0,
+      precioPorNoche: formVal.precioPorNoche || 0,
+      tamañoM2: formVal.tamañoM2 || 0,
+      incluyeCochera: formVal.incluyeCochera || false,
+      incluyeDesayuno: formVal.incluyeDesayuno || false,
+      tieneWifi: formVal.tieneWifi || false,
+      tienePileta: formVal.tienePileta || false,
+      complexId: formVal.complexId || 0
+    };
     this.error = '';
     this.success = '';
     this.deptService.createDepartment(request).subscribe({
