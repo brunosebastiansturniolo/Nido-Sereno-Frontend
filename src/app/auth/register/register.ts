@@ -36,9 +36,10 @@ export class RegisterComponent {
 
   error = '';
   success = '';
+  loading = false;
 
   onSubmit(): void {
-    if (this.registerForm.invalid) return;
+    if (this.registerForm.invalid || this.loading) return;
 
     const password = this.registerForm.get('password')?.value;
     const confirmPassword = this.registerForm.get('confirmPassword')?.value;
@@ -47,6 +48,10 @@ export class RegisterComponent {
       this.error = 'Las contraseñas no coinciden';
       return;
     }
+
+    this.loading = true;
+    this.error = '';
+    this.success = '';
 
     const request: RegistrationRequest = {
       firstName: this.registerForm.get('firstName')?.value!,
@@ -59,11 +64,13 @@ export class RegisterComponent {
       next: () => {
         this.success = '¡Registro exitoso! Revisá tu email para activar tu cuenta.';
         this.registerForm.reset();
+        this.loading = false;
         setTimeout(() => this.router.navigate(['/activate-account']), 3000);
       },
       error: (err) => {
         this.error = 'Error al registrar. Intentá de nuevo.';
         console.error(err);
+        this.loading = false;
       }
     });
   }
