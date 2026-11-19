@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { DepartmentService } from '../../services/department.service';
 import { ComplexService } from '../../services/complex.service';
 import { AutoFillService } from '../../services/auto-fill.service';
@@ -11,7 +12,7 @@ import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 @Component({
   selector: 'app-departments',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ErrorModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, ErrorModalComponent, RouterLink],
   templateUrl: './departments.html',
   styleUrl: './departments.css'
 })
@@ -28,6 +29,10 @@ export class DepartmentsComponent implements OnInit {
   success = '';
   showErrorModal = false;
   errorMessage = '';
+
+  get noComplexes(): boolean {
+    return this.complexes.length === 0;
+  }
 
   createForm = this.fb.group({
     nombre: ['', Validators.required],
