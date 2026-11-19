@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ComplexService } from '../../services/complex.service';
+import { AutoFillService } from '../../services/auto-fill.service';
 import { ComplexRequest, ComplexResponse } from '../../models/complex.models';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 
@@ -15,6 +16,7 @@ import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 export class ComplexesComponent implements OnInit {
   private fb = inject(FormBuilder);
   private complexService = inject(ComplexService);
+  private autoFill = inject(AutoFillService);
 
   complexes: ComplexResponse[] = [];
   loading = false;
@@ -68,6 +70,11 @@ export class ComplexesComponent implements OnInit {
   closeErrorModal(): void {
     this.showErrorModal = false;
     this.errorMessage = '';
+  }
+
+  onAutoFill(): void {
+    const data = this.autoFill.autoFillComplex();
+    this.createForm.patchValue(data);
   }
 
   private extractErrorMessage(err: any): string {

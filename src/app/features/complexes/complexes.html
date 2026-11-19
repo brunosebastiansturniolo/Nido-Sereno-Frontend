@@ -19,7 +19,10 @@
         <p *ngIf="createForm.get('ubicacion')?.touched && createForm.get('ubicacion')?.errors?.['required']" class="text-red-500 text-xs mt-1">La ubicación es obligatoria.</p>
       </div>
       <input formControlName="descripcion" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Descripción (opcional)" />
-      <button type="submit" class="w-full md:w-auto bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 lg:py-2 rounded-lg md:col-span-3 text-base lg:text-sm">Crear complejo</button>
+      <div class="md:col-span-3 flex gap-2">
+        <button type="button" (click)="onAutoFill()" class="flex-1 bg-amber-400 hover:bg-amber-500 text-amber-900 font-semibold py-2.5 lg:py-2 rounded-lg transition text-base lg:text-sm">🎲 Rellenar con ejemplo</button>
+        <button type="submit" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 lg:py-2 rounded-lg text-base lg:text-sm">Crear complejo</button>
+      </div>
     </form>
   </div>
 

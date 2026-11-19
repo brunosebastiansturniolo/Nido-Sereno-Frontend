@@ -77,9 +77,12 @@
       </div>
       <div class="md:col-span-3">
         <p *ngIf="success" class="text-emerald-500 text-sm bg-emerald-50 p-2 rounded mb-2">✅ {{ success }}</p>
-        <button type="submit" [disabled]="createForm.invalid" class="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 text-white font-semibold py-2.5 lg:py-2 rounded-lg transition mt-2 text-base lg:text-sm">
-          Crear reserva
-        </button>
+        <div class="flex gap-2">
+          <button type="button" (click)="onAutoFill()" class="flex-1 bg-amber-400 hover:bg-amber-500 text-amber-900 font-semibold py-2.5 lg:py-2 rounded-lg transition text-base lg:text-sm">🎲 Rellenar con ejemplo</button>
+          <button type="submit" [disabled]="createForm.invalid" class="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 text-white font-semibold py-2.5 lg:py-2 rounded-lg transition text-base lg:text-sm">
+            Crear reserva
+          </button>
+        </div>
       </div>
     </form>
   </div>

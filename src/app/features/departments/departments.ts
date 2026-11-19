@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { DepartmentService } from '../../services/department.service';
 import { ComplexService } from '../../services/complex.service';
+import { AutoFillService } from '../../services/auto-fill.service';
 import { DepartmentRequest, DepartmentResponse } from '../../models/department.models';
 import { ComplexResponse } from '../../models/complex.models';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
@@ -18,6 +19,7 @@ export class DepartmentsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private deptService = inject(DepartmentService);
   private complexService = inject(ComplexService);
+  private autoFill = inject(AutoFillService);
 
   departments: DepartmentResponse[] = [];
   complexes: ComplexResponse[] = [];
@@ -91,6 +93,20 @@ export class DepartmentsComponent implements OnInit {
   closeErrorModal(): void {
     this.showErrorModal = false;
     this.errorMessage = '';
+  }
+
+  onAutoFill(): void {
+    const data = this.autoFill.autoFillDepartment();
+    this.createForm.patchValue({
+      nombre: data.nombre,
+      numeroHabitaciones: data.numeroHabitaciones,
+      precioPorNoche: data.precioPorNoche,
+      tamañoM2: data.tamañoM2,
+      incluyeCochera: data.incluyeCochera,
+      incluyeDesayuno: data.incluyeDesayuno,
+      tieneWifi: data.tieneWifi,
+      tienePileta: data.tienePileta
+    } as any);
   }
 
   private extractErrorMessage(err: any): string {

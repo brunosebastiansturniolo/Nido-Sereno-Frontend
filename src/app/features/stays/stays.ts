@@ -11,6 +11,7 @@ import { DepartmentService } from '../../services/department.service';
 import { DepartmentResponse } from '../../models/department.models';
 import { TenantService } from '../../services/tenant.service';
 import { DateControllerService } from '../../services/date-controller.service';
+import { AutoFillService } from '../../services/auto-fill.service';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 import { debounceTime, distinctUntilChanged, switchMap, tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -28,6 +29,7 @@ export class StaysComponent implements OnInit {
   private deptService = inject(DepartmentService);
   private tenantService = inject(TenantService);
   private dateCtrl = inject(DateControllerService);
+  private autoFill = inject(AutoFillService);
   private fb = inject(FormBuilder);
 
   stays: StayResponse[] = [];
@@ -389,25 +391,11 @@ export class StaysComponent implements OnInit {
     this.selectedReservation = reservation;
     this.useReservanteAsTenant = false;
 
-    // Prellenar la fecha de check-in con la fecha de la reserva + hora actual
-    // IMPORTANTE: reservation.fechaCheckIn es "YYYY-MM-DD" (LocalDate del backend).
-    // new Date("2026-12-01") lo interpreta como UTC midnight, lo que en Argentina (UTC-3)
-    // da 30/11/2026 21:00 — un día antes. Por eso parseamos manualmente los componentes.
-    const now = new Date();
-    const parts = reservation.fechaCheckIn.split('-');
-    const year = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1; // JavaScript months: 0-11
-    const day = parseInt(parts[2], 10);
-    const checkInDateTime = new Date(
-      year,
-      month,
-      day,
-      now.getHours(),
-      now.getMinutes()
-    );
-
+    // Prellenar la fecha de check-in con la fecha simulada actual (no la fecha de la reserva).
+    // Así, si la fecha simulada no coincide con la fecha de la reserva, la validación
+    // en onCheckInFromReservation() detectará la diferencia y mostrará el modal de justificación.
     this.existingForm.get('fechaHoraCheckInReal')?.setValue(
-      checkInDateTime.toISOString().slice(0, 16),
+      this.dateCtrl.getDateTimeStr(),
       { emitEvent: false }
     );
 
@@ -723,6 +711,55 @@ export class StaysComponent implements OnInit {
   closeErrorModal(): void {
     this.showErrorModal = false;
     this.errorMessage = '';
+  }
+
+  // ----------------------------------------------------------------------
+  // Auto-relleno con datos de ejemplo
+  // ----------------------------------------------------------------------
+
+  onAutoFillExpress(): void {
+    const tenant = this.autoFill.autoFillTenant();
+    this.expressForm.patchValue({
+      cantidadPersonas: 1,
+      cantidadVehiculos: Math.floor(Math.random() * 2),
+      comentariosCheckIn: ''
+    });
+    // Rellenar el primer tenant
+    const tenants = this.expressForm.get('tenants') as FormArray;
+    if (tenants.at(0)) {
+      tenants.at(0).patchValue(tenant);
+    }
+  }
+
+  onAutoFillExisting(): void {
+    const tenant = this.autoFill.autoFillTenant();
+    this.existingForm.patchValue({
+      comentariosCheckIn: ''
+    });
+    // Rellenar el primer tenant
+    const tenants = this.existingForm.get('tenants') as FormArray;
+    if (tenants.at(0)) {
+      tenants.at(0).patchValue(tenant);
+    }
+  }
+
+  onAutoFillRetroactive(): void {
+    const tenant = this.autoFill.autoFillTenant();
+    this.retroactiveForm.patchValue({
+      cantidadPersonas: 1,
+      cantidadVehiculos: Math.floor(Math.random() * 2),
+      comentariosCheckIn: ''
+    });
+    // Rellenar el primer tenant
+    const tenants = this.retroactiveForm.get('tenants') as FormArray;
+    if (tenants.at(0)) {
+      tenants.at(0).patchValue(tenant);
+    }
+  }
+
+  onAutoFillCheckout(): void {
+    const data = this.autoFill.autoFillCheckout();
+    this.checkoutForm.patchValue(data);
   }
 
   private extractErrorMessage(err: any): string {

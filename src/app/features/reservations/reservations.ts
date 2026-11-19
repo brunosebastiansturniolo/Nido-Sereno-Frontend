@@ -6,6 +6,7 @@ import { ReservationRequest, ReservationResponse } from '../../models/reservatio
 import { DepartmentService } from '../../services/department.service';
 import { DepartmentResponse } from '../../models/department.models';
 import { DateControllerService } from '../../services/date-controller.service';
+import { AutoFillService } from '../../services/auto-fill.service';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 
 @Component({
@@ -19,6 +20,7 @@ export class ReservationsComponent implements OnInit {
   private resService = inject(ReservationService);
   private deptService = inject(DepartmentService);
   private dateCtrl = inject(DateControllerService);
+  private autoFill = inject(AutoFillService);
   private fb = inject(FormBuilder);
 
   reservations: ReservationResponse[] = [];
@@ -221,6 +223,11 @@ export class ReservationsComponent implements OnInit {
   closeErrorModal(): void {
     this.showErrorModal = false;
     this.errorMessage = '';
+  }
+
+  onAutoFill(): void {
+    const data = this.autoFill.autoFillReservation();
+    this.createForm.patchValue(data);
   }
 
   private extractErrorMessage(err: any): string {

@@ -228,9 +228,12 @@
           </div>
         </div>
 
-        <button type="submit" [disabled]="expressForm.invalid" class="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition">
-          Realizar Check-In Express
-        </button>
+        <div class="flex gap-2">
+          <button type="button" (click)="onAutoFillExpress()" class="flex-1 bg-amber-400 hover:bg-amber-500 text-amber-900 font-semibold py-2 rounded-lg transition">🎲 Rellenar inquilino</button>
+          <button type="submit" [disabled]="expressForm.invalid" class="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition">
+            Realizar Check-In Express
+          </button>
+        </div>
       </form>
     </div>
 
@@ -406,9 +409,12 @@
           </div>
         </div>
 
-        <button type="submit" [disabled]="existingForm.invalid" class="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition">
-          Realizar Check-In
-        </button>
+        <div class="flex gap-2">
+          <button type="button" (click)="onAutoFillExisting()" class="flex-1 bg-amber-400 hover:bg-amber-500 text-amber-900 font-semibold py-2 rounded-lg transition">🎲 Rellenar inquilino</button>
+          <button type="submit" [disabled]="existingForm.invalid" class="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition">
+            Realizar Check-In
+          </button>
+        </div>
       </form>
     </div>
 
@@ -557,9 +563,12 @@
           </div>
         </div>
 
-        <button type="submit" [disabled]="retroactiveForm.invalid" class="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition">
-          Cargar estadía retroactiva
-        </button>
+        <div class="flex gap-2">
+          <button type="button" (click)="onAutoFillRetroactive()" class="flex-1 bg-amber-400 hover:bg-amber-500 text-amber-900 font-semibold py-2 rounded-lg transition">🎲 Rellenar inquilino</button>
+          <button type="submit" [disabled]="retroactiveForm.invalid" class="flex-1 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition">
+            Cargar estadía retroactiva
+          </button>
+        </div>
       </form>
     </div>
   </div>
@@ -616,6 +625,7 @@
       </div>
 
       <div class="flex gap-2">
+        <button type="button" (click)="onAutoFillCheckout()" class="flex-1 bg-amber-400 hover:bg-amber-500 text-amber-900 font-semibold py-2 rounded-lg transition">🎲 Rellenar con ejemplo</button>
         <button type="submit" [disabled]="checkoutForm.invalid" class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition">
           Confirmar Check-out
         </button>
