@@ -81,7 +81,7 @@ export class DashboardComponent implements OnInit {
           confirmed: reservations.filter(r => r.estado === 'CONFIRMED').length,
           checkedIn: reservations.filter(r => r.estado === 'CHECKED_IN').length,
           completed: reservations.filter(r => r.estado === 'COMPLETED').length,
-          cancelled: reservations.filter(r => r.estado === 'CANCELLED').length
+          cancelled: reservations.filter(r => r.estado === 'CANCELED' || r.estado === 'CANCELLED').length
         };
         this.checkLoadingComplete();
       },

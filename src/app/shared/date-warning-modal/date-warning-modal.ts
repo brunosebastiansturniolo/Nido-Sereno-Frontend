@@ -40,6 +40,7 @@ import { CommonModule } from '@angular/common';
             <li>Las fechas de <strong>check-in</strong> y <strong>check-out</strong> se validarán contra la <strong>fecha simulada</strong>, no la fecha real.</li>
             <li>El backend usará la fecha simulada para crear reservas y estadías.</li>
             <li>Los formularios se pre-llenarán con la fecha simulada.</li>
+            <li>El <strong>dashboard</strong> no se ve afectado por la fecha simulada y siempre mostrará el estado actual del complejo.</li>
           </ul>
           <p class="text-sm text-amber-900 leading-relaxed mt-2 font-semibold">
             ¿Deseás continuar con el simulador activado?
