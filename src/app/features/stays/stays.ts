@@ -85,6 +85,10 @@ export class StaysComponent implements OnInit {
   selectedDepartmentPrice: number | null = null;
   calculatedNights: number | null = null;
   calculatedTotal: number | null = null;
+  
+  // Variables para cálculo de precio en retroactivo
+  retroactiveSelectedDepartmentPrice: number | null = null;
+  retroactiveCalculatedTotal: number | null = null;
 
   ngOnInit(): void {
     this.loadStays();
@@ -133,20 +137,31 @@ export class StaysComponent implements OnInit {
       cantidadNoches: [null, [Validators.min(1)]],
       cantidadPersonas: [1, [Validators.required, Validators.min(1)]],
       cantidadVehiculos: [0, [Validators.min(0)]],
+      precioTotal: [null],
+      montoSenia: [null],
       comentariosCheckIn: [''],
+      classificationScore: [null, [Validators.min(1), Validators.max(5)]],
+      classificationReviewComment: [''],
       tenants: this.fb.array([this.createTenant()])
     }, { validators: this.checkoutAfterCheckInValidator() });
 
-    // Cuando cambian las fechas del retroactivo, calcular las noches
+    // Cuando cambian las fechas del retroactivo, calcular las noches y el precio
     this.retroactiveForm.get('fechaCheckIn')!.valueChanges.subscribe(() => {
       this.calculateRetroactiveNights();
+      this.calculateRetroactivePricing();
     });
     this.retroactiveForm.get('fechaCheckOut')!.valueChanges.subscribe(() => {
       this.calculateRetroactiveNights();
+      this.calculateRetroactivePricing();
     });
-    // Cuando cambia la cantidad de noches, ajustar el check-out
+    // Cuando cambia la cantidad de noches, ajustar el check-out y el precio
     this.retroactiveForm.get('cantidadNoches')!.valueChanges.subscribe((nights: number | null) => {
       this.onRetroactiveNightsChange(nights);
+      this.calculateRetroactivePricing();
+    });
+    // Cuando cambia el departamento, recalcular el precio
+    this.retroactiveForm.get('departmentId')!.valueChanges.subscribe(() => {
+      this.calculateRetroactivePricing();
     });
 
     this.checkoutForm = this.fb.group({
@@ -539,8 +554,12 @@ export class StaysComponent implements OnInit {
       fechaCheckOut: formValue.fechaCheckOut,
       cantidadPersonas: formValue.cantidadPersonas,
       cantidadVehiculos: formValue.cantidadVehiculos,
+      precioTotal: formValue.precioTotal,
+      montoSenia: formValue.montoSenia,
       comentariosCheckIn: formValue.comentariosCheckIn,
-      tenants: formValue.tenants as TenantRequest[]
+      tenants: formValue.tenants as TenantRequest[],
+      classificationScore: formValue.classificationScore,
+      classificationReviewComment: formValue.classificationReviewComment
     };
     this.error = '';
     this.success = '';
@@ -604,6 +623,35 @@ export class StaysComponent implements OnInit {
     if (diffDays > 0) {
       this.retroactiveForm.get('cantidadNoches')?.setValue(diffDays, { emitEvent: false });
     }
+  }
+
+  /**
+   * Calcula el precio total automáticamente para la estadía retroactiva.
+   * Usa el precioPorNoche del departamento seleccionado y la cantidad de noches.
+   */
+  calculateRetroactivePricing(): void {
+    const deptId = this.retroactiveForm.get('departmentId')?.value;
+    const nights = this.retroactiveForm.get('cantidadNoches')?.value;
+
+    if (!deptId || !nights || nights < 1) {
+      this.retroactiveSelectedDepartmentPrice = null;
+      this.retroactiveCalculatedTotal = null;
+      this.retroactiveForm.get('precioTotal')?.setValue(null, { emitEvent: false });
+      return;
+    }
+
+    // Buscar el precio por noche del departamento seleccionado
+    const dept = this.departments.find(d => d.id === deptId);
+    if (!dept || !dept.precioPorNoche) {
+      this.retroactiveSelectedDepartmentPrice = null;
+      this.retroactiveCalculatedTotal = null;
+      this.retroactiveForm.get('precioTotal')?.setValue(null, { emitEvent: false });
+      return;
+    }
+
+    this.retroactiveSelectedDepartmentPrice = dept.precioPorNoche;
+    this.retroactiveCalculatedTotal = nights * dept.precioPorNoche;
+    this.retroactiveForm.get('precioTotal')?.setValue(this.retroactiveCalculatedTotal, { emitEvent: false });
   }
 
   /**

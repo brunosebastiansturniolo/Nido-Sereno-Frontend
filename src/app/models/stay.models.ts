@@ -60,4 +60,6 @@ export interface RetroactiveStayRequest {
   tenants: TenantRequest[];
   reservanteFirstName?: string;
   reservanteLastName?: string;
+  classificationScore?: number;
+  classificationReviewComment?: string;
 }
