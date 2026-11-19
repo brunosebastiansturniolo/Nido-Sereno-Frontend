@@ -84,6 +84,7 @@
 
     <!-- Check-In Express -->
     <div *ngIf="checkInMode === 'express'">
+      <p *ngIf="noDepartments" class="text-amber-600 text-sm bg-amber-50 p-3 rounded-lg mb-4">⚠️ No tenés ningún departamento creado. Necesitás al menos un departamento para poder hacer check-in. <a routerLink="/dashboard/departments" class="underline font-semibold hover:text-amber-700">Ir a Departamentos</a></p>
       <p class="text-sm text-gray-500 mb-4">Registrá una estadía sin reserva previa. Se creará la reserva y la estadía automáticamente.</p>
       <form (ngSubmit)="onCheckInExpress()" [formGroup]="expressForm" class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -239,6 +240,7 @@
 
     <!-- Check-In desde Reserva -->
     <div *ngIf="checkInMode === 'existing'">
+      <p *ngIf="noReservations" class="text-amber-600 text-sm bg-amber-50 p-3 rounded-lg mb-4">⚠️ No tenés ninguna reserva disponible. Necesitás al menos una reserva para poder hacer check-in desde una reserva existente. <a routerLink="/dashboard/reservations" class="underline font-semibold hover:text-amber-700">Ir a Reservas</a></p>
       <p class="text-sm text-gray-500 mb-4">Seleccioná una reserva existente para hacer check-in.</p>
       <form (ngSubmit)="onCheckInFromReservation()" [formGroup]="existingForm" class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -420,6 +422,7 @@
 
     <!-- Cargar estadía retroactiva (historial) -->
     <div *ngIf="checkInMode === 'retroactive'">
+      <p *ngIf="noDepartments" class="text-amber-600 text-sm bg-amber-50 p-3 rounded-lg mb-4">⚠️ No tenés ningún departamento creado. Necesitás al menos un departamento para poder cargar una estadía retroactiva. <a routerLink="/dashboard/departments" class="underline font-semibold hover:text-amber-700">Ir a Departamentos</a></p>
       <p class="text-sm text-amber-500 mb-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
         📋 Usá esta opción para cargar alquileres que tenías anotados en papel. Podés elegir cualquier fecha, incluso en el pasado.
       </p>

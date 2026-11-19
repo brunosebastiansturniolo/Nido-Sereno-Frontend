@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { StayService } from '../../services/stay.service';
 import { StayResponse, StayRequest, StayFinalizationRequest, CheckInRequest, RetroactiveStayRequest } from '../../models/stay.models';
 import { TenantRequest, TenantSearchResponse } from '../../models/tenant.models';
@@ -19,7 +20,7 @@ import { of } from 'rxjs';
 @Component({
   selector: 'app-stays',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, ErrorModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ErrorModalComponent, RouterLink],
   templateUrl: './stays.html',
   styleUrl: './stays.css'
 })
@@ -41,6 +42,14 @@ export class StaysComponent implements OnInit {
   checkoutStayId: number | null = null;
   showErrorModal = false;
   errorMessage = '';
+
+  get noDepartments(): boolean {
+    return this.departments.length === 0;
+  }
+
+  get noReservations(): boolean {
+    return this.reservations.length === 0;
+  }
 
   // Modal de justificación de fecha
   showJustificationModal = false;
