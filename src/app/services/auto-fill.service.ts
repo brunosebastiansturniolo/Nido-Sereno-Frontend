@@ -105,15 +105,25 @@ export class AutoFillService {
   } {
     const firstName = randomFrom(nombres);
     const lastName = randomFrom(apellidos);
+    // Generar una fecha de nacimiento donde la persona tenga entre 18 y 80 años
+    // respecto a la fecha actual (no usar años fijos como 1980-1999)
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // 1-12
+    const currentDay = now.getDate();
+    const age = 18 + Math.floor(Math.random() * 63); // 18-80 años
+    let birthYear = currentYear - age;
+    let birthMonth = 1 + Math.floor(Math.random() * 12); // 1-12
+    let birthDay = 1 + Math.floor(Math.random() * 28); // 1-28 (seguro para todos los meses)
     return {
       documentNumber: randomDNI(),
       firstName,
       lastName,
       email: randomEmail(firstName, lastName),
       phoneNumber: randomPhone(),
-      dateOfBirth: '19' + (80 + Math.floor(Math.random() * 30)) + '-' +
-                   String(1 + Math.floor(Math.random() * 12)).padStart(2, '0') + '-' +
-                   String(1 + Math.floor(Math.random() * 28)).padStart(2, '0')
+      dateOfBirth: String(birthYear) + '-' +
+                   String(birthMonth).padStart(2, '0') + '-' +
+                   String(birthDay).padStart(2, '0')
     };
   }
 

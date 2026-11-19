@@ -727,7 +727,15 @@ export class StaysComponent implements OnInit {
     // Rellenar el primer tenant
     const tenants = this.expressForm.get('tenants') as FormArray;
     if (tenants.at(0)) {
-      tenants.at(0).patchValue(tenant);
+      const tenantControl = tenants.at(0) as FormGroup;
+      tenantControl.patchValue(tenant, { emitEvent: false });
+      // Marcar controles como dirty y touched, y re-evaluar validators (incluyendo async)
+      Object.keys(tenantControl.controls).forEach(key => {
+        const control = tenantControl.get(key);
+        control?.markAsDirty();
+        control?.markAsTouched();
+        control?.updateValueAndValidity({ emitEvent: false });
+      });
     }
   }
 
@@ -739,7 +747,15 @@ export class StaysComponent implements OnInit {
     // Rellenar el primer tenant
     const tenants = this.existingForm.get('tenants') as FormArray;
     if (tenants.at(0)) {
-      tenants.at(0).patchValue(tenant);
+      const tenantControl = tenants.at(0) as FormGroup;
+      tenantControl.patchValue(tenant, { emitEvent: false });
+      // Marcar controles como dirty y touched, y re-evaluar validators (incluyendo async)
+      Object.keys(tenantControl.controls).forEach(key => {
+        const control = tenantControl.get(key);
+        control?.markAsDirty();
+        control?.markAsTouched();
+        control?.updateValueAndValidity({ emitEvent: false });
+      });
     }
   }
 
@@ -753,7 +769,15 @@ export class StaysComponent implements OnInit {
     // Rellenar el primer tenant
     const tenants = this.retroactiveForm.get('tenants') as FormArray;
     if (tenants.at(0)) {
-      tenants.at(0).patchValue(tenant);
+      const tenantControl = tenants.at(0) as FormGroup;
+      tenantControl.patchValue(tenant, { emitEvent: false });
+      // Marcar controles como dirty y touched, y re-evaluar validators (incluyendo async)
+      Object.keys(tenantControl.controls).forEach(key => {
+        const control = tenantControl.get(key);
+        control?.markAsDirty();
+        control?.markAsTouched();
+        control?.updateValueAndValidity({ emitEvent: false });
+      });
     }
   }
 
