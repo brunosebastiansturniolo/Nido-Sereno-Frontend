@@ -411,7 +411,7 @@
 
         <div class="flex gap-2">
           <button type="button" (click)="onAutoFillExisting()" class="flex-1 bg-amber-400 hover:bg-amber-500 text-amber-900 font-semibold py-2 rounded-lg transition">🎲 Rellenar inquilino</button>
-          <button type="submit" [disabled]="existingForm.invalid" class="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition">
+          <button type="submit" [disabled]="existingForm.invalid || existingForm.status === 'PENDING'" class="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition">
             Realizar Check-In
           </button>
         </div>

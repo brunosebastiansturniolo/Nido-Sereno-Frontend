@@ -228,6 +228,13 @@ export class ReservationsComponent implements OnInit {
   onAutoFill(): void {
     const data = this.autoFill.autoFillReservation();
     this.createForm.patchValue(data);
+
+    // Seleccionar un departamento aleatorio si hay departamentos disponibles
+    if (this.departments.length > 0) {
+      const randomDept = this.departments[Math.floor(Math.random() * this.departments.length)];
+      this.createForm.get('departmentId')?.setValue(randomDept.id, { emitEvent: true });
+      // emitEvent: true dispara calculateSmartPricing() que calcula noches, precio total y seña
+    }
   }
 
   private extractErrorMessage(err: any): string {
