@@ -451,16 +451,19 @@ export class StaysComponent implements OnInit {
     if (this.existingForm.invalid) return;
     const formValue = this.existingForm.value;
 
-    // Check if check-in date matches the reservation's check-in date
+    // Check if check-in date matches the reservation's check-in date.
+    // Usamos la fecha del simulador (dateCtrl.getDateStr()) como referencia,
+    // igual que el tutorial, para que la validación funcione correctamente
+    // incluso si el usuario editó manualmente el campo datetime-local.
     if (this.selectedReservation) {
-      const checkInDateFromForm = formValue.fechaHoraCheckInReal.slice(0, 10); // YYYY-MM-DD
-      if (checkInDateFromForm !== this.selectedReservation.fechaCheckIn) {
+      const simDate = this.dateCtrl.getDateStr(); // YYYY-MM-DD (simulada o real según switch)
+      if (simDate !== this.selectedReservation.fechaCheckIn) {
         // Show justification modal instead of blocking
-        const direction = checkInDateFromForm < this.selectedReservation.fechaCheckIn ? 'antes' : 'después';
+        const direction = simDate < this.selectedReservation.fechaCheckIn ? 'antes' : 'después';
         this.justificationContext = 'checkIn';
         this.justificationMessage =
           `📅 La reserva tiene fecha de check-in: <strong>${this.selectedReservation.fechaCheckIn}</strong>. ` +
-          `El huésped llegó <strong>${direction}</strong> del día planeado (fecha de check-in: <strong>${checkInDateFromForm}</strong>).`;
+          `El huésped llegó <strong>${direction}</strong> del día planeado (fecha actual: <strong>${simDate}</strong>).`;
         this.justificationComment = '';
         this.justificationProceedWithoutComment = false;
 
@@ -602,17 +605,19 @@ export class StaysComponent implements OnInit {
     if (this.checkoutForm.invalid) return;
     const formValue = this.checkoutForm.value;
 
-    // Check if check-out date matches the planned check-out date
+    // Check if check-out date matches the planned check-out date.
+    // Usamos la fecha del simulador (dateCtrl.getDateStr()) como referencia,
+    // igual que el tutorial, para que la validación funcione correctamente.
     const stay = this.stays.find(s => s.id === stayId);
     if (stay && stay.fechaCheckOutPlaneada) {
-      const checkOutDateFromForm = formValue.fechaHoraCheckOutReal.slice(0, 10); // YYYY-MM-DD
-      if (checkOutDateFromForm !== stay.fechaCheckOutPlaneada) {
+      const simDate = this.dateCtrl.getDateStr(); // YYYY-MM-DD (simulada o real según switch)
+      if (simDate !== stay.fechaCheckOutPlaneada) {
         // Show justification modal instead of blocking
-        const direction = checkOutDateFromForm < stay.fechaCheckOutPlaneada ? 'antes' : 'después';
+        const direction = simDate < stay.fechaCheckOutPlaneada ? 'antes' : 'después';
         this.justificationContext = 'checkout';
         this.justificationMessage =
           `📅 La estadía tiene fecha de check-out planeada: <strong>${stay.fechaCheckOutPlaneada}</strong>. ` +
-          `El huésped se va <strong>${direction}</strong> del día planeado (fecha de check-out: <strong>${checkOutDateFromForm}</strong>).`;
+          `El huésped se va <strong>${direction}</strong> del día planeado (fecha actual: <strong>${simDate}</strong>).`;
         this.justificationComment = '';
         this.justificationProceedWithoutComment = false;
 
