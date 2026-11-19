@@ -522,6 +522,17 @@ export class StaysComponent implements OnInit {
   onCreateRetroactive(): void {
     if (this.retroactiveForm.invalid) return;
     const formValue = this.retroactiveForm.value;
+
+    // Validar que la fecha de check-out no sea posterior a la fecha actual
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    const checkOutDate = new Date(formValue.fechaCheckOut);
+    if (checkOutDate > today) {
+      this.errorMessage = 'No se pueden cargar estadías retroactivas con fecha de check-out en el futuro.';
+      this.showErrorModal = true;
+      return;
+    }
+
     const request: RetroactiveStayRequest = {
       departmentId: formValue.departmentId,
       fechaCheckIn: formValue.fechaCheckIn,

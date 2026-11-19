@@ -7,6 +7,7 @@ const calles = ['Av. San Martín', 'Calle Belgrano', 'Av. Rivadavia', 'Calle Mit
 const ciudades = ['Bariloche', 'Mar del Plata', 'Buenos Aires', 'Córdoba', 'Rosario', 'Mendoza'];
 const nombresComplejo = ['Los Arrayanes', 'El Mirador', 'Villa Serena', 'Las Garzas', 'Sol y Luna', 'El Bosque'];
 const nombresDepto = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'D1', 'D2'];
+const dominiosEmail = ['gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com', 'mail.com', 'protonmail.com'];
 
 function randomFrom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -21,7 +22,8 @@ function randomPhone(): string {
 }
 
 function randomEmail(first: string, last: string): string {
-  return `${first.toLowerCase()}.${last.toLowerCase()}@email.com`;
+  const domain = randomFrom(dominiosEmail);
+  return `${first.toLowerCase()}.${last.toLowerCase()}@${domain}`;
 }
 
 @Injectable({
