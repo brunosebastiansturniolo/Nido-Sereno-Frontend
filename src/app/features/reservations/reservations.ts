@@ -5,6 +5,7 @@ import { ReservationService } from '../../services/reservation.service';
 import { ReservationRequest, ReservationResponse } from '../../models/reservation.models';
 import { DepartmentService } from '../../services/department.service';
 import { DepartmentResponse } from '../../models/department.models';
+import { DateControllerService } from '../../services/date-controller.service';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 
 @Component({
@@ -17,6 +18,7 @@ import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 export class ReservationsComponent implements OnInit {
   private resService = inject(ReservationService);
   private deptService = inject(DepartmentService);
+  private dateCtrl = inject(DateControllerService);
   private fb = inject(FormBuilder);
 
   reservations: ReservationResponse[] = [];
@@ -44,8 +46,8 @@ export class ReservationsComponent implements OnInit {
       phoneNumber: ['', [Validators.required]],
       cantidadPersonas: [1, [Validators.required, Validators.min(1)]],
       cantidadVehiculos: [null, [Validators.min(0)]],
-      fechaCheckIn: ['', [Validators.required]],
-      fechaCheckOut: ['', [Validators.required]],
+      fechaCheckIn: [this.dateCtrl.getDateStr(), [Validators.required]],
+      fechaCheckOut: [this.dateCtrl.getDateStrOffset(1), [Validators.required]],
       cantidadNoches: [null, [Validators.min(1)]],
       departmentId: [null, [Validators.required]],
       precioTotal: [null, [Validators.min(0)]],

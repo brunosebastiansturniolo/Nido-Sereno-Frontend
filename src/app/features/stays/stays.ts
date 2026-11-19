@@ -10,6 +10,7 @@ import { ReservationResponse } from '../../models/reservation.models';
 import { DepartmentService } from '../../services/department.service';
 import { DepartmentResponse } from '../../models/department.models';
 import { TenantService } from '../../services/tenant.service';
+import { DateControllerService } from '../../services/date-controller.service';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 import { debounceTime, distinctUntilChanged, switchMap, tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -26,6 +27,7 @@ export class StaysComponent implements OnInit {
   private resService = inject(ReservationService);
   private deptService = inject(DepartmentService);
   private tenantService = inject(TenantService);
+  private dateCtrl = inject(DateControllerService);
   private fb = inject(FormBuilder);
 
   stays: StayResponse[] = [];
@@ -80,7 +82,7 @@ export class StaysComponent implements OnInit {
 
     this.expressForm = this.fb.group({
       departmentId: [null, [Validators.required]],
-      fechaHoraCheckInReal: [new Date().toISOString().slice(0, 16)],
+      fechaHoraCheckInReal: [this.dateCtrl.getDateTimeStr()],
       fechaCheckOutPlaneada: ['', [Validators.required]],
       cantidadPersonas: [1, [Validators.required, Validators.min(1)]],
       cantidadVehiculos: [0, [Validators.min(0)]],
@@ -103,7 +105,7 @@ export class StaysComponent implements OnInit {
 
     this.existingForm = this.fb.group({
       reservationId: [null, [Validators.required]],
-      fechaHoraCheckInReal: [new Date().toISOString().slice(0, 16)],
+      fechaHoraCheckInReal: [this.dateCtrl.getDateTimeStr()],
       comentariosCheckIn: [''],
       tenants: this.fb.array([this.createTenant()])
     });
@@ -137,7 +139,7 @@ export class StaysComponent implements OnInit {
     });
 
     this.checkoutForm = this.fb.group({
-      fechaHoraCheckOutReal: [new Date().toISOString().slice(0, 16)],
+      fechaHoraCheckOutReal: [this.dateCtrl.getDateTimeStr()],
       comentariosCheckOut: [''],
       estadoDepartamento: ['GOOD', [Validators.required]],
       classificationScore: [null, [Validators.required, Validators.min(1), Validators.max(5)]],
@@ -336,7 +338,7 @@ export class StaysComponent implements OnInit {
       next: () => {
         this.success = 'Check-in express realizado exitosamente.';
         this.expressForm.reset({
-          fechaHoraCheckInReal: new Date().toISOString().slice(0, 16),
+          fechaHoraCheckInReal: this.dateCtrl.getDateTimeStr(),
           cantidadPersonas: 1,
           cantidadVehiculos: 0
         });
@@ -503,7 +505,7 @@ export class StaysComponent implements OnInit {
         this.success = 'Check-in realizado exitosamente.';
         this.selectedReservation = null;
         this.existingForm.reset({
-          fechaHoraCheckInReal: new Date().toISOString().slice(0, 16)
+          fechaHoraCheckInReal: this.dateCtrl.getDateTimeStr()
         });
         while (this.existingTenants.length > 1) this.existingTenants.removeAt(1);
         this.loadStays();
@@ -657,7 +659,7 @@ export class StaysComponent implements OnInit {
       next: () => {
         this.success = 'Check-out realizado exitosamente.';
         this.checkoutForm.reset({
-          fechaHoraCheckOutReal: new Date().toISOString().slice(0, 16),
+          fechaHoraCheckOutReal: this.dateCtrl.getDateTimeStr(),
           estadoDepartamento: 'GOOD'
         });
         this.loadStays();

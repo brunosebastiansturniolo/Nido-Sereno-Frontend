@@ -1,6 +1,8 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { DateControllerService } from '../services/date-controller.service';
 import { catchError, Observable, throwError, from } from 'rxjs';
 
 let isRefreshing = false;
@@ -8,19 +10,30 @@ let refreshTokenPromise: Promise<void> | null = null;
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+  const router = inject(Router);
+  const dateCtrl = inject(DateControllerService);
   const token = localStorage.getItem('token');
 
-  // No agregar Authorization a /refresh-token para evitar bucle infinito
-  if (req.url.includes('/refresh-token')) {
+  // No procesar rutas de autenticación: login, registro, activación, refresh
+  if (req.url.includes('/authenticate') || req.url.includes('/register') ||
+      req.url.includes('/activate-account') || req.url.includes('/refresh-token')) {
     return next(req);
   }
 
   let cloned = req;
+  const headers: { [key: string]: string } = {};
   if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  // Si el simulador de fecha está activo, enviar el header X-Simulated-Date
+  if (dateCtrl.enabled()) {
+    headers['X-Simulated-Date'] = dateCtrl.simulatedDateTimeStr();
+  }
+
+  if (Object.keys(headers).length > 0) {
     cloned = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
+      setHeaders: headers
     });
   }
 
@@ -52,7 +65,8 @@ function handle401Error(
           isRefreshing = false;
           refreshTokenPromise = null;
           authService.logout();
-          window.location.href = '/#/login';
+          const router = inject(Router);
+          router.navigate(['/login']);
           reject(err);
         }
       });
