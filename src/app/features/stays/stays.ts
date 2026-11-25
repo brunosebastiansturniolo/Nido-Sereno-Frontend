@@ -14,6 +14,7 @@ import { TenantService } from '../../services/tenant.service';
 import { DateControllerService } from '../../services/date-controller.service';
 import { AutoFillService } from '../../services/auto-fill.service';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
+import { addNightsToDate, calculateNightCount } from '../../shared/pricing.utils';
 import { debounceTime, distinctUntilChanged, switchMap, tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -117,6 +118,7 @@ export class StaysComponent implements OnInit {
         this.calculateExpressPricing();
       });
     });
+    this.calculateExpressPricing();
 
     this.existingForm = this.fb.group({
       reservationId: [null, [Validators.required]],
@@ -163,6 +165,7 @@ export class StaysComponent implements OnInit {
     this.retroactiveForm.get('departmentId')!.valueChanges.subscribe(() => {
       this.calculateRetroactivePricing();
     });
+    this.calculateRetroactivePricing();
 
     this.checkoutForm = this.fb.group({
       fechaHoraCheckOutReal: [this.dateCtrl.getDateTimeStr()],
@@ -283,7 +286,11 @@ export class StaysComponent implements OnInit {
 
   loadDepartments(): void {
     this.deptService.getMyDepartments().subscribe({
-      next: (data) => { this.departments = data; },
+      next: (data) => {
+        this.departments = data;
+        if (this.expressForm) this.calculateExpressPricing();
+        if (this.retroactiveForm) this.calculateRetroactivePricing();
+      },
       error: (err) => console.error(err)
     });
   }
@@ -294,9 +301,7 @@ export class StaysComponent implements OnInit {
   getExpressCheckOutMinDate(): string {
     const checkIn = this.expressForm.get('fechaHoraCheckInReal')?.value;
     if (!checkIn) return '';
-    const dateIn = new Date(checkIn);
-    dateIn.setDate(dateIn.getDate() + 1);
-    return dateIn.toISOString().slice(0, 10);
+    return addNightsToDate(checkIn, 1);
   }
 
   /**
@@ -307,39 +312,16 @@ export class StaysComponent implements OnInit {
     const deptId = this.expressForm.get('departmentId')?.value;
     const checkOut = this.expressForm.get('fechaCheckOutPlaneada')?.value;
     const checkIn = this.expressForm.get('fechaHoraCheckInReal')?.value;
+    const dept = this.departments.find(d => d.id === Number(deptId));
+    this.selectedDepartmentPrice = dept?.precioPorNoche ?? null;
+    this.calculatedNights = calculateNightCount(checkIn, checkOut);
+    this.calculatedTotal = this.selectedDepartmentPrice !== null && this.calculatedNights !== null
+      ? this.calculatedNights * this.selectedDepartmentPrice
+      : null;
 
-    if (!deptId || !checkOut || !checkIn) {
-      this.selectedDepartmentPrice = null;
-      this.calculatedNights = null;
-      this.calculatedTotal = null;
-      return;
-    }
-
-    // Buscar el precio por noche del departamento seleccionado
-    const dept = this.departments.find(d => d.id === deptId);
-    if (!dept || !dept.precioPorNoche) {
-      this.selectedDepartmentPrice = null;
-      this.calculatedNights = null;
-      this.calculatedTotal = null;
-      return;
-    }
-
-    this.selectedDepartmentPrice = dept.precioPorNoche;
-
-    // Calcular la cantidad de noches
-    const dateIn = new Date(checkIn);
-    const dateOut = new Date(checkOut);
-    const diffTime = dateOut.getTime() - dateIn.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays > 0) {
-      this.calculatedNights = diffDays;
-      this.calculatedTotal = diffDays * dept.precioPorNoche;
-      this.expressForm.get('precioTotal')?.setValue(this.calculatedTotal, { emitEvent: false });
-    } else {
-      this.calculatedNights = null;
-      this.calculatedTotal = null;
-      this.expressForm.get('precioTotal')?.setValue(null, { emitEvent: false });
+    const priceControl = this.expressForm.get('precioTotal');
+    if (priceControl?.pristine) {
+      priceControl.setValue(this.calculatedTotal, { emitEvent: false });
     }
   }
 
@@ -368,6 +350,7 @@ export class StaysComponent implements OnInit {
           cantidadPersonas: 1,
           cantidadVehiculos: 0
         });
+        this.calculateExpressPricing();
         while (this.expressTenants.length > 1) this.expressTenants.removeAt(1);
         this.loadStays();
       },
@@ -571,6 +554,7 @@ export class StaysComponent implements OnInit {
           cantidadVehiculos: 0,
           cantidadNoches: null
         });
+        this.calculateRetroactivePricing();
         while (this.retroactiveTenants.length > 1) this.retroactiveTenants.removeAt(1);
         this.loadStays();
       },
@@ -603,9 +587,7 @@ export class StaysComponent implements OnInit {
   getRetroactiveCheckOutMinDate(): string {
     const checkIn = this.retroactiveForm.get('fechaCheckIn')?.value;
     if (!checkIn) return '';
-    const dateIn = new Date(checkIn);
-    dateIn.setDate(dateIn.getDate() + 1);
-    return dateIn.toISOString().slice(0, 10);
+    return addNightsToDate(checkIn, 1);
   }
 
   /**
@@ -614,15 +596,7 @@ export class StaysComponent implements OnInit {
   calculateRetroactiveNights(): void {
     const checkIn = this.retroactiveForm.get('fechaCheckIn')?.value;
     const checkOut = this.retroactiveForm.get('fechaCheckOut')?.value;
-    if (!checkIn || !checkOut) return;
-
-    const dateIn = new Date(checkIn);
-    const dateOut = new Date(checkOut);
-    const diffTime = dateOut.getTime() - dateIn.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays > 0) {
-      this.retroactiveForm.get('cantidadNoches')?.setValue(diffDays, { emitEvent: false });
-    }
+    this.retroactiveForm.get('cantidadNoches')?.setValue(calculateNightCount(checkIn, checkOut), { emitEvent: false });
   }
 
   /**
@@ -631,27 +605,18 @@ export class StaysComponent implements OnInit {
    */
   calculateRetroactivePricing(): void {
     const deptId = this.retroactiveForm.get('departmentId')?.value;
-    const nights = this.retroactiveForm.get('cantidadNoches')?.value;
+    const nights = Number(this.retroactiveForm.get('cantidadNoches')?.value);
 
-    if (!deptId || !nights || nights < 1) {
-      this.retroactiveSelectedDepartmentPrice = null;
-      this.retroactiveCalculatedTotal = null;
-      this.retroactiveForm.get('precioTotal')?.setValue(null, { emitEvent: false });
-      return;
+    const dept = this.departments.find(d => d.id === Number(deptId));
+    this.retroactiveSelectedDepartmentPrice = dept?.precioPorNoche ?? null;
+    this.retroactiveCalculatedTotal = Number.isFinite(nights) && nights >= 1 && this.retroactiveSelectedDepartmentPrice !== null
+      ? nights * this.retroactiveSelectedDepartmentPrice
+      : null;
+
+    const priceControl = this.retroactiveForm.get('precioTotal');
+    if (priceControl?.pristine) {
+      priceControl.setValue(this.retroactiveCalculatedTotal, { emitEvent: false });
     }
-
-    // Buscar el precio por noche del departamento seleccionado
-    const dept = this.departments.find(d => d.id === deptId);
-    if (!dept || !dept.precioPorNoche) {
-      this.retroactiveSelectedDepartmentPrice = null;
-      this.retroactiveCalculatedTotal = null;
-      this.retroactiveForm.get('precioTotal')?.setValue(null, { emitEvent: false });
-      return;
-    }
-
-    this.retroactiveSelectedDepartmentPrice = dept.precioPorNoche;
-    this.retroactiveCalculatedTotal = nights * dept.precioPorNoche;
-    this.retroactiveForm.get('precioTotal')?.setValue(this.retroactiveCalculatedTotal, { emitEvent: false });
   }
 
   /**
@@ -662,11 +627,9 @@ export class StaysComponent implements OnInit {
     const checkIn = this.retroactiveForm.get('fechaCheckIn')?.value;
     if (!checkIn || !nights || nights < 1) return;
 
-    const dateIn = new Date(checkIn);
-    const dateOut = new Date(dateIn);
-    dateOut.setDate(dateOut.getDate() + nights);
-
-    this.retroactiveForm.get('fechaCheckOut')?.setValue(dateOut.toISOString().slice(0, 10), { emitEvent: false });
+    const checkOut = addNightsToDate(checkIn, nights);
+    if (!checkOut) return;
+    this.retroactiveForm.get('fechaCheckOut')?.setValue(checkOut, { emitEvent: false });
   }
 
   onCheckout(stayId: number): void {

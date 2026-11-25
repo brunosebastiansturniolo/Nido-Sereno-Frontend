@@ -12,6 +12,7 @@ import {
   TutorialTenant,
   TutorialStay
 } from '../../services/tutorial/tutorial.models';
+import { calculateNightCount } from '../../shared/pricing.utils';
 
 export type TutorialSection = 'welcome' | 'hierarchy' | 'flow' | 'dashboard' | 'complexes' | 'departments' | 'reservations' | 'stays' | 'tenants';
 
@@ -106,6 +107,8 @@ export class TutorialComponent {
     precioTotal: 0,
     montoSenia: 0
   });
+  private reservationPriceManuallyModified = false;
+  private reservationDepositManuallyModified = false;
   tenantForm = signal({
     documentNumber: '',
     firstName: '',
@@ -179,6 +182,7 @@ export class TutorialComponent {
       fechaCheckIn: this.dateController.getDateStrOffset(1),
       fechaCheckOut: this.dateController.getDateStrOffset(4)
     }));
+    this.calculateReservationPricing();
   }
 
   addDays(days: number): void {
@@ -188,6 +192,7 @@ export class TutorialComponent {
       fechaCheckIn: this.dateController.getDateStrOffset(1),
       fechaCheckOut: this.dateController.getDateStrOffset(4)
     }));
+    this.calculateReservationPricing();
   }
 
   resetDate(): void {
@@ -197,6 +202,7 @@ export class TutorialComponent {
       fechaCheckIn: this.dateController.getDateStrOffset(1),
       fechaCheckOut: this.dateController.getDateStrOffset(4)
     }));
+    this.calculateReservationPricing();
   }
 
   // ==========================================
@@ -221,6 +227,9 @@ export class TutorialComponent {
 
   startInteractiveFlow(): void {
     this.tutorialService.resetAll();
+    this.reservationPriceManuallyModified = false;
+    this.reservationDepositManuallyModified = false;
+    this.calculateReservationPricing();
     this.flowStep.set(0);
     this.navigate('flow');
     this.showInfoModal(
@@ -303,20 +312,20 @@ export class TutorialComponent {
 
   autoFillReservationForm(): void {
     const filled = this.tutorialService.autoFillReservation();
-    const dept = this.tutorialService.departments().find(d => d.id === this.selectedDepartmentId());
     const checkIn = this.dateController.getDateStrOffset(1);
     const checkOut = this.dateController.getDateStrOffset(4);
-    const nights = 3;
-    const precioTotal = dept ? dept.precioPorNoche * nights : 30000;
+    this.reservationPriceManuallyModified = false;
+    this.reservationDepositManuallyModified = false;
 
     this.reservationForm.set({
       ...filled,
       fechaCheckIn: checkIn,
       fechaCheckOut: checkOut,
       departmentId: this.selectedDepartmentId(),
-      precioTotal,
-      montoSenia: Math.floor(precioTotal * 0.3)
+      precioTotal: 0,
+      montoSenia: 0
     });
+    this.calculateReservationPricing();
   }
 
   createReservation(): void {
@@ -548,6 +557,9 @@ export class TutorialComponent {
 
   resetTutorial(): void {
     this.tutorialService.resetAll();
+    this.reservationPriceManuallyModified = false;
+    this.reservationDepositManuallyModified = false;
+    this.calculateReservationPricing();
     this.flowStep.set(0);
     this.selectedComplexId.set(0);
     this.selectedDepartmentId.set(0);
@@ -634,12 +646,40 @@ export class TutorialComponent {
   setResLastName(v: string): void { this.reservationForm.update(f => ({...f, lastName: v})); }
   setResDNI(v: string): void { this.reservationForm.update(f => ({...f, documentNumber: v})); }
   setResPhone(v: string): void { this.reservationForm.update(f => ({...f, phoneNumber: v})); }
-  setResCheckIn(v: string): void { this.reservationForm.update(f => ({...f, fechaCheckIn: v})); }
-  setResCheckOut(v: string): void { this.reservationForm.update(f => ({...f, fechaCheckOut: v})); }
-  setResDeptId(v: number): void { this.reservationForm.update(f => ({...f, departmentId: v})); }
+  setResCheckIn(v: string): void {
+    this.reservationForm.update(f => ({...f, fechaCheckIn: v}));
+    this.calculateReservationPricing();
+  }
+  setResCheckOut(v: string): void {
+    this.reservationForm.update(f => ({...f, fechaCheckOut: v}));
+    this.calculateReservationPricing();
+  }
+  setResDeptId(v: number): void {
+    this.reservationForm.update(f => ({...f, departmentId: Number(v)}));
+    this.calculateReservationPricing();
+  }
   setResPersonas(v: number): void { this.reservationForm.update(f => ({...f, cantidadPersonas: v})); }
-  setResPrecio(v: number): void { this.reservationForm.update(f => ({...f, precioTotal: v})); }
-  setResSenia(v: number): void { this.reservationForm.update(f => ({...f, montoSenia: v})); }
+  setResPrecio(v: number): void {
+    this.reservationPriceManuallyModified = true;
+    this.reservationForm.update(f => ({...f, precioTotal: v}));
+  }
+  setResSenia(v: number): void {
+    this.reservationDepositManuallyModified = true;
+    this.reservationForm.update(f => ({...f, montoSenia: v}));
+  }
+
+  private calculateReservationPricing(): void {
+    const form = this.reservationForm();
+    const department = this.tutorialService.departments().find(d => d.id === Number(form.departmentId));
+    const nights = calculateNightCount(form.fechaCheckIn, form.fechaCheckOut);
+    const total = department && nights !== null ? department.precioPorNoche * nights : 0;
+
+    this.reservationForm.update(current => ({
+      ...current,
+      precioTotal: this.reservationPriceManuallyModified ? current.precioTotal : total,
+      montoSenia: this.reservationDepositManuallyModified ? current.montoSenia : Math.floor(total * 0.3)
+    }));
+  }
 
   // Tenant form
   setTenantDNI(v: string): void { this.tenantForm.update(f => ({...f, documentNumber: v})); }

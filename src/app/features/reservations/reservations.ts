@@ -9,6 +9,7 @@ import { DepartmentResponse } from '../../models/department.models';
 import { DateControllerService } from '../../services/date-controller.service';
 import { AutoFillService } from '../../services/auto-fill.service';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
+import { addNightsToDate, calculateNightCount } from '../../shared/pricing.utils';
 
 @Component({
   selector: 'app-reservations',
@@ -40,8 +41,6 @@ export class ReservationsComponent implements OnInit {
   selectedDepartmentPrice: number | null = null;
   calculatedNights: number | null = null;
   calculatedTotal: number | null = null;
-  private userModifiedCheckOut = false; // Bandera para saber si el usuario modificó manualmente el check-out
-  private userModifiedNights = false; // Bandera para saber si el usuario modificó manualmente las noches
 
   ngOnInit(): void {
     this.loadReservations();
@@ -61,7 +60,7 @@ export class ReservationsComponent implements OnInit {
       montoSenia: [null, [Validators.min(0)]]
     });
 
-    // Calcular precio total automáticamente cuando cambian las fechas o el departamento
+    // Recalcular cuando cambian las fechas o el departamento
     const controlsToWatch = [
       this.createForm.get('departmentId')!,
       this.createForm.get('fechaCheckIn')!,
@@ -74,20 +73,12 @@ export class ReservationsComponent implements OnInit {
       });
     });
 
-    // Cuando el usuario cambia la cantidad de noches, ajustar la fecha de check-out
+    // Cuando el usuario cambia las noches, ajustar el check-out y recalcular
     this.createForm.get('cantidadNoches')!.valueChanges.subscribe((nights: number | null) => {
       this.onNightsChange(nights);
     });
 
-    // Detectar si el usuario modificó manualmente el check-out
-    this.createForm.get('fechaCheckOut')!.valueChanges.subscribe(() => {
-      this.userModifiedCheckOut = true;
-    });
-
-    // Detectar si el usuario modificó manualmente las noches
-    this.createForm.get('cantidadNoches')!.valueChanges.subscribe(() => {
-      this.userModifiedNights = true;
-    });
+    this.calculateSmartPricing();
   }
 
   /**
@@ -95,17 +86,13 @@ export class ReservationsComponent implements OnInit {
    * Se suma la cantidad de noches a la fecha de check-in.
    */
   onNightsChange(nights: number | null): void {
-    if (!this.userModifiedNights) return; // Solo si fue el usuario quien cambió las noches manualmente
     const checkIn = this.createForm.get('fechaCheckIn')?.value;
-    if (!checkIn || !nights || nights < 1) return;
+    if (!checkIn || nights === null || !Number.isFinite(nights) || nights < 1) return;
 
-    const dateIn = new Date(checkIn);
-    const dateOut = new Date(dateIn);
-    dateOut.setDate(dateOut.getDate() + nights);
-
-    this.createForm.get('fechaCheckOut')?.setValue(dateOut.toISOString().slice(0, 10), { emitEvent: false });
-    this.userModifiedCheckOut = false;
-    this.userModifiedNights = false;
+    const checkOut = addNightsToDate(checkIn, nights);
+    if (!checkOut) return;
+    this.createForm.get('fechaCheckOut')?.setValue(checkOut, { emitEvent: false });
+    this.calculateSmartPricing();
   }
 
   /**
@@ -114,14 +101,15 @@ export class ReservationsComponent implements OnInit {
   getCheckOutMinDate(): string {
     const checkIn = this.createForm.get('fechaCheckIn')?.value;
     if (!checkIn) return '';
-    const dateIn = new Date(checkIn);
-    dateIn.setDate(dateIn.getDate() + 1);
-    return dateIn.toISOString().slice(0, 10);
+    return addNightsToDate(checkIn, 1);
   }
 
   loadDepartments(): void {
     this.deptService.getMyDepartments().subscribe({
-      next: (data) => { this.departments = data; },
+      next: (data) => {
+        this.departments = data;
+        if (this.createForm) this.calculateSmartPricing();
+      },
       error: (err) => console.error(err)
     });
   }
@@ -165,8 +153,6 @@ export class ReservationsComponent implements OnInit {
         this.selectedDepartmentPrice = null;
         this.calculatedNights = null;
         this.calculatedTotal = null;
-        this.userModifiedCheckOut = false;
-        this.userModifiedNights = false;
         this.loadReservations();
       },
       error: (err) => {
@@ -188,40 +174,33 @@ export class ReservationsComponent implements OnInit {
 
     // Buscar el precio por noche del departamento seleccionado
     if (deptId) {
-      const dept = this.departments.find(d => d.id === deptId);
+      const dept = this.departments.find(d => d.id === Number(deptId));
       this.selectedDepartmentPrice = dept?.precioPorNoche ?? null;
     } else {
       this.selectedDepartmentPrice = null;
     }
 
     // Calcular cantidad de noches
-    if (checkIn && checkOut) {
-      const dateIn = new Date(checkIn);
-      const dateOut = new Date(checkOut);
-      const diffTime = dateOut.getTime() - dateIn.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      this.calculatedNights = diffDays > 0 ? diffDays : null;
-      // Actualizar el campo cantidadNoches si no fue modificado manualmente por el usuario
-      if (this.calculatedNights && !this.userModifiedCheckOut && !this.userModifiedNights) {
-        this.createForm.get('cantidadNoches')?.setValue(this.calculatedNights, { emitEvent: false });
-      }
-    } else {
-      this.calculatedNights = null;
-    }
+    this.calculatedNights = calculateNightCount(checkIn, checkOut);
+    this.createForm.get('cantidadNoches')?.setValue(this.calculatedNights, { emitEvent: false });
 
     // Calcular precio total = precio por noche × cantidad de noches
-    if (this.selectedDepartmentPrice && this.calculatedNights) {
+    if (this.selectedDepartmentPrice !== null && this.calculatedNights !== null) {
       this.calculatedTotal = this.selectedDepartmentPrice * this.calculatedNights;
-      // Si el usuario no ha modificado manualmente el precio total, lo prellenamos
-      if (this.createForm.get('precioTotal')?.value == null) {
+      if (this.createForm.get('precioTotal')?.pristine) {
         this.createForm.get('precioTotal')?.setValue(this.calculatedTotal, { emitEvent: false });
       }
-      // La señal por defecto es el precio por noche
-      if (this.createForm.get('montoSenia')?.value == null) {
+      if (this.createForm.get('montoSenia')?.pristine) {
         this.createForm.get('montoSenia')?.setValue(this.selectedDepartmentPrice, { emitEvent: false });
       }
     } else {
       this.calculatedTotal = null;
+      if (this.createForm.get('precioTotal')?.pristine) {
+        this.createForm.get('precioTotal')?.setValue(null, { emitEvent: false });
+      }
+      if (this.createForm.get('montoSenia')?.pristine) {
+        this.createForm.get('montoSenia')?.setValue(this.selectedDepartmentPrice, { emitEvent: false });
+      }
     }
   }
 
@@ -232,6 +211,8 @@ export class ReservationsComponent implements OnInit {
 
   onAutoFill(): void {
     const data = this.autoFill.autoFillReservation();
+    this.createForm.get('precioTotal')?.reset(null, { emitEvent: false });
+    this.createForm.get('montoSenia')?.reset(null, { emitEvent: false });
     this.createForm.patchValue(data);
 
     // Seleccionar un departamento aleatorio si hay departamentos disponibles
