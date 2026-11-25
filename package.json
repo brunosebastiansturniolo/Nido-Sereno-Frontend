@@ -8,7 +8,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:local": "node ./e2e/run-local.mjs",
+    "test:e2e:local:headed": "node ./e2e/run-local.mjs --headed"
   },
   "prettier": {
     "printWidth": 100,
