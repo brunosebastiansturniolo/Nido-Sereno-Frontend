@@ -40,4 +40,12 @@ export class ReservationService {
   cancelReservation(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
+
+  registerDeposit(id: number, monto: number): Observable<ReservationResponse> {
+    return this.http.post<ReservationResponse>(`${this.baseUrl}/${id}/deposit`, { monto });
+  }
+
+  completePayment(id: number): Observable<ReservationResponse> {
+    return this.http.post<ReservationResponse>(`${this.baseUrl}/${id}/complete`, null);
+  }
 }

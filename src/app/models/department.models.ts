@@ -2,6 +2,7 @@ export interface DepartmentRequest {
   nombre: string;
   numeroHabitaciones: number;
   precioPorNoche: number;
+  montoSeniaRequerida: number;
   tamañoM2: number;
   incluyeCochera: boolean;
   incluyeDesayuno: boolean;
@@ -15,6 +16,7 @@ export interface DepartmentResponse {
   nombre: string;
   numeroHabitaciones: number;
   precioPorNoche: number;
+  montoSeniaRequerida: number;
   tamañoM2: number;
   incluyeCochera: boolean;
   incluyeDesayuno: boolean;

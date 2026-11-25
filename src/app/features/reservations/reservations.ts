@@ -39,6 +39,7 @@ export class ReservationsComponent implements OnInit {
 
   createForm!: FormGroup;
   selectedDepartmentPrice: number | null = null;
+  selectedDepartmentDepositMinimum: number | null = null;
   calculatedNights: number | null = null;
   calculatedTotal: number | null = null;
 
@@ -151,6 +152,7 @@ export class ReservationsComponent implements OnInit {
           montoSenia: null
         });
         this.selectedDepartmentPrice = null;
+        this.selectedDepartmentDepositMinimum = null;
         this.calculatedNights = null;
         this.calculatedTotal = null;
         this.loadReservations();
@@ -164,7 +166,7 @@ export class ReservationsComponent implements OnInit {
   }
 
   /**
-   * Calcula automáticamente la cantidad de noches, precio total y señal
+   * Calcula automáticamente la cantidad de noches y el precio total
    * basado en el departamento seleccionado y las fechas.
    */
   calculateSmartPricing(): void {
@@ -176,8 +178,10 @@ export class ReservationsComponent implements OnInit {
     if (deptId) {
       const dept = this.departments.find(d => d.id === Number(deptId));
       this.selectedDepartmentPrice = dept?.precioPorNoche ?? null;
+      this.selectedDepartmentDepositMinimum = dept?.montoSeniaRequerida ?? null;
     } else {
       this.selectedDepartmentPrice = null;
+      this.selectedDepartmentDepositMinimum = null;
     }
 
     // Calcular cantidad de noches
@@ -190,16 +194,10 @@ export class ReservationsComponent implements OnInit {
       if (this.createForm.get('precioTotal')?.pristine) {
         this.createForm.get('precioTotal')?.setValue(this.calculatedTotal, { emitEvent: false });
       }
-      if (this.createForm.get('montoSenia')?.pristine) {
-        this.createForm.get('montoSenia')?.setValue(this.selectedDepartmentPrice, { emitEvent: false });
-      }
     } else {
       this.calculatedTotal = null;
       if (this.createForm.get('precioTotal')?.pristine) {
         this.createForm.get('precioTotal')?.setValue(null, { emitEvent: false });
-      }
-      if (this.createForm.get('montoSenia')?.pristine) {
-        this.createForm.get('montoSenia')?.setValue(this.selectedDepartmentPrice, { emitEvent: false });
       }
     }
   }
@@ -219,7 +217,7 @@ export class ReservationsComponent implements OnInit {
     if (this.departments.length > 0) {
       const randomDept = this.departments[Math.floor(Math.random() * this.departments.length)];
       this.createForm.get('departmentId')?.setValue(randomDept.id, { emitEvent: true });
-      // emitEvent: true dispara calculateSmartPricing() que calcula noches, precio total y seña
+      // emitEvent: true dispara calculateSmartPricing() para calcular noches y precio total
     }
   }
 
@@ -246,5 +244,48 @@ export class ReservationsComponent implements OnInit {
       next: () => this.loadReservations(),
       error: (err) => console.error(err)
     });
+  }
+
+  onDeposit(reservation: ReservationResponse): void {
+    const department = this.departments.find(d => d.id === reservation.departmentId);
+    const paid = reservation.montoSenia || 0;
+    const minimumRemaining = Math.max((department?.montoSeniaRequerida || 0) - paid, 0);
+    const enteredAmount = window.prompt(
+      `Monto de seña a registrar. Falta $${minimumRemaining} para alcanzar la seña mínima de confirmación:`,
+      minimumRemaining > 0 ? String(minimumRemaining) : ''
+    );
+    if (enteredAmount === null) return;
+
+    const amount = Number(enteredAmount.replace(',', '.'));
+    if (!Number.isFinite(amount) || amount <= 0) {
+      this.showActionError('Ingresá un monto mayor a cero.');
+      return;
+    }
+
+    this.resService.registerDeposit(reservation.id, amount).subscribe({
+      next: () => {
+        this.success = 'Seña registrada exitosamente.';
+        this.loadReservations();
+      },
+      error: (err) => this.showActionError(this.extractErrorMessage(err))
+    });
+  }
+
+  onCompletePayment(reservation: ReservationResponse): void {
+    const balance = Math.max(reservation.precioTotal - (reservation.montoSenia || 0), 0);
+    if (!window.confirm(`¿Registrar el pago del saldo de $${balance} y completar esta reserva?`)) return;
+
+    this.resService.completePayment(reservation.id).subscribe({
+      next: () => {
+        this.success = 'Pago completado; la reserva quedó completada.';
+        this.loadReservations();
+      },
+      error: (err) => this.showActionError(this.extractErrorMessage(err))
+    });
+  }
+
+  private showActionError(message: string): void {
+    this.errorMessage = message;
+    this.showErrorModal = true;
   }
 }
