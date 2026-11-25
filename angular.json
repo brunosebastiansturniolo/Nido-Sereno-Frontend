@@ -26,11 +26,11 @@
             ],
             "styles": [
               "src/styles.css"
-            ],
-            "baseHref": "/Nido-Sereno-Frontend/"
+            ]
           },
           "configurations": {
             "production": {
+              "baseHref": "/Nido-Sereno-Frontend/",
               "budgets": [
                 {
                   "type": "initial",

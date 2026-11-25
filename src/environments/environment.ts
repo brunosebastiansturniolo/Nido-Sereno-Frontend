@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://nido-sereno-api-835621842674.southamerica-east1.run.app/api/v1'
+  apiUrl: 'http://localhost:8080/api/v1'
 };
