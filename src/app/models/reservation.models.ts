@@ -27,5 +27,5 @@ export interface ReservationResponse {
   montoSenia: number;
   cantidadNoches: number;
   departmentId: number;
-  departamentoNombre: string;
+  departmentName: string;
 }

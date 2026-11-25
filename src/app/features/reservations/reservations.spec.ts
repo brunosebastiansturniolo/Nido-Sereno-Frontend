@@ -1,19 +1,23 @@
 import { TestBed } from '@angular/core/testing';
 import { FormBuilder } from '@angular/forms';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { DepartmentService } from '../../services/department.service';
 import { DateControllerService } from '../../services/date-controller.service';
 import { ReservationService } from '../../services/reservation.service';
 import { AutoFillService } from '../../services/auto-fill.service';
 import { DepartmentResponse } from '../../models/department.models';
+import { ReservationResponse } from '../../models/reservation.models';
 import { ReservationsComponent } from './reservations';
 
-describe('ReservationsComponent pricing', () => {
+describe('ReservationsComponent', () => {
   let component: ReservationsComponent;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [ReservationsComponent],
       providers: [
+        provideRouter([]),
         FormBuilder,
         { provide: ReservationService, useValue: { getMyReservations: () => of([]) } },
         { provide: DepartmentService, useValue: { getMyDepartments: () => of([]) } },
@@ -46,5 +50,34 @@ describe('ReservationsComponent pricing', () => {
 
     expect(priceControl.value).toBe(12345);
     expect(component.calculatedTotal).toBe(20000);
+  });
+
+  it('shows the associated department in mobile and desktop reservation lists', () => {
+    const fixture = TestBed.createComponent(ReservationsComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.reservations = [{
+      id: 1,
+      firstName: 'Ana',
+      lastName: 'Pérez',
+      documentNumber: '12345678',
+      cantidadPersonas: 1,
+      fechaCheckIn: '2025-01-10',
+      fechaCheckOut: '2025-01-11',
+      cantidadVehiculos: 0,
+      phoneNumber: '11111111',
+      estado: 'PENDING',
+      precioTotal: 10000,
+      montoSenia: 0,
+      cantidadNoches: 1,
+      departmentId: 5,
+      departmentName: 'D2'
+    } as ReservationResponse];
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Departamento: D2');
+    expect(Array.from(fixture.nativeElement.querySelectorAll('th'))
+      .some((header: any) => header.textContent.trim() === 'Departamento')).toBeTrue();
+    expect(Array.from(fixture.nativeElement.querySelectorAll('td'))
+      .some((cell: any) => cell.textContent.trim() === 'D2')).toBeTrue();
   });
 });

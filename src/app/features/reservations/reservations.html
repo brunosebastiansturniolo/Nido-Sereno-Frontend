@@ -115,6 +115,7 @@
           </span>
         </div>
         <div class="flex flex-wrap gap-2 text-xs text-gray-600">
+          <span class="px-2 py-1 bg-purple-50 rounded text-purple-600">Departamento: {{ r.departmentName || 'No disponible' }}</span>
           <span class="px-2 py-1 bg-gray-100 rounded">📅 {{ r.fechaCheckIn }} → {{ r.fechaCheckOut }}</span>
           <span class="px-2 py-1 bg-emerald-50 rounded text-emerald-600">Total: $ {{ r.precioTotal }}</span>
           <span class="px-2 py-1 bg-blue-50 rounded text-blue-600">Pagado: $ {{ r.montoSenia || 0 }}</span>
@@ -131,10 +132,11 @@
     <!-- Vista desktop: tabla -->
     <div *ngIf="!loading && reservations.length > 0" class="hidden md:block overflow-x-auto">
       <table class="w-full text-left">
-        <thead><tr class="border-b"><th class="py-2 px-3 text-sm text-gray-500">Nombre</th><th class="py-2 px-3 text-sm text-gray-500">DNI</th><th class="py-2 px-3 text-sm text-gray-500">Check-in</th><th class="py-2 px-3 text-sm text-gray-500">Check-out</th><th class="py-2 px-3 text-sm text-gray-500">Estado</th><th class="py-2 px-3 text-sm text-gray-500">Total</th><th class="py-2 px-3 text-sm text-gray-500">Pagado</th><th class="py-2 px-3 text-sm text-gray-500">Acciones</th></tr></thead>
+        <thead><tr class="border-b"><th class="py-2 px-3 text-sm text-gray-500">Nombre</th><th class="py-2 px-3 text-sm text-gray-500">Departamento</th><th class="py-2 px-3 text-sm text-gray-500">DNI</th><th class="py-2 px-3 text-sm text-gray-500">Check-in</th><th class="py-2 px-3 text-sm text-gray-500">Check-out</th><th class="py-2 px-3 text-sm text-gray-500">Estado</th><th class="py-2 px-3 text-sm text-gray-500">Total</th><th class="py-2 px-3 text-sm text-gray-500">Pagado</th><th class="py-2 px-3 text-sm text-gray-500">Acciones</th></tr></thead>
         <tbody>
           <tr *ngFor="let r of reservations" class="border-b hover:bg-gray-50">
             <td class="py-2 px-3 text-sm">{{ r.firstName }} {{ r.lastName }}</td>
+            <td class="py-2 px-3 text-sm">{{ r.departmentName || 'No disponible' }}</td>
             <td class="py-2 px-3 text-sm">{{ r.documentNumber }}</td>
             <td class="py-2 px-3 text-sm">{{ r.fechaCheckIn }}</td>
             <td class="py-2 px-3 text-sm">{{ r.fechaCheckOut }}</td>
