@@ -29,6 +29,7 @@ export class DepartmentsComponent implements OnInit {
   success = '';
   showErrorModal = false;
   errorMessage = '';
+  editingDepartmentId: number | null = null;
 
   get noComplexes(): boolean {
     return this.complexes.length === 0;
@@ -66,7 +67,7 @@ export class DepartmentsComponent implements OnInit {
     });
   }
 
-  onCreate(): void {
+  onSubmit(): void {
     const formVal = this.createForm.value;
     const request: DepartmentRequest = {
       nombre: formVal.nombre || '',
@@ -81,16 +82,75 @@ export class DepartmentsComponent implements OnInit {
     };
     this.error = '';
     this.success = '';
-    this.deptService.createDepartment(request).subscribe({
+    const saveRequest = this.editingDepartmentId === null
+      ? this.deptService.createDepartment(request)
+      : this.deptService.updateDepartment(this.editingDepartmentId, request);
+
+    saveRequest.subscribe({
       next: () => {
-        this.success = 'Departamento creado exitosamente.';
+        this.success = this.editingDepartmentId === null
+          ? 'Departamento creado exitosamente.'
+          : 'Departamento actualizado exitosamente.';
         this.loadDepartments();
-        this.createForm.reset();
+        this.cancelEdit();
       },
       error: (err) => {
         this.errorMessage = this.extractErrorMessage(err);
         this.showErrorModal = true;
         console.error(err);
+      }
+    });
+  }
+
+  onEdit(department: DepartmentResponse): void {
+    this.editingDepartmentId = department.id;
+    this.success = '';
+    this.errorMessage = '';
+    this.createForm.patchValue({
+      nombre: department.nombre,
+      numeroHabitaciones: department.numeroHabitaciones,
+      precioPorNoche: department.precioPorNoche,
+      tamañoM2: department.tamañoM2,
+      incluyeCochera: department.incluyeCochera,
+      incluyeDesayuno: department.incluyeDesayuno,
+      tieneWifi: department.tieneWifi,
+      tienePileta: department.tienePileta,
+      complexId: department.complexId
+    } as any);
+  }
+
+  cancelEdit(): void {
+    this.editingDepartmentId = null;
+    this.createForm.reset({
+      nombre: '',
+      numeroHabitaciones: null,
+      precioPorNoche: null,
+      tamañoM2: null,
+      incluyeCochera: false,
+      incluyeDesayuno: false,
+      tieneWifi: false,
+      tienePileta: false,
+      complexId: null
+    });
+  }
+
+  onDelete(department: DepartmentResponse): void {
+    const confirmed = window.confirm(
+      `¿Querés eliminar el departamento "${department.nombre}"? Esta acción es permanente y solo se permite si no tiene reservas ni estadías asociadas.`
+    );
+    if (!confirmed) return;
+
+    this.errorMessage = '';
+    this.success = '';
+    this.deptService.deleteDepartment(department.id).subscribe({
+      next: () => {
+        this.success = 'Departamento eliminado exitosamente.';
+        if (this.editingDepartmentId === department.id) this.cancelEdit();
+        this.loadDepartments();
+      },
+      error: (err) => {
+        this.errorMessage = this.extractErrorMessage(err);
+        this.showErrorModal = true;
       }
     });
   }
