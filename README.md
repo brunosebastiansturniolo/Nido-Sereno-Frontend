@@ -46,13 +46,19 @@ ng test
 
 ## Running end-to-end tests
 
-For end-to-end (e2e) testing, run:
+Playwright uses the installed stable Google Chrome and starts the Angular development server automatically:
 
 ```bash
-ng e2e
+npm run test:e2e
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+To watch the browser perform the test, run:
+
+```bash
+npm run test:e2e:headed
+```
+
+The initial smoke test checks navigation between login and registration and does not submit credentials or call the API. Future tests that exercise backend workflows require the isolated local backend, PostgreSQL, and MailDev to be running.
 
 ## Additional Resources
 
