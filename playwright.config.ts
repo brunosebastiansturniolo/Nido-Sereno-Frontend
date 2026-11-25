@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 import { resolve } from 'node:path';
 
 const localStack = process.env.PLAYWRIGHT_LOCAL_STACK === 'true';
@@ -19,9 +19,11 @@ export default defineConfig({
   reporter: 'list',
   outputDir: './test-results',
   use: {
-    ...devices['Desktop Chrome'],
+    browserName: 'chromium',
+    viewport: { width: 1280, height: 900 },
     channel: 'chrome',
     launchOptions: {
+      args: ['--start-maximized'],
       slowMo: Number(process.env.PLAYWRIGHT_SLOW_MO ?? 0)
     },
     baseURL: `http://${angularHost}:${angularPort}`,
