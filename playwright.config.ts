@@ -21,6 +21,9 @@ export default defineConfig({
   use: {
     ...devices['Desktop Chrome'],
     channel: 'chrome',
+    launchOptions: {
+      slowMo: Number(process.env.PLAYWRIGHT_SLOW_MO ?? 0)
+    },
     baseURL: `http://${angularHost}:${angularPort}`,
     trace: 'retain-on-failure'
   },
