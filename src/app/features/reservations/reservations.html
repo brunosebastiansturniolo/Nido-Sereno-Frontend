@@ -121,9 +121,7 @@
           <span class="px-2 py-1 bg-blue-50 rounded text-blue-600">Pagado: $ {{ r.montoSenia || 0 }}</span>
         </div>
         <div class="mt-2 flex justify-end">
-          <button *ngIf="r.estado === 'PENDING'" (click)="onDeposit(r)" class="text-emerald-700 hover:underline text-xs font-medium mr-3">Señar</button>
-          <button *ngIf="r.estado === 'CONFIRMED'" (click)="onCompletePayment(r)" class="text-blue-700 hover:underline text-xs font-medium mr-3">Completar</button>
-          <button *ngIf="r.estado !== 'CANCELLED' && r.estado !== 'CHECKED_IN' && r.estado !== 'COMPLETED'"
+          <button *ngIf="r.estado !== 'CANCELLED' && r.estado !== 'CHECKED_IN' && r.estado !== 'COMPLETED' && !r.checkInRealizado"
             (click)="onCancel(r.id)" class="text-red-600 hover:underline text-xs font-medium">Cancelar</button>
         </div>
       </div>
@@ -153,9 +151,7 @@
             <td class="py-2 px-3 text-sm">$ {{ r.precioTotal }}</td>
             <td class="py-2 px-3 text-sm">$ {{ r.montoSenia || 0 }}</td>
             <td class="py-2 px-3">
-              <button *ngIf="r.estado === 'PENDING'" (click)="onDeposit(r)" class="text-emerald-700 hover:underline text-sm mr-3">Señar</button>
-              <button *ngIf="r.estado === 'CONFIRMED'" (click)="onCompletePayment(r)" class="text-blue-700 hover:underline text-sm mr-3">Completar</button>
-              <button *ngIf="r.estado !== 'CANCELLED' && r.estado !== 'CHECKED_IN' && r.estado !== 'COMPLETED'"
+              <button *ngIf="r.estado !== 'CANCELLED' && r.estado !== 'CHECKED_IN' && r.estado !== 'COMPLETED' && !r.checkInRealizado"
                 (click)="onCancel(r.id)" class="text-red-600 hover:underline text-sm">Cancelar</button>
             </td>
           </tr>

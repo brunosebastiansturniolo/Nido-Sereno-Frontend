@@ -19,15 +19,14 @@ export interface ReservationSummary {
   total: number;
   pending: number;
   confirmed: number;
-  checkedIn: number;
   completed: number;
   cancelled: number;
 }
 
 export interface StaySummary {
   total: number;
-  checkedIn: number;
-  checkedOut: number;
+  inProgress: number;
+  completed: number;
   pending: number;
 }
 
@@ -49,8 +48,8 @@ export class DashboardComponent implements OnInit {
 
   complexes: ComplexResponse[] = [];
   complexSummaries: ComplexSummary[] = [];
-  reservationSummary: ReservationSummary = { total: 0, pending: 0, confirmed: 0, checkedIn: 0, completed: 0, cancelled: 0 };
-  staySummary: StaySummary = { total: 0, checkedIn: 0, checkedOut: 0, pending: 0 };
+  reservationSummary: ReservationSummary = { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
+  staySummary: StaySummary = { total: 0, inProgress: 0, completed: 0, pending: 0 };
   loading = true;
 
   ngOnInit(): void {
@@ -79,7 +78,6 @@ export class DashboardComponent implements OnInit {
           total: reservations.length,
           pending: reservations.filter(r => r.estado === 'PENDING').length,
           confirmed: reservations.filter(r => r.estado === 'CONFIRMED').length,
-          checkedIn: reservations.filter(r => r.estado === 'CHECKED_IN').length,
           completed: reservations.filter(r => r.estado === 'COMPLETED').length,
           cancelled: reservations.filter(r => r.estado === 'CANCELED' || r.estado === 'CANCELLED').length
         };
@@ -96,9 +94,9 @@ export class DashboardComponent implements OnInit {
       next: (stays) => {
         this.staySummary = {
           total: stays.length,
-          checkedIn: stays.filter(s => s.status === 'ACTIVE').length,
-          checkedOut: stays.filter(s => s.status === 'COMPLETED').length,
-          pending: 0
+          inProgress: stays.filter(s => s.status === 'IN_PROGRESS' || s.status === 'ACTIVE').length,
+          completed: stays.filter(s => s.status === 'COMPLETED').length,
+          pending: stays.filter(s => s.status === 'PENDING').length
         };
         this.checkLoadingComplete();
       },
@@ -122,7 +120,9 @@ export class DashboardComponent implements OnInit {
         const occupiedDeptIds = new Set<number>();
         this.stayService.getMyStays(undefined, undefined, true).subscribe({
           next: (activeStays) => {
-            activeStays.forEach(s => occupiedDeptIds.add(s.departmentId));
+            activeStays
+              .filter(s => s.fechaHoraCheckInReal && !s.fechaHoraCheckOutReal)
+              .forEach(s => occupiedDeptIds.add(s.departmentId));
 
             this.complexSummaries = complexes.map(complex => {
               const complexDepts = departments.filter(d => d.complexId === complex.id);

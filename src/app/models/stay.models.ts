@@ -4,6 +4,7 @@ export interface CheckInRequest {
   reservationId: number;
   fechaHoraCheckInReal: string;
   comentariosCheckIn?: string;
+  montoPagadoEnCheckIn?: number;
   tenants: TenantRequest[];
 }
 
@@ -24,16 +25,21 @@ export interface StayRequest {
 
 export interface StayResponse {
   id: number;
-  fechaHoraCheckInReal: string;
+  fechaHoraCheckInReal?: string | null;
   fechaHoraCheckOutReal?: string;
+  fechaCheckInPlaneada?: string;
   fechaCheckOutPlaneada?: string;
   comentariosCheckIn?: string;
   comentariosCheckOut?: string;
   estadoDepartamento?: string;
-  status: string; // 'ACTIVE' o 'COMPLETED'
+  status: string; // 'PENDING', 'IN_PROGRESS' o 'COMPLETED'
   reservationId?: number;
+  reservanteFirstName?: string;
+  reservanteLastName?: string;
   departmentId: number;
   departamentoNombre?: string;
+  precioTotalReserva?: number | null;
+  montoPagadoReserva?: number | null;
   cantidadNoches?: number;
   tenants?: any[];
   classificationScore?: number;
@@ -44,6 +50,7 @@ export interface StayFinalizationRequest {
   fechaHoraCheckOutReal: string;
   comentariosCheckOut?: string;
   estadoDepartamento: 'GOOD' | 'MINOR_DAMAGE' | 'MAJOR_DAMAGE' | 'CLEANING_REQUIRED';
+  montoPagadoEnCheckOut?: number;
   classificationScore?: number;
   classificationReviewComment?: string;
 }

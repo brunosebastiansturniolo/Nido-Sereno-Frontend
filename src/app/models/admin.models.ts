@@ -6,9 +6,9 @@ export interface AdminStatistics {
   totalTenants: number;
   reservationsPending: number;
   reservationsConfirmed: number;
-  reservationsCheckedIn: number;
   reservationsCompleted: number;
   reservationsCancelled: number;
+  staysPending: number;
   staysActive: number;
   staysCompleted: number;
   averageClassificationScore: number;

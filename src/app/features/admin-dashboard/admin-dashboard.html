@@ -63,13 +63,6 @@
           </div>
           <div class="flex justify-between items-center">
             <span class="flex items-center gap-2">
-              <span class="w-3 h-3 rounded-full bg-blue-400"></span>
-              <span class="text-gray-600">Check-in</span>
-            </span>
-            <span class="font-semibold">{{ statistics.reservationsCheckedIn }}</span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span class="flex items-center gap-2">
               <span class="w-3 h-3 rounded-full bg-gray-400"></span>
               <span class="text-gray-600">Completadas</span>
             </span>
@@ -97,8 +90,15 @@
         <div class="space-y-2 text-sm">
           <div class="flex justify-between items-center">
             <span class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+              <span class="text-gray-600">Pendientes</span>
+            </span>
+            <span class="font-semibold">{{ statistics.staysPending }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="flex items-center gap-2">
               <span class="w-3 h-3 rounded-full bg-green-400"></span>
-              <span class="text-gray-600">Activas</span>
+              <span class="text-gray-600">En progreso</span>
             </span>
             <span class="font-semibold">{{ statistics.staysActive }}</span>
           </div>

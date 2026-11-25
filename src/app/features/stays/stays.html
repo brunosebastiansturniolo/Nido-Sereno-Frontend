@@ -7,6 +7,24 @@
   <!-- Modal de error -->
   <app-error-modal [visible]="showErrorModal" [message]="errorMessage" (closed)="closeErrorModal()"></app-error-modal>
 
+  <div *ngIf="showCheckoutPaymentReminder" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-5">
+      <h2 class="text-lg font-bold text-gray-800 mb-3">Saldo pendiente al hacer check-out</h2>
+      <p class="text-sm text-gray-600 mb-4">
+        El inquilino todavía debe <strong class="text-amber-700">$ {{ getCheckoutOutstandingAmount(pendingCheckoutStayId) }}</strong>.
+        Confirmar registrará ese pago (cobrado por fuera de Nido Sereno) y completará la reserva junto con la estadía.
+      </p>
+      <div class="flex gap-2">
+        <button type="button" (click)="confirmCheckoutPaymentReminder()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 rounded-lg">
+          Registrar saldo y hacer check-out
+        </button>
+        <button type="button" (click)="closeCheckoutPaymentReminder()" class="px-5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg">
+          Volver
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal de justificación de fecha -->
   <div *ngIf="showJustificationModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-4 lg:p-6 max-h-[90vh] overflow-y-auto">
@@ -114,13 +132,13 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Precio total ($)</label>
-            <input formControlName="precioTotal" type="number" min="0" class="w-full px-4 py-2 border rounded-lg bg-gray-50" placeholder="Calculado automáticamente" />
+            <input formControlName="precioTotal" type="number" min="0.01" step="0.01" class="w-full px-4 py-2 border rounded-lg bg-gray-50" placeholder="Calculado automáticamente" />
+            <p *ngIf="expressForm.get('precioTotal')?.touched && expressForm.get('precioTotal')?.errors?.['required']" class="text-red-500 text-xs mt-1">El precio total es obligatorio.</p>
             <p *ngIf="calculatedTotal" class="text-xs text-emerald-500 mt-1">{{ calculatedNights }} noches × ${{ selectedDepartmentPrice }} = ${{ calculatedTotal }}</p>
+            <p *ngIf="expressForm.get('precioTotal')?.touched && expressForm.get('precioTotal')?.errors?.['min']" class="text-red-500 text-xs mt-1">El precio total debe ser mayor a $0.</p>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Seña ($)</label>
-            <input formControlName="montoSenia" type="number" min="0" class="w-full px-4 py-2 border rounded-lg" placeholder="Ej: 15000" />
-            <p *ngIf="expressForm.get('montoSenia')?.value" class="text-xs text-blue-600 mt-1">Resto a pagar: ${{ (expressForm.get('precioTotal')?.value || 0) - (expressForm.get('montoSenia')?.value || 0) }}</p>
+          <div class="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">
+            El check-in express registra el pago total de ${{ expressForm.get('precioTotal')?.value || 0 }} y deja la reserva completada.
           </div>
           <div class="col-span-3">
             <label class="block text-sm font-medium text-gray-700 mb-1">Comentarios del check-in</label>
@@ -278,6 +296,14 @@
               <p class="font-medium">$ {{ selectedReservation.precioTotal }}</p>
             </div>
             <div>
+              <p class="text-gray-500">Pagado hasta ahora</p>
+              <p class="font-medium">$ {{ selectedReservation.montoSenia || 0 }}</p>
+            </div>
+            <div>
+              <p class="text-gray-500">Saldo antes del check-in</p>
+              <p class="font-medium text-amber-700">$ {{ getCheckInOutstandingAmount() }}</p>
+            </div>
+            <div>
               <p class="text-gray-500">Estado</p>
               <p class="font-medium">
                 <span class="px-2 py-1 rounded text-xs font-semibold"
@@ -302,6 +328,12 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Fecha y hora de check-in</label>
             <input formControlName="fechaHoraCheckInReal" type="datetime-local" class="w-full px-4 py-2 border rounded-lg" />
+          </div>
+          <div *ngIf="selectedReservation">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Pago recibido en el check-in ($)</label>
+            <input formControlName="montoPagadoEnCheckIn" type="number" min="0" step="0.01" [max]="getCheckInOutstandingAmount()" class="w-full px-4 py-2 border rounded-lg" />
+            <p class="text-xs text-gray-500 mt-1">Se registra aquí el importe cobrado al llegar. Saldo tras este pago: <strong class="text-amber-700">$ {{ getCheckInOutstandingAfterPayment() }}</strong>.</p>
+            <p *ngIf="existingForm.get('montoPagadoEnCheckIn')?.touched && existingForm.get('montoPagadoEnCheckIn')?.errors?.['max']" class="text-red-500 text-xs mt-1">El pago no puede superar el saldo pendiente.</p>
           </div>
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Comentarios del check-in</label>
@@ -686,25 +718,27 @@
           <div class="flex-1 min-w-0">
             <h3 class="font-semibold text-gray-800 text-sm">
               <span *ngIf="s.tenants && s.tenants.length">{{ s.tenants[0].firstName }} {{ s.tenants[0].lastName }}</span>
-              <span *ngIf="!s.tenants || !s.tenants.length">Sin inquilino</span>
+              <span *ngIf="(!s.tenants || !s.tenants.length) && s.reservanteFirstName">{{ s.reservanteFirstName }} {{ s.reservanteLastName }}</span>
+              <span *ngIf="(!s.tenants || !s.tenants.length) && !s.reservanteFirstName">Sin inquilino</span>
               <span *ngIf="s.tenants && s.tenants.length > 1" class="text-xs text-gray-500">(+{{ s.tenants.length - 1 }} más)</span>
             </h3>
           </div>
           <span class="px-2 py-1 rounded text-xs font-semibold ml-2 flex-shrink-0"
-            [class.bg-green-100]="s.status==='ACTIVE'"
+            [class.bg-yellow-100]="s.status==='PENDING'"
+            [class.bg-green-100]="s.status==='IN_PROGRESS' || s.status==='ACTIVE'"
             [class.bg-blue-100]="s.status==='COMPLETED'">
-            {{ s.status === 'ACTIVE' ? 'En curso' : 'Finalizado' }}
+            {{ s.status === 'PENDING' ? 'Pendiente' : s.status === 'COMPLETED' ? 'Completada' : (s.fechaHoraCheckInReal ? 'En curso' : 'Programada') }}
           </span>
         </div>
         <div class="flex flex-wrap gap-2 text-xs text-gray-600">
-          <span class="px-2 py-1 bg-gray-100 rounded">📅 {{ formatDate(s.fechaHoraCheckInReal) }}</span>
+          <span class="px-2 py-1 bg-gray-100 rounded">📅 {{ s.fechaHoraCheckInReal ? formatDate(s.fechaHoraCheckInReal) : (s.fechaCheckInPlaneada ? formatDate(s.fechaCheckInPlaneada) : '—') }}</span>
           <span *ngIf="s.fechaHoraCheckOutReal" class="px-2 py-1 bg-gray-100 rounded">→ {{ formatDate(s.fechaHoraCheckOutReal) }}</span>
           <span *ngIf="s.classificationScore" class="px-2 py-1 bg-amber-50 rounded text-amber-600">
             {{ '⭐'.repeat(s.classificationScore) }} ({{ s.classificationScore }}/5)
           </span>
         </div>
         <div class="mt-2 flex justify-end">
-          <button *ngIf="s.status === 'ACTIVE'"
+          <button *ngIf="(s.status === 'IN_PROGRESS' || s.status === 'ACTIVE') && s.fechaHoraCheckInReal"
             (click)="checkoutStayId = s.id" class="text-blue-600 hover:underline text-xs font-medium">Check-out</button>
         </div>
       </div>
@@ -723,13 +757,14 @@
         </tr></thead>
         <tbody>
           <tr *ngFor="let s of stays" class="border-b hover:bg-gray-50">
-            <td class="py-2 px-3 text-sm">{{ formatDate(s.fechaHoraCheckInReal) }}</td>
+            <td class="py-2 px-3 text-sm">{{ s.fechaHoraCheckInReal ? formatDate(s.fechaHoraCheckInReal) : (s.fechaCheckInPlaneada ? formatDate(s.fechaCheckInPlaneada) : '—') }}</td>
             <td class="py-2 px-3 text-sm">{{ s.fechaHoraCheckOutReal ? formatDate(s.fechaHoraCheckOutReal) : '—' }}</td>
             <td class="py-2 px-3">
               <span class="px-2 py-1 rounded text-xs font-semibold"
-                [class.bg-green-100]="s.status==='ACTIVE'"
+                [class.bg-yellow-100]="s.status==='PENDING'"
+                [class.bg-green-100]="s.status==='IN_PROGRESS' || s.status==='ACTIVE'"
                 [class.bg-blue-100]="s.status==='COMPLETED'">
-                {{ s.status === 'ACTIVE' ? 'En curso' : 'Finalizado' }}
+                {{ s.status === 'PENDING' ? 'Pendiente' : s.status === 'COMPLETED' ? 'Completada' : (s.fechaHoraCheckInReal ? 'En curso' : 'Programada') }}
               </span>
             </td>
             <td class="py-2 px-3 text-sm">
@@ -737,7 +772,8 @@
                 {{ s.tenants[0].firstName }} {{ s.tenants[0].lastName }}
                 <span *ngIf="s.tenants.length > 1">(+{{ s.tenants.length - 1 }} más)</span>
               </span>
-              <span *ngIf="!s.tenants || !s.tenants.length">—</span>
+              <span *ngIf="(!s.tenants || !s.tenants.length) && s.reservanteFirstName">{{ s.reservanteFirstName }} {{ s.reservanteLastName }}</span>
+              <span *ngIf="(!s.tenants || !s.tenants.length) && !s.reservanteFirstName">—</span>
             </td>
             <td class="py-2 px-3">
               <span *ngIf="s.classificationScore" class="text-sm">
@@ -746,7 +782,7 @@
               <span *ngIf="!s.classificationScore" class="text-gray-400 text-sm">—</span>
             </td>
             <td class="py-2 px-3">
-              <button *ngIf="s.status === 'ACTIVE'"
+              <button *ngIf="(s.status === 'IN_PROGRESS' || s.status === 'ACTIVE') && s.fechaHoraCheckInReal"
                 (click)="checkoutStayId = s.id" class="text-blue-600 hover:underline text-sm">Check-out</button>
             </td>
           </tr>

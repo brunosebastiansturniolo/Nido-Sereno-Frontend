@@ -60,6 +60,7 @@ export class StaysComponent implements OnInit {
   justificationProceedWithoutComment = false;
   // Datos temporales para procesar después del modal
   pendingCheckInRequest: CheckInRequest | null = null;
+  showCheckoutPaymentReminder = false;
   pendingCheckoutStayId: number | null = null;
   pendingCheckoutRequest: StayFinalizationRequest | null = null;
 
@@ -102,8 +103,7 @@ export class StaysComponent implements OnInit {
       fechaCheckOutPlaneada: ['', [Validators.required]],
       cantidadPersonas: [1, [Validators.required, Validators.min(1)]],
       cantidadVehiculos: [0, [Validators.min(0)]],
-      precioTotal: [null],
-      montoSenia: [null],
+      precioTotal: [null, [Validators.required, Validators.min(0.01)]],
       comentariosCheckIn: [''],
       tenants: this.fb.array([this.createTenant()])
     });
@@ -124,6 +124,7 @@ export class StaysComponent implements OnInit {
       reservationId: [null, [Validators.required]],
       fechaHoraCheckInReal: [this.dateCtrl.getDateTimeStr()],
       comentariosCheckIn: [''],
+      montoPagadoEnCheckIn: [0, [Validators.min(0)]],
       tenants: this.fb.array([this.createTenant()])
     });
 
@@ -278,7 +279,9 @@ export class StaysComponent implements OnInit {
   loadReservations(): void {
     this.resService.getMyReservations().subscribe({
       next: (data) => {
-        this.reservations = data.filter(r => r.estado === 'PENDING' || r.estado === 'CONFIRMED');
+        this.reservations = data.filter(r =>
+          (r.estado === 'PENDING' || r.estado === 'CONFIRMED') && !r.checkInRealizado
+        );
       },
       error: (err) => console.error(err)
     });
@@ -336,7 +339,7 @@ export class StaysComponent implements OnInit {
       cantidadPersonas: formValue.cantidadPersonas,
       cantidadVehiculos: formValue.cantidadVehiculos,
       precioTotal: formValue.precioTotal,
-      montoSenia: formValue.montoSenia,
+      montoSenia: formValue.precioTotal,
       comentariosCheckIn: formValue.comentariosCheckIn,
       tenants: formValue.tenants as TenantRequest[]
     };
@@ -380,6 +383,9 @@ export class StaysComponent implements OnInit {
     if (!reservationId) {
       this.selectedReservation = null;
       this.useReservanteAsTenant = false;
+      this.existingForm.get('montoPagadoEnCheckIn')?.setValue(0, { emitEvent: false });
+      this.existingForm.get('montoPagadoEnCheckIn')?.setValidators([Validators.min(0), Validators.max(0)]);
+      this.existingForm.get('montoPagadoEnCheckIn')?.updateValueAndValidity({ emitEvent: false });
       return;
     }
 
@@ -392,11 +398,16 @@ export class StaysComponent implements OnInit {
     if (!reservation) {
       this.selectedReservation = null;
       this.useReservanteAsTenant = false;
+      this.existingForm.get('montoPagadoEnCheckIn')?.setValue(0, { emitEvent: false });
       return;
     }
 
     this.selectedReservation = reservation;
     this.useReservanteAsTenant = false;
+    const paymentControl = this.existingForm.get('montoPagadoEnCheckIn');
+    paymentControl?.setValue(0, { emitEvent: false });
+    paymentControl?.setValidators([Validators.min(0), Validators.max(this.getCheckInOutstandingAmount())]);
+    paymentControl?.updateValueAndValidity({ emitEvent: false });
 
     // Prellenar la fecha de check-in con la fecha simulada actual (no la fecha de la reserva).
     // Así, si la fecha simulada no coincide con la fecha de la reserva, la validación
@@ -457,6 +468,12 @@ export class StaysComponent implements OnInit {
   onCheckInFromReservation(): void {
     if (this.existingForm.invalid) return;
     const formValue = this.existingForm.value;
+    const paymentAmount = Number(formValue.montoPagadoEnCheckIn || 0);
+    if (!Number.isFinite(paymentAmount) || paymentAmount < 0 || paymentAmount > this.getCheckInOutstandingAmount()) {
+      this.errorMessage = 'El pago ingresado no puede superar el saldo pendiente de la reserva.';
+      this.showErrorModal = true;
+      return;
+    }
 
     // Check if check-in date matches the reservation's check-in date.
     // Usamos la fecha del simulador (dateCtrl.getDateStr()) como referencia,
@@ -479,6 +496,7 @@ export class StaysComponent implements OnInit {
           reservationId: formValue.reservationId,
           fechaHoraCheckInReal: formValue.fechaHoraCheckInReal,
           comentariosCheckIn: formValue.comentariosCheckIn,
+          montoPagadoEnCheckIn: paymentAmount,
           tenants: formValue.tenants as TenantRequest[]
         };
         this.showJustificationModal = true;
@@ -491,8 +509,25 @@ export class StaysComponent implements OnInit {
       reservationId: formValue.reservationId,
       fechaHoraCheckInReal: formValue.fechaHoraCheckInReal,
       comentariosCheckIn: formValue.comentariosCheckIn,
+      montoPagadoEnCheckIn: paymentAmount,
       tenants: formValue.tenants as TenantRequest[]
     });
+  }
+
+  getCheckInOutstandingAmount(): number {
+    if (!this.selectedReservation) return 0;
+    return Math.max(0, (this.selectedReservation.precioTotal || 0) - (this.selectedReservation.montoSenia || 0));
+  }
+
+  getCheckInOutstandingAfterPayment(): number {
+    const payment = Number(this.existingForm?.get('montoPagadoEnCheckIn')?.value || 0);
+    return Math.max(0, this.getCheckInOutstandingAmount() - payment);
+  }
+
+  getCheckoutOutstandingAmount(stayId: number | null): number {
+    if (stayId === null) return 0;
+    const stay = this.stays.find(item => item.id === stayId);
+    return Math.max(0, (stay?.precioTotalReserva || 0) - (stay?.montoPagadoReserva || 0));
   }
 
   executeCheckInFromReservation(request: CheckInRequest): void {
@@ -503,7 +538,8 @@ export class StaysComponent implements OnInit {
         this.success = 'Check-in realizado exitosamente.';
         this.selectedReservation = null;
         this.existingForm.reset({
-          fechaHoraCheckInReal: this.dateCtrl.getDateTimeStr()
+          fechaHoraCheckInReal: this.dateCtrl.getDateTimeStr(),
+          montoPagadoEnCheckIn: 0
         });
         while (this.existingTenants.length > 1) this.existingTenants.removeAt(1);
         this.loadStays();
@@ -635,7 +671,25 @@ export class StaysComponent implements OnInit {
   onCheckout(stayId: number): void {
     if (this.checkoutForm.invalid) return;
     const formValue = this.checkoutForm.value;
+    const request: StayFinalizationRequest = {
+      fechaHoraCheckOutReal: formValue.fechaHoraCheckOutReal,
+      comentariosCheckOut: formValue.comentariosCheckOut,
+      estadoDepartamento: formValue.estadoDepartamento,
+      classificationScore: formValue.classificationScore,
+      classificationReviewComment: formValue.classificationScore ? formValue.classificationReviewComment : undefined
+    };
 
+    if (this.getCheckoutOutstandingAmount(stayId) > 0) {
+      this.pendingCheckoutStayId = stayId;
+      this.pendingCheckoutRequest = request;
+      this.showCheckoutPaymentReminder = true;
+      return;
+    }
+
+    this.continueCheckout(stayId, request);
+  }
+
+  private continueCheckout(stayId: number, request: StayFinalizationRequest): void {
     // Check if check-out date matches the planned check-out date.
     // Usamos la fecha del simulador (dateCtrl.getDateStr()) como referencia,
     // igual que el tutorial, para que la validación funcione correctamente.
@@ -654,26 +708,32 @@ export class StaysComponent implements OnInit {
 
         // Prepare the pending request
         this.pendingCheckoutStayId = stayId;
-        this.pendingCheckoutRequest = {
-          fechaHoraCheckOutReal: formValue.fechaHoraCheckOutReal,
-          comentariosCheckOut: formValue.comentariosCheckOut,
-          estadoDepartamento: formValue.estadoDepartamento,
-          classificationScore: formValue.classificationScore,
-          classificationReviewComment: formValue.classificationScore ? formValue.classificationReviewComment : undefined
-        };
+        this.pendingCheckoutRequest = request;
         this.showJustificationModal = true;
         return;
       }
     }
 
     // Date matches — proceed normally
-    this.executeCheckout(stayId, {
-      fechaHoraCheckOutReal: formValue.fechaHoraCheckOutReal,
-      comentariosCheckOut: formValue.comentariosCheckOut,
-      estadoDepartamento: formValue.estadoDepartamento,
-      classificationScore: formValue.classificationScore,
-      classificationReviewComment: formValue.classificationScore ? formValue.classificationReviewComment : undefined
-    });
+    this.executeCheckout(stayId, request);
+  }
+
+  confirmCheckoutPaymentReminder(): void {
+    const stayId = this.pendingCheckoutStayId;
+    const request = this.pendingCheckoutRequest;
+    this.showCheckoutPaymentReminder = false;
+    this.pendingCheckoutStayId = null;
+    this.pendingCheckoutRequest = null;
+    if (stayId !== null && request) {
+      request.montoPagadoEnCheckOut = this.getCheckoutOutstandingAmount(stayId);
+      this.continueCheckout(stayId, request);
+    }
+  }
+
+  closeCheckoutPaymentReminder(): void {
+    this.showCheckoutPaymentReminder = false;
+    this.pendingCheckoutStayId = null;
+    this.pendingCheckoutRequest = null;
   }
 
   executeCheckout(stayId: number, request: StayFinalizationRequest): void {
@@ -687,6 +747,7 @@ export class StaysComponent implements OnInit {
           estadoDepartamento: 'GOOD'
         });
         this.loadStays();
+        this.loadReservations();
       },
       error: (err) => {
         this.errorMessage = this.extractErrorMessage(err);

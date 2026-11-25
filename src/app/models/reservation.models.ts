@@ -28,4 +28,5 @@ export interface ReservationResponse {
   cantidadNoches: number;
   departmentId: number;
   departmentName: string;
+  checkInRealizado: boolean;
 }
