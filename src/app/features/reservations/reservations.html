@@ -75,7 +75,7 @@
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Seña ($)</label>
         <input formControlName="montoSenia" type="number" min="0" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ej: 15000" />
-        <p *ngIf="selectedDepartmentDepositMinimum !== null" class="text-xs text-gray-400 mt-1">Seña mínima para confirmar: ${{ selectedDepartmentDepositMinimum }}. Dejalo en 0 para crearla pendiente.</p>
+        <p *ngIf="selectedDepartmentDepositPercentage !== null" class="text-xs text-gray-400 mt-1">Seña mínima para confirmar: {{ selectedDepartmentDepositPercentage }}% {{ selectedDepartmentDepositBase === 'NIGHT_PRICE' ? 'del precio de una noche' : 'del total de la reserva' }} ({{ calculatedDepositMinimum === null ? 'calculando…' : '$' + calculatedDepositMinimum }}). Dejalo en 0 para crearla pendiente.</p>
         <p *ngIf="createForm.get('montoSenia')?.value" class="text-xs text-blue-600 mt-1">Resto a pagar: ${{ (createForm.get('precioTotal')?.value || 0) - (createForm.get('montoSenia')?.value || 0) }}</p>
         <p *ngIf="createForm.get('montoSenia')?.touched && createForm.get('montoSenia')?.errors?.['min']" class="text-red-500 text-xs mt-1">La señal no puede ser negativa.</p>
       </div>

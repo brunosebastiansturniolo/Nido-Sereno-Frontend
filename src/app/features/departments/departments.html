@@ -26,9 +26,18 @@
         <p *ngIf="createForm.get('precioPorNoche')?.touched && createForm.get('precioPorNoche')?.errors?.['required']" class="text-red-500 text-xs mt-1">El precio por noche es obligatorio.</p>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Seña mínima para confirmar ($)</label>
-        <input formControlName="montoSeniaRequerida" type="number" min="0" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ej: 15000" />
-        <p *ngIf="createForm.get('montoSeniaRequerida')?.touched && createForm.get('montoSeniaRequerida')?.errors?.['min']" class="text-red-500 text-xs mt-1">La seña mínima no puede ser negativa.</p>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Base para calcular la seña mínima</label>
+        <select formControlName="baseCalculoSenia" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg text-base lg:text-sm">
+          <option value="RESERVATION_TOTAL">Porcentaje del total de la reserva</option>
+          <option value="NIGHT_PRICE">Porcentaje del precio de una noche</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Porcentaje mínimo para confirmar (%)</label>
+        <input formControlName="porcentajeSeniaRequerida" type="number" min="0" max="100" step="0.01" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ej: 20" />
+        <p *ngIf="createForm.get('baseCalculoSenia')?.value === 'RESERVATION_TOTAL'" class="text-xs text-gray-400 mt-1">Se calcula sobre el precio total de la reserva.</p>
+        <p *ngIf="createForm.get('baseCalculoSenia')?.value === 'NIGHT_PRICE'" class="text-xs text-gray-400 mt-1">Se calcula sobre el precio de una noche, sin importar la cantidad de noches.</p>
+        <p *ngIf="createForm.get('porcentajeSeniaRequerida')?.touched && (createForm.get('porcentajeSeniaRequerida')?.errors?.['min'] || createForm.get('porcentajeSeniaRequerida')?.errors?.['max'])" class="text-red-500 text-xs mt-1">Ingresá un porcentaje entre 0 y 100.</p>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Tamaño (m²)</label>
@@ -69,7 +78,7 @@
             <div class="flex flex-wrap gap-2 mt-2 text-xs">
               <span class="px-2 py-1 bg-gray-100 rounded text-gray-600">🛏️ {{ d.numeroHabitaciones }} hab</span>
               <span class="px-2 py-1 bg-emerald-50 rounded text-emerald-600">$ {{ d.precioPorNoche }}/noche</span>
-              <span class="px-2 py-1 bg-blue-50 rounded text-blue-600">Seña mínima: $ {{ d.montoSeniaRequerida }}</span>
+              <span class="px-2 py-1 bg-blue-50 rounded text-blue-600">Seña mínima: {{ d.porcentajeSeniaRequerida }}% {{ d.baseCalculoSenia === 'NIGHT_PRICE' ? 'de una noche' : 'del total' }}</span>
               <span [class]="d.disponible ? 'px-2 py-1 bg-green-50 rounded text-green-600' : 'px-2 py-1 bg-red-50 rounded text-red-600'">
                 {{ d.disponible ? '✅ Disponible' : '❌ Ocupado' }}
               </span>
@@ -92,7 +101,7 @@
             <td class="py-2 px-3 text-sm">{{ d.nombre }}</td>
             <td class="py-2 px-3 text-sm">{{ d.numeroHabitaciones }}</td>
             <td class="py-2 px-3 text-sm">$ {{ d.precioPorNoche }}</td>
-            <td class="py-2 px-3 text-sm">$ {{ d.montoSeniaRequerida }}</td>
+            <td class="py-2 px-3 text-sm">{{ d.porcentajeSeniaRequerida }}% {{ d.baseCalculoSenia === 'NIGHT_PRICE' ? 'de una noche' : 'del total' }}</td>
             <td class="py-2 px-3 text-sm">{{ d.disponible ? '✅' : '❌' }}</td>
             <td class="py-2 px-3 text-sm">
               <div class="flex gap-2">

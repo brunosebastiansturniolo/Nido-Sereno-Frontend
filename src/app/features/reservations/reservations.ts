@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { ReservationService } from '../../services/reservation.service';
 import { ReservationRequest, ReservationResponse } from '../../models/reservation.models';
 import { DepartmentService } from '../../services/department.service';
-import { DepartmentResponse } from '../../models/department.models';
+import { DepartmentResponse, DepositCalculationBase } from '../../models/department.models';
 import { DateControllerService } from '../../services/date-controller.service';
 import { AutoFillService } from '../../services/auto-fill.service';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
@@ -39,7 +39,9 @@ export class ReservationsComponent implements OnInit {
 
   createForm!: FormGroup;
   selectedDepartmentPrice: number | null = null;
-  selectedDepartmentDepositMinimum: number | null = null;
+  selectedDepartmentDepositPercentage: number | null = null;
+  selectedDepartmentDepositBase: DepositCalculationBase | null = null;
+  calculatedDepositMinimum: number | null = null;
   calculatedNights: number | null = null;
   calculatedTotal: number | null = null;
 
@@ -72,6 +74,10 @@ export class ReservationsComponent implements OnInit {
       control?.valueChanges.subscribe(() => {
         this.calculateSmartPricing();
       });
+    });
+
+    this.createForm.get('precioTotal')!.valueChanges.subscribe(() => {
+      this.calculateDepositMinimum();
     });
 
     // Cuando el usuario cambia las noches, ajustar el check-out y recalcular
@@ -152,7 +158,9 @@ export class ReservationsComponent implements OnInit {
           montoSenia: null
         });
         this.selectedDepartmentPrice = null;
-        this.selectedDepartmentDepositMinimum = null;
+        this.selectedDepartmentDepositPercentage = null;
+        this.selectedDepartmentDepositBase = null;
+        this.calculatedDepositMinimum = null;
         this.calculatedNights = null;
         this.calculatedTotal = null;
         this.loadReservations();
@@ -178,10 +186,12 @@ export class ReservationsComponent implements OnInit {
     if (deptId) {
       const dept = this.departments.find(d => d.id === Number(deptId));
       this.selectedDepartmentPrice = dept?.precioPorNoche ?? null;
-      this.selectedDepartmentDepositMinimum = dept?.montoSeniaRequerida ?? null;
+      this.selectedDepartmentDepositPercentage = dept?.porcentajeSeniaRequerida ?? null;
+      this.selectedDepartmentDepositBase = dept?.baseCalculoSenia ?? null;
     } else {
       this.selectedDepartmentPrice = null;
-      this.selectedDepartmentDepositMinimum = null;
+      this.selectedDepartmentDepositPercentage = null;
+      this.selectedDepartmentDepositBase = null;
     }
 
     // Calcular cantidad de noches
@@ -200,6 +210,19 @@ export class ReservationsComponent implements OnInit {
         this.createForm.get('precioTotal')?.setValue(null, { emitEvent: false });
       }
     }
+    this.calculateDepositMinimum();
+  }
+
+  private calculateDepositMinimum(): void {
+    const total = Number(this.createForm.get('precioTotal')?.value);
+    const baseAmount = this.selectedDepartmentDepositBase === 'NIGHT_PRICE'
+      ? this.selectedDepartmentPrice
+      : total;
+    if (this.selectedDepartmentDepositPercentage === null || baseAmount === null || !Number.isFinite(baseAmount) || baseAmount <= 0) {
+      this.calculatedDepositMinimum = null;
+      return;
+    }
+    this.calculatedDepositMinimum = baseAmount * this.selectedDepartmentDepositPercentage / 100;
   }
 
   closeErrorModal(): void {
@@ -249,9 +272,15 @@ export class ReservationsComponent implements OnInit {
   onDeposit(reservation: ReservationResponse): void {
     const department = this.departments.find(d => d.id === reservation.departmentId);
     const paid = reservation.montoSenia || 0;
-    const minimumRemaining = Math.max((department?.montoSeniaRequerida || 0) - paid, 0);
+    const depositBase = department?.baseCalculoSenia ?? 'RESERVATION_TOTAL';
+    const depositBaseAmount = depositBase === 'NIGHT_PRICE'
+      ? department?.precioPorNoche || 0
+      : reservation.precioTotal;
+    const requiredDeposit = depositBaseAmount * (department?.porcentajeSeniaRequerida || 0) / 100;
+    const minimumRemaining = Math.max(requiredDeposit - paid, 0);
+    const depositBaseLabel = depositBase === 'NIGHT_PRICE' ? 'del precio de una noche' : 'del total de la reserva';
     const enteredAmount = window.prompt(
-      `Monto de seña a registrar. Falta $${minimumRemaining} para alcanzar la seña mínima de confirmación:`,
+      `Monto de seña a registrar. Falta $${minimumRemaining} para alcanzar la seña mínima (${department?.porcentajeSeniaRequerida || 0}% ${depositBaseLabel}):`,
       minimumRemaining > 0 ? String(minimumRemaining) : ''
     );
     if (enteredAmount === null) return;

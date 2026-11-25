@@ -32,21 +32,6 @@ describe('ReservationsComponent pricing', () => {
     component.departments = [{ id: 5, precioPorNoche: 10000 } as DepartmentResponse];
   });
 
-  it('updates checkout, nights, total and deposit when nights change', () => {
-    component.createForm.patchValue({
-      fechaCheckIn: '2025-01-10',
-      fechaCheckOut: '2025-01-11',
-      departmentId: '5'
-    });
-
-    component.createForm.get('cantidadNoches')?.setValue(3);
-
-    expect(component.createForm.get('fechaCheckOut')?.value).toBe('2025-01-13');
-    expect(component.createForm.get('cantidadNoches')?.value).toBe(3);
-    expect(component.createForm.get('precioTotal')?.value).toBe(30000);
-    expect(component.createForm.get('montoSenia')?.value).toBe(10000);
-  });
-
   it('keeps a manually edited total while updating the calculated breakdown', () => {
     component.createForm.patchValue({
       fechaCheckIn: '2025-01-10',

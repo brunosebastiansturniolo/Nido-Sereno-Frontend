@@ -1,8 +1,11 @@
+export type DepositCalculationBase = 'RESERVATION_TOTAL' | 'NIGHT_PRICE';
+
 export interface DepartmentRequest {
   nombre: string;
   numeroHabitaciones: number;
   precioPorNoche: number;
-  montoSeniaRequerida: number;
+  porcentajeSeniaRequerida: number;
+  baseCalculoSenia: DepositCalculationBase;
   tamañoM2: number;
   incluyeCochera: boolean;
   incluyeDesayuno: boolean;
@@ -16,7 +19,8 @@ export interface DepartmentResponse {
   nombre: string;
   numeroHabitaciones: number;
   precioPorNoche: number;
-  montoSeniaRequerida: number;
+  porcentajeSeniaRequerida: number;
+  baseCalculoSenia: DepositCalculationBase;
   tamañoM2: number;
   incluyeCochera: boolean;
   incluyeDesayuno: boolean;

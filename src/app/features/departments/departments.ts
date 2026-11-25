@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { DepartmentService } from '../../services/department.service';
 import { ComplexService } from '../../services/complex.service';
 import { AutoFillService } from '../../services/auto-fill.service';
-import { DepartmentRequest, DepartmentResponse } from '../../models/department.models';
+import { DepartmentRequest, DepartmentResponse, DepositCalculationBase } from '../../models/department.models';
 import { ComplexResponse } from '../../models/complex.models';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 
@@ -39,7 +39,8 @@ export class DepartmentsComponent implements OnInit {
     nombre: ['', Validators.required],
     numeroHabitaciones: [null, Validators.required],
     precioPorNoche: [null, Validators.required],
-    montoSeniaRequerida: [0, [Validators.required, Validators.min(0)]],
+    porcentajeSeniaRequerida: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+    baseCalculoSenia: ['RESERVATION_TOTAL', Validators.required],
     tamañoM2: [null, Validators.required],
     incluyeCochera: [false],
     incluyeDesayuno: [false],
@@ -74,7 +75,8 @@ export class DepartmentsComponent implements OnInit {
       nombre: formVal.nombre || '',
       numeroHabitaciones: formVal.numeroHabitaciones || 0,
       precioPorNoche: formVal.precioPorNoche || 0,
-      montoSeniaRequerida: formVal.montoSeniaRequerida ?? 0,
+      porcentajeSeniaRequerida: formVal.porcentajeSeniaRequerida ?? 0,
+      baseCalculoSenia: (formVal.baseCalculoSenia || 'RESERVATION_TOTAL') as DepositCalculationBase,
       tamañoM2: formVal.tamañoM2 || 0,
       incluyeCochera: formVal.incluyeCochera || false,
       incluyeDesayuno: formVal.incluyeDesayuno || false,
@@ -112,7 +114,8 @@ export class DepartmentsComponent implements OnInit {
       nombre: department.nombre,
       numeroHabitaciones: department.numeroHabitaciones,
       precioPorNoche: department.precioPorNoche,
-      montoSeniaRequerida: department.montoSeniaRequerida,
+      porcentajeSeniaRequerida: department.porcentajeSeniaRequerida,
+      baseCalculoSenia: department.baseCalculoSenia,
       tamañoM2: department.tamañoM2,
       incluyeCochera: department.incluyeCochera,
       incluyeDesayuno: department.incluyeDesayuno,
@@ -128,7 +131,8 @@ export class DepartmentsComponent implements OnInit {
       nombre: '',
       numeroHabitaciones: null,
       precioPorNoche: null,
-      montoSeniaRequerida: 0,
+      porcentajeSeniaRequerida: 0,
+      baseCalculoSenia: 'RESERVATION_TOTAL',
       tamañoM2: null,
       incluyeCochera: false,
       incluyeDesayuno: false,
