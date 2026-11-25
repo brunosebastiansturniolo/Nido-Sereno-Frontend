@@ -1,25 +1,28 @@
 <div class="flex h-screen bg-gray-100 overflow-hidden">
   <!-- Overlay para móvil cuando el sidebar está abierto -->
-  <div *ngIf="sidebarOpen()" class="fixed inset-0 bg-black/50 z-20 lg:hidden" (click)="sidebarOpen.set(false)"></div>
+  <div *ngIf="mobileSidebarOpen() && isMobile()" class="fixed inset-0 bg-black/50 z-20 lg:hidden" (click)="mobileSidebarOpen.set(false)"></div>
 
   <!-- Sidebar -->
   <aside 
-    [class]="sidebarOpen() ? 'translate-x-0' : '-translate-x-full'"
-    class="fixed lg:static inset-y-0 left-0 z-30 w-64 bg-emerald-800 text-white flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:flex-shrink-0 overflow-y-auto"
+    [class.translate-x-0]="!isMobile() || mobileSidebarOpen()"
+    [class.-translate-x-full]="isMobile() && !mobileSidebarOpen()"
+    [class.w-64]="isMobile() || sidebarExpanded()"
+    [class.w-20]="!isMobile() && !sidebarExpanded()"
+    class="fixed lg:static inset-y-0 left-0 z-30 bg-emerald-800 text-white flex flex-col transition-all duration-300 ease-in-out lg:flex-shrink-0 overflow-y-auto overflow-x-hidden"
   >
     <!-- Logo -->
-    <div class="p-4 flex items-center justify-between border-b border-emerald-700">
-      <span class="text-lg lg:text-xl font-bold truncate">🌿 Tutorial</span>
-      <button (click)="toggleSidebar()" class="p-1 hover:bg-emerald-700 rounded lg:hidden">
+    <div class="p-4 flex items-center justify-between border-b border-emerald-700" [class.justify-center]="!isMobile() && !sidebarExpanded()">
+      <span *ngIf="isMobile() || sidebarExpanded()" class="text-lg lg:text-xl font-bold truncate">🌿 Tutorial</span>
+      <button (click)="mobileSidebarOpen.set(false)" class="p-1 hover:bg-emerald-700 rounded lg:hidden" aria-label="Cerrar menú">
         ✕
       </button>
-      <button (click)="toggleSidebar()" class="p-1 hover:bg-emerald-700 rounded hidden lg:block">
-        {{ sidebarOpen() ? '◀' : '▶' }}
+      <button (click)="toggleSidebar()" class="p-1 hover:bg-emerald-700 rounded hidden lg:block" [attr.aria-label]="sidebarExpanded() ? 'Contraer menú' : 'Expandir menú'">
+        {{ sidebarExpanded() ? '◀' : '▶' }}
       </button>
     </div>
 
     <!-- Tutorial Info -->
-    <div *ngIf="sidebarOpen()" class="p-3 mx-3 mb-3 bg-emerald-700/50 rounded-lg">
+    <div *ngIf="isMobile() || sidebarExpanded()" class="p-3 mx-3 mb-3 bg-emerald-700/50 rounded-lg">
       <p class="text-xs text-emerald-200">¿Qué es Nido Sereno?</p>
       <p class="text-xs text-emerald-300 mt-1">Sistema de gestión de alquileres temporarios para propietarios.</p>
     </div>
@@ -27,65 +30,65 @@
     <!-- Navigation -->
     <nav class="flex-1 py-2">
       <a (click)="navigate('welcome')" [class.bg-emerald-700]="currentSection() === 'welcome'"
-         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
-        <span class="text-lg">🏠</span>
-        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Inicio</span>
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile() && !sidebarExpanded()" title="Inicio">
+        <span class="text-lg" aria-hidden="true">🏠</span>
+        <span *ngIf="isMobile() || sidebarExpanded()" class="ml-3 text-sm">Inicio</span>
       </a>
 
       <a (click)="navigate('hierarchy')" [class.bg-emerald-700]="currentSection() === 'hierarchy'"
-         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
-        <span class="text-lg">📐</span>
-        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Jerarquía</span>
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile() && !sidebarExpanded()" title="Jerarquía">
+        <span class="text-lg" aria-hidden="true">📐</span>
+        <span *ngIf="isMobile() || sidebarExpanded()" class="ml-3 text-sm">Jerarquía</span>
       </a>
 
       <a (click)="navigate('flow')" [class.bg-emerald-700]="currentSection() === 'flow'"
-         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
-        <span class="text-lg">🔄</span>
-        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Flujo Interactivo</span>
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile() && !sidebarExpanded()" title="Flujo Interactivo">
+        <span class="text-lg" aria-hidden="true">🔄</span>
+        <span *ngIf="isMobile() || sidebarExpanded()" class="ml-3 text-sm">Flujo Interactivo</span>
       </a>
 
-      <div *ngIf="sidebarOpen()" class="mx-4 my-2 border-t border-emerald-600"></div>
+      <div *ngIf="isMobile() || sidebarExpanded()" class="mx-4 my-2 border-t border-emerald-600"></div>
 
       <a (click)="navigate('dashboard')" [class.bg-emerald-700]="currentSection() === 'dashboard'"
-         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
-        <span class="text-lg">📊</span>
-        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Dashboard</span>
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile() && !sidebarExpanded()" title="Dashboard">
+        <span class="text-lg" aria-hidden="true">📊</span>
+        <span *ngIf="isMobile() || sidebarExpanded()" class="ml-3 text-sm">Dashboard</span>
       </a>
 
       <a (click)="navigate('complexes')" [class.bg-emerald-700]="currentSection() === 'complexes'"
-         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
-        <span class="text-lg">🏢</span>
-        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Complejos</span>
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile() && !sidebarExpanded()" title="Complejos">
+        <span class="text-lg" aria-hidden="true">🏢</span>
+        <span *ngIf="isMobile() || sidebarExpanded()" class="ml-3 text-sm">Complejos</span>
       </a>
 
       <a (click)="navigate('departments')" [class.bg-emerald-700]="currentSection() === 'departments'"
-         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
-        <span class="text-lg">🚪</span>
-        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Departamentos</span>
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile() && !sidebarExpanded()" title="Departamentos">
+        <span class="text-lg" aria-hidden="true">🚪</span>
+        <span *ngIf="isMobile() || sidebarExpanded()" class="ml-3 text-sm">Departamentos</span>
       </a>
 
       <a (click)="navigate('reservations')" [class.bg-emerald-700]="currentSection() === 'reservations'"
-         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
-        <span class="text-lg">📋</span>
-        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Reservas</span>
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile() && !sidebarExpanded()" title="Reservas">
+        <span class="text-lg" aria-hidden="true">📋</span>
+        <span *ngIf="isMobile() || sidebarExpanded()" class="ml-3 text-sm">Reservas</span>
       </a>
 
       <a (click)="navigate('stays')" [class.bg-emerald-700]="currentSection() === 'stays'"
-         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
-        <span class="text-lg">🛏️</span>
-        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Estadías</span>
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile() && !sidebarExpanded()" title="Estadías">
+        <span class="text-lg" aria-hidden="true">🛏️</span>
+        <span *ngIf="isMobile() || sidebarExpanded()" class="ml-3 text-sm">Estadías</span>
       </a>
 
       <a (click)="navigate('tenants')" [class.bg-emerald-700]="currentSection() === 'tenants'"
-         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer">
-        <span class="text-lg">👥</span>
-        <span *ngIf="sidebarOpen()" class="ml-3 text-sm">Inquilinos</span>
+         class="flex items-center px-4 py-2.5 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile() && !sidebarExpanded()" title="Inquilinos">
+        <span class="text-lg" aria-hidden="true">👥</span>
+        <span *ngIf="isMobile() || sidebarExpanded()" class="ml-3 text-sm">Inquilinos</span>
       </a>
     </nav>
 
     <!-- Date Controller -->
-    <div [class]="'p-3 mx-3 mb-2 rounded-lg transition-all duration-500 ' + (highlightDateController() ? 'bg-yellow-500/30 border-2 border-yellow-400 animate-pulse' : 'bg-emerald-700/50 border-2 border-transparent')">
-      <div *ngIf="sidebarOpen()">
+    <div *ngIf="isMobile() || sidebarExpanded()" [class]="'p-3 mx-3 mb-2 rounded-lg transition-all duration-500 ' + (highlightDateController() ? 'bg-yellow-500/30 border-2 border-yellow-400 animate-pulse' : 'bg-emerald-700/50 border-2 border-transparent')">
+      <div>
         <p class="text-xs font-semibold text-emerald-200 mb-1">📅 Fecha simulada</p>
         <p class="text-xs text-emerald-300 capitalize">{{ simulatedDateDisplay() }}</p>
         <input
@@ -106,33 +109,25 @@
           <p [innerHTML]="dateControllerHint() | replaceNewlines"></p>
         </div>
       </div>
-      <div *ngIf="!sidebarOpen()" class="text-center">
-        <p class="text-xs text-emerald-300">📅</p>
-        <input
-          type="date"
-          [ngModel]="simulatedDateStr()"
-          (ngModelChange)="setDateFromString($event)"
-          class="w-full mt-1 px-1 py-0.5 text-xs bg-emerald-600 text-white rounded border border-emerald-400"
-        />
-      </div>
     </div>
+    <div *ngIf="!isMobile() && !sidebarExpanded()" class="px-3 py-2 text-center" title="Fecha simulada">📅</div>
 
     <!-- Reset -->
     <div class="p-3">
       <button (click)="resetTutorial()" class="w-full bg-red-600 hover:bg-red-700 text-white text-xs py-1.5 rounded transition">
-        <span *ngIf="sidebarOpen()">🔄 Reiniciar Tutorial</span>
-        <span *ngIf="!sidebarOpen()">🔄</span>
+        <span *ngIf="isMobile() || sidebarExpanded()">🔄 Reiniciar Tutorial</span>
+        <span *ngIf="!isMobile() && !sidebarExpanded()">🔄</span>
       </button>
       <button (click)="goToLogin()" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white text-xs py-1.5 rounded transition">
-        <span *ngIf="sidebarOpen()">🚪 Ir a App Real</span>
-        <span *ngIf="!sidebarOpen()">🚪</span>
+        <span *ngIf="isMobile() || sidebarExpanded()">🚪 Ir a App Real</span>
+        <span *ngIf="!isMobile() && !sidebarExpanded()">🚪</span>
       </button>
     </div>
   </aside>
  
   <!-- Top bar para móvil -->
   <div class="lg:hidden fixed top-0 left-0 right-0 h-14 bg-emerald-800 text-white flex items-center px-4 z-10">
-    <button (click)="sidebarOpen.set(true)" class="p-2 hover:bg-emerald-700 rounded">
+    <button (click)="mobileSidebarOpen.set(true)" class="p-2 hover:bg-emerald-700 rounded" aria-label="Abrir menú">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
       </svg>

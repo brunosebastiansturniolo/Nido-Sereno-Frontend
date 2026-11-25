@@ -19,7 +19,8 @@ export class LayoutComponent implements OnInit {
   dateCtrl = inject(DateControllerService);
 
   user = this.auth.getUser();
-  sidebarOpen = false;
+  sidebarExpanded = true;
+  mobileSidebarOpen = false;
   isMobile = false;
 
   // Modal de advertencia del simulador de fecha
@@ -28,17 +29,15 @@ export class LayoutComponent implements OnInit {
 
   ngOnInit(): void {
     this.isMobile = window.innerWidth < 1024;
-    if (!this.isMobile) {
-      this.sidebarOpen = true;
-    }
   }
 
   @HostListener('window:resize')
   onResize(): void {
     this.isMobile = window.innerWidth < 1024;
-    if (!this.isMobile) {
-      this.sidebarOpen = true;
-    }
+  }
+
+  toggleSidebar(): void {
+    this.sidebarExpanded = !this.sidebarExpanded;
   }
 
   logout(): void {

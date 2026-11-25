@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -29,7 +29,9 @@ export class TutorialComponent {
 
   // Navigation
   currentSection = signal<TutorialSection>('welcome');
-  sidebarOpen = signal(true);
+  sidebarExpanded = signal(true);
+  mobileSidebarOpen = signal(false);
+  isMobile = signal(window.innerWidth < 1024);
 
   // Date controller
   simulatedDate = this.dateController.simulatedDate;
@@ -153,10 +155,16 @@ export class TutorialComponent {
 
   navigate(section: TutorialSection): void {
     this.currentSection.set(section);
+    this.mobileSidebarOpen.set(false);
   }
 
   toggleSidebar(): void {
-    this.sidebarOpen.set(!this.sidebarOpen());
+    this.sidebarExpanded.update(expanded => !expanded);
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.isMobile.set(window.innerWidth < 1024);
   }
 
   // ==========================================
@@ -534,6 +542,7 @@ export class TutorialComponent {
   // ==========================================
 
   goToLogin(): void {
+    this.mobileSidebarOpen.set(false);
     this.router.navigate(['/login']);
   }
 

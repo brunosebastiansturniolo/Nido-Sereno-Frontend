@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AuthenticationRequest } from '../../models/auth-response.models';
+import { APP_VERSION } from '../../app.constants';
 
 @Component({
   selector: 'app-login',
@@ -13,6 +14,7 @@ import { AuthenticationRequest } from '../../models/auth-response.models';
   styleUrl: './login.css'
 })
 export class LoginComponent {
+  appVersion = APP_VERSION;
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);

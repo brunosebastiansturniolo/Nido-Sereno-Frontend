@@ -63,11 +63,11 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'login',
+    loadComponent: () => import('./features/home/home').then(m => m.HomeComponent),
     pathMatch: 'full'
   },
   {
     path: '**',
-    redirectTo: 'login'
+    redirectTo: ''
   }
 ];
