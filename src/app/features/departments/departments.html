@@ -22,8 +22,9 @@
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Precio/noche ($)</label>
-        <input formControlName="precioPorNoche" type="number" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ej: 15000" />
+        <input formControlName="precioPorNoche" type="number" min="0.01" step="0.01" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ej: 15000" />
         <p *ngIf="createForm.get('precioPorNoche')?.touched && createForm.get('precioPorNoche')?.errors?.['required']" class="text-red-500 text-xs mt-1">El precio por noche es obligatorio.</p>
+        <p *ngIf="createForm.get('precioPorNoche')?.touched && createForm.get('precioPorNoche')?.errors?.['min']" class="text-red-500 text-xs mt-1">El precio por noche debe ser mayor a $0.</p>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Base para calcular la seña mínima</label>
@@ -33,11 +34,17 @@
         </select>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Porcentaje mínimo para confirmar (%)</label>
-        <input formControlName="porcentajeSeniaRequerida" type="number" min="0" max="100" step="0.01" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ej: 20" />
+        <label *ngIf="createForm.get('baseCalculoSenia')?.value === 'RESERVATION_TOTAL'" class="block text-sm font-medium text-gray-700 mb-1">Porcentaje mínimo para confirmar (%)</label>
+        <input *ngIf="createForm.get('baseCalculoSenia')?.value === 'RESERVATION_TOTAL'" formControlName="porcentajeSeniaRequerida" type="number" min="0" max="100" step="0.01" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ej: 20" />
+        <label *ngIf="createForm.get('baseCalculoSenia')?.value === 'NIGHT_PRICE'" class="block text-sm font-medium text-gray-700 mb-1">Importe mínimo de seña ($)</label>
+        <input *ngIf="createForm.get('baseCalculoSenia')?.value === 'NIGHT_PRICE'" formControlName="montoSeniaRequerida" type="number" min="0" step="0.01" [max]="createForm.get('precioPorNoche')?.value ?? null" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg placeholder:text-gray-400 placeholder:italic text-base lg:text-sm" placeholder="Ej: 15000" />
         <p *ngIf="createForm.get('baseCalculoSenia')?.value === 'RESERVATION_TOTAL'" class="text-xs text-gray-400 mt-1">Se calcula sobre el precio total de la reserva.</p>
-        <p *ngIf="createForm.get('baseCalculoSenia')?.value === 'NIGHT_PRICE'" class="text-xs text-gray-400 mt-1">Se calcula sobre el precio de una noche, sin importar la cantidad de noches.</p>
-        <p *ngIf="createForm.get('porcentajeSeniaRequerida')?.touched && (createForm.get('porcentajeSeniaRequerida')?.errors?.['min'] || createForm.get('porcentajeSeniaRequerida')?.errors?.['max'])" class="text-red-500 text-xs mt-1">Ingresá un porcentaje entre 0 y 100.</p>
+        <p *ngIf="createForm.get('baseCalculoSenia')?.value === 'NIGHT_PRICE'" class="text-xs text-gray-400 mt-1">Ingresá un importe igual o menor al precio de una noche.</p>
+        <p *ngIf="createForm.get('baseCalculoSenia')?.value === 'NIGHT_PRICE' && (createForm.get('precioPorNoche')?.value || 0) > 0" class="text-xs text-blue-600 mt-1">Equivale al {{ createForm.get('porcentajeSeniaRequerida')?.value | number:'1.0-2' }}% del precio de una noche.</p>
+        <p *ngIf="createForm.get('baseCalculoSenia')?.value === 'RESERVATION_TOTAL' && createForm.get('porcentajeSeniaRequerida')?.touched && (createForm.get('porcentajeSeniaRequerida')?.errors?.['min'] || createForm.get('porcentajeSeniaRequerida')?.errors?.['max'])" class="text-red-500 text-xs mt-1">Ingresá un porcentaje entre 0 y 100.</p>
+        <p *ngIf="createForm.get('montoSeniaRequerida')?.touched && createForm.get('montoSeniaRequerida')?.errors?.['required']" class="text-red-500 text-xs mt-1">Ingresá el importe mínimo de seña.</p>
+        <p *ngIf="createForm.get('montoSeniaRequerida')?.touched && createForm.get('montoSeniaRequerida')?.errors?.['min']" class="text-red-500 text-xs mt-1">El importe no puede ser negativo.</p>
+        <p *ngIf="createForm.errors?.['nightDepositExceedsPrice'] && (createForm.get('montoSeniaRequerida')?.touched || createForm.get('precioPorNoche')?.touched)" class="text-red-500 text-xs mt-1">El importe de la seña no puede superar el precio de una noche (${{ createForm.get('precioPorNoche')?.value }}).</p>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Tamaño (m²)</label>
