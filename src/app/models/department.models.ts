@@ -28,5 +28,5 @@ export interface DepartmentResponse {
   tienePileta: boolean;
   disponible: boolean;
   complexId: number;
-  complejoNombre: string;
+  complexNombre: string;
 }
