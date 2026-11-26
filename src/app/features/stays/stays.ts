@@ -609,7 +609,32 @@ export class StaysComponent implements OnInit {
   getCheckoutOutstandingAmount(stayId: number | null): number {
     if (stayId === null) return 0;
     const stay = this.stays.find(item => item.id === stayId);
-    return Math.max(0, (stay?.precioTotalReserva || 0) - (stay?.montoPagadoReserva || 0));
+    return Math.max(0, this.getCheckoutTotalAmount(stayId) - (stay?.montoPagadoReserva || 0));
+  }
+
+  getCheckoutTotalAmount(stayId: number | null): number {
+    if (stayId === null) return 0;
+    const stay = this.stays.find(item => item.id === stayId);
+    if (!stay) return 0;
+
+    const department = this.departments.find(item => item.id === stay.departmentId);
+    return (stay.precioTotalReserva || 0) + this.getCheckoutAdditionalNights(stayId) * (department?.precioPorNoche || 0);
+  }
+
+  getCheckoutPreviousTotalAmount(stayId: number | null): number {
+    if (stayId === null) return 0;
+    return this.stays.find(item => item.id === stayId)?.precioTotalReserva || 0;
+  }
+
+  getCheckoutAdditionalNights(stayId: number | null): number {
+    if (stayId === null) return 0;
+    const stay = this.stays.find(item => item.id === stayId);
+    const actualCheckOutDate = this.checkoutForm?.get('fechaHoraCheckOutReal')?.value?.slice(0, 10);
+    if (!stay?.fechaCheckOutPlaneada || !actualCheckOutDate || actualCheckOutDate <= stay.fechaCheckOutPlaneada) return 0;
+
+    const plannedDate = Date.parse(`${stay.fechaCheckOutPlaneada}T00:00:00Z`);
+    const actualDate = Date.parse(`${actualCheckOutDate}T00:00:00Z`);
+    return Math.round((actualDate - plannedDate) / 86_400_000);
   }
 
   getCheckoutRemainingAfterPayment(): number {

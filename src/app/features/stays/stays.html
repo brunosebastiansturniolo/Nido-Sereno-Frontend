@@ -22,6 +22,9 @@
   <div *ngIf="showCheckoutPaymentReminder" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
     <div role="dialog" aria-modal="true" aria-labelledby="checkout-payment-dialog-title" class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-5 max-h-[90vh] overflow-y-auto">
       <h2 id="checkout-payment-dialog-title" class="text-lg font-bold text-gray-800 mb-3">Registrar pago del check-out</h2>
+      <p *ngIf="getCheckoutAdditionalNights(pendingCheckoutStayId) > 0" class="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
+        La salida agrega {{ getCheckoutAdditionalNights(pendingCheckoutStayId) }} {{ getCheckoutAdditionalNights(pendingCheckoutStayId) === 1 ? 'noche' : 'noches' }}. El total se actualiza de $ {{ formatCheckoutAmount(getCheckoutPreviousTotalAmount(pendingCheckoutStayId)) }} a $ {{ formatCheckoutAmount(getCheckoutTotalAmount(pendingCheckoutStayId)) }}.
+      </p>
       <p class="text-sm text-gray-600 mb-4">Saldo pendiente antes de este pago: <strong>$ {{ formatCheckoutAmount(getCheckoutOutstandingAmount(pendingCheckoutStayId)) }}</strong>.</p>
       <label class="block text-sm font-medium text-gray-700 mb-1" for="checkoutPaymentAmount">¿Cuánto pagaron ahora? ($)</label>
       <input id="checkoutPaymentAmount" name="checkoutPaymentAmount" [(ngModel)]="checkoutPaymentAmount" type="number" min="0" step="0.01"

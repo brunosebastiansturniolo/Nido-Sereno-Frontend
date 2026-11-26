@@ -538,6 +538,124 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   await expect(page.getByText('Check-in realizado exitosamente.')).toBeVisible();
   await expect(page.getByRole('row').filter({ hasText: 'Inquilino Anticipado' })).toBeVisible();
 
+  const sameDayCheckInDate = addDays(earlyReservationCheckInDate, 10);
+  const sameDayReservationName = 'Reservante MismoDia';
+  await simulatedDate.fill(sameDayCheckInDate);
+  await page.getByRole('link', { name: 'Reservas', exact: true }).click();
+  await page.locator('input[formcontrolname="firstName"]').fill('Reservante');
+  await page.locator('input[formcontrolname="lastName"]').fill('MismoDia');
+  await page.locator('input[formcontrolname="documentNumber"]').fill(`${unique}94`);
+  await page.locator('input[formcontrolname="phoneNumber"]').fill('1123456787');
+  await page.locator('input[formcontrolname="cantidadPersonas"]').fill('1');
+  await page.locator('input[formcontrolname="fechaCheckIn"]').fill(sameDayCheckInDate);
+  await page.locator('input[formcontrolname="cantidadNoches"]').fill('1');
+  await page.locator('select[formcontrolname="departmentId"]').selectOption({
+    label: `${departmentName} (${departmentPricePerNight}$/noche)`
+  });
+  await page.locator('input[formcontrolname="montoSenia"]').fill('0');
+  await page.getByRole('button', { name: 'Crear reserva' }).click();
+  await expect(page.getByText('Reserva creada exitosamente.')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Estadías', exact: true }).click();
+  await page.getByRole('button', { name: 'Desde Reserva' }).click();
+  await page.locator('select[formcontrolname="reservationId"]').selectOption({
+    label: `${sameDayReservationName} - ${sameDayCheckInDate}`
+  });
+  const sameDayTenant = page.locator('div[formArrayName="tenants"] > div.border.rounded-lg').nth(0);
+  await sameDayTenant.locator('input[formcontrolname="documentNumber"]').fill(`${unique}93`);
+  await sameDayTenant.locator('input[formcontrolname="firstName"]').fill('Inquilino');
+  await sameDayTenant.locator('input[formcontrolname="lastName"]').fill('MismoDia');
+  await sameDayTenant.locator('input[formcontrolname="email"]').fill(`mismo-dia-${unique}@nido-sereno.local`);
+  await sameDayTenant.locator('input[formcontrolname="phoneNumber"]').fill('1123456790');
+  const sameDayCheckInDateTime = page.locator('input[formcontrolname="fechaHoraCheckInReal"]');
+  await sameDayCheckInDateTime.fill(`${sameDayCheckInDate}T22:30`);
+
+  const sameDayCheckInRequestPromise = page.waitForRequest(request =>
+    request.method() === 'POST' && request.url().endsWith('/stays/checkin')
+  );
+  await page.getByRole('button', { name: 'Realizar Check-In' }).click();
+  const sameDayCheckInRequest = await sameDayCheckInRequestPromise;
+  const sameDayCheckInRequestBody = sameDayCheckInRequest.postDataJSON();
+  expect(sameDayCheckInRequestBody.fechaHoraCheckInReal).toBe(`${sameDayCheckInDate}T22:30`);
+  expect(sameDayCheckInRequestBody.comentariosCheckIn ?? '').not.toContain('[FECHA JUSTIFICADA]');
+  await expect(page.getByRole('heading', { name: /Fecha de check-in no coincide/ })).toHaveCount(0);
+  await expect(page.getByText('Check-in realizado exitosamente.')).toBeVisible();
+  await expect(page.getByRole('row').filter({ hasText: 'Inquilino MismoDia' })).toContainText('En curso');
+
+  const lateCheckInDate = addDays(sameDayCheckInDate, 10);
+  const plannedLateCheckOutDate = addDays(lateCheckInDate, 2);
+  const actualLateCheckOutDate = addDays(plannedLateCheckOutDate, 1);
+  const lateCheckoutReservationName = 'Reservante SalidaTarde';
+  const lateCheckoutTenantName = 'Inquilino SalidaTarde';
+  await simulatedDate.fill(lateCheckInDate);
+  await page.getByRole('link', { name: 'Reservas', exact: true }).click();
+  await page.locator('input[formcontrolname="firstName"]').fill('Reservante');
+  await page.locator('input[formcontrolname="lastName"]').fill('SalidaTarde');
+  await page.locator('input[formcontrolname="documentNumber"]').fill(`${unique}92`);
+  await page.locator('input[formcontrolname="phoneNumber"]').fill('1123456791');
+  await page.locator('input[formcontrolname="cantidadPersonas"]').fill('1');
+  await page.locator('input[formcontrolname="fechaCheckIn"]').fill(lateCheckInDate);
+  await page.locator('input[formcontrolname="cantidadNoches"]').fill('2');
+  await page.locator('select[formcontrolname="departmentId"]').selectOption({
+    label: `${departmentName} (${departmentPricePerNight}$/noche)`
+  });
+  await page.locator('input[formcontrolname="montoSenia"]').fill(String(departmentDepositAmount));
+  await page.getByRole('button', { name: 'Crear reserva' }).click();
+  await expect(page.getByText('Reserva creada exitosamente.')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Estadías', exact: true }).click();
+  await page.getByRole('button', { name: 'Desde Reserva' }).click();
+  await page.locator('select[formcontrolname="reservationId"]').selectOption({
+    label: `${lateCheckoutReservationName} - ${lateCheckInDate}`
+  });
+  const lateCheckoutTenant = page.locator('div[formArrayName="tenants"] > div.border.rounded-lg').nth(0);
+  await lateCheckoutTenant.locator('input[formcontrolname="documentNumber"]').fill(`${unique}91`);
+  await lateCheckoutTenant.locator('input[formcontrolname="firstName"]').fill('Inquilino');
+  await lateCheckoutTenant.locator('input[formcontrolname="lastName"]').fill('SalidaTarde');
+  await lateCheckoutTenant.locator('input[formcontrolname="email"]').fill(`salida-tarde-${unique}@nido-sereno.local`);
+  await lateCheckoutTenant.locator('input[formcontrolname="phoneNumber"]').fill('1123456792');
+  await page.locator('input[formcontrolname="montoPagadoEnCheckIn"]').fill(String(2 * departmentPricePerNight - departmentDepositAmount));
+  await page.getByRole('button', { name: 'Realizar Check-In' }).click();
+  await expect(page.getByText('Check-in realizado exitosamente.')).toBeVisible();
+
+  await simulatedDate.fill(actualLateCheckOutDate);
+  const lateCheckoutStayRow = page.getByRole('row').filter({ hasText: lateCheckoutTenantName });
+  await lateCheckoutStayRow.getByRole('button', { name: 'Check-out' }).click();
+  await page.locator('input[formcontrolname="fechaHoraCheckOutReal"]').fill(`${actualLateCheckOutDate}T10:00`);
+  await page.locator('select[formcontrolname="classificationScore"]').selectOption({ label: '5 - Excelente' });
+  await page.locator('input[formcontrolname="classificationReviewComment"]').fill('Buena estadía, con una noche adicional acordada.');
+  await page.getByRole('button', { name: 'Confirmar Check-out' }).click();
+
+  const lateCheckoutPaymentDialog = page.getByRole('dialog', { name: 'Registrar pago del check-out' });
+  await expect(lateCheckoutPaymentDialog).toContainText('El total se actualiza de $ 160.000 a $ 240.000');
+  await expect(lateCheckoutPaymentDialog).toContainText('Saldo pendiente antes de este pago: $ 80.000');
+  await lateCheckoutPaymentDialog.locator('input[name="checkoutPaymentAmount"]').fill('80000');
+  await lateCheckoutPaymentDialog.getByRole('button', { name: 'Registrar pago y finalizar check-out' }).click();
+
+  const lateCheckoutJustification = page.locator('div.fixed.inset-0').filter({
+    has: page.getByRole('heading', { name: /Fecha de check-out no coincide/ })
+  });
+  await expect(lateCheckoutJustification).toContainText(plannedLateCheckOutDate);
+  await expect(lateCheckoutJustification).toContainText(actualLateCheckOutDate);
+  await lateCheckoutJustification.getByRole('button', { name: 'Confirmar' }).click();
+  await expect(lateCheckoutJustification.getByText('La justificación es obligatoria para continuar con el check-out.')).toBeVisible();
+  const lateCheckoutReason = 'El huésped solicitó quedarse una noche más.';
+  await lateCheckoutJustification.getByPlaceholder('Escribí el motivo de la diferencia de fecha...').fill(lateCheckoutReason);
+  const lateCheckoutRequestPromise = page.waitForRequest(request =>
+    request.method() === 'PATCH' && request.url().endsWith('/checkout')
+  );
+  await lateCheckoutJustification.getByRole('button', { name: 'Confirmar' }).click();
+  const lateCheckoutRequest = await lateCheckoutRequestPromise;
+  const lateCheckoutRequestBody = lateCheckoutRequest.postDataJSON();
+  expect(lateCheckoutRequestBody.montoPagadoEnCheckOut).toBe(80_000);
+  expect(lateCheckoutRequestBody.comentariosCheckOut).toContain(`[FECHA JUSTIFICADA] Motivo: ${lateCheckoutReason}`);
+  await expect(page.getByText('Check-out realizado exitosamente.')).toBeVisible();
+  await expect(lateCheckoutStayRow).toContainText('Completada');
+
+  await page.getByRole('link', { name: 'Reservas', exact: true }).click();
+  const lateCheckoutReservationRow = page.getByRole('row').filter({ hasText: lateCheckoutReservationName });
+  await expect(lateCheckoutReservationRow).toContainText('$ 240000');
+
   const expressCheckInDate = addDays(actualMismatchCheckInDate, 5);
   await page.getByRole('link', { name: 'Reservas', exact: true }).click();
   await simulatedDate.fill(expressCheckInDate);
