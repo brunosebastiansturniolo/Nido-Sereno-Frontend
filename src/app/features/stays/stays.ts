@@ -57,7 +57,7 @@ export class StaysComponent implements OnInit {
   justificationContext = ''; // 'checkIn' | 'checkout'
   justificationMessage = '';
   justificationComment = '';
-  justificationProceedWithoutComment = false;
+  justificationError = '';
   // Datos temporales para procesar después del modal
   pendingCheckInRequest: CheckInRequest | null = null;
   showCheckoutPaymentReminder = false;
@@ -536,7 +536,7 @@ export class StaysComponent implements OnInit {
           `📅 La reserva tiene fecha de check-in: <strong>${this.selectedReservation.fechaCheckIn}</strong>. ` +
           `El huésped llegó <strong>${direction}</strong> del día planeado (fecha actual: <strong>${simDate}</strong>).`;
         this.justificationComment = '';
-        this.justificationProceedWithoutComment = false;
+        this.justificationError = '';
 
         // Prepare the pending request
         this.pendingCheckInRequest = {
@@ -764,7 +764,7 @@ export class StaysComponent implements OnInit {
           `📅 La estadía tiene fecha de check-out planeada: <strong>${stay.fechaCheckOutPlaneada}</strong>. ` +
           `El huésped se va <strong>${direction}</strong> del día planeado (fecha actual: <strong>${simDate}</strong>).`;
         this.justificationComment = '';
-        this.justificationProceedWithoutComment = false;
+        this.justificationError = '';
 
         // Prepare the pending request
         this.pendingCheckoutStayId = stayId;
@@ -852,14 +852,16 @@ export class StaysComponent implements OnInit {
   // ----------------------------------------------------------------------
 
   confirmJustification(): void {
+    const reason = this.justificationComment.trim();
+    if (!reason) {
+      this.justificationError = this.justificationContext === 'checkIn'
+        ? 'La justificación es obligatoria para continuar con el check-in.'
+        : 'La justificación es obligatoria para continuar con el check-out.';
+      return;
+    }
+
     if (this.justificationContext === 'checkIn' && this.pendingCheckInRequest) {
-      // Construir la nota de justificación para agregar a comentariosCheckIn
-      let justificationNote = '';
-      if (!this.justificationProceedWithoutComment && this.justificationComment.trim()) {
-        justificationNote = '[FECHA JUSTIFICADA] Motivo: ' + this.justificationComment.trim();
-      } else {
-        justificationNote = '[FECHA JUSTIFICADA] El huésped llegó en fecha diferente a la planeada.';
-      }
+      const justificationNote = '[FECHA JUSTIFICADA] Motivo: ' + reason;
       // Agregar la nota a los comentarios de check-in
       const existingComment = this.pendingCheckInRequest.comentariosCheckIn;
       this.pendingCheckInRequest.comentariosCheckIn = existingComment && existingComment.trim()
@@ -867,13 +869,7 @@ export class StaysComponent implements OnInit {
         : justificationNote;
       this.executeCheckInFromReservation(this.pendingCheckInRequest);
     } else if (this.justificationContext === 'checkout' && this.pendingCheckoutRequest && this.pendingCheckoutStayId) {
-      // Construir la nota de justificación para agregar a comentariosCheckOut
-      let justificationNote = '';
-      if (!this.justificationProceedWithoutComment && this.justificationComment.trim()) {
-        justificationNote = '[FECHA JUSTIFICADA] Motivo: ' + this.justificationComment.trim();
-      } else {
-        justificationNote = '[FECHA JUSTIFICADA] El huésped se fue en fecha diferente a la planeada.';
-      }
+      const justificationNote = '[FECHA JUSTIFICADA] Motivo: ' + reason;
       // Agregar la nota a los comentarios de check-out
       const existingComment = this.pendingCheckoutRequest.comentariosCheckOut;
       this.pendingCheckoutRequest.comentariosCheckOut = existingComment && existingComment.trim()
@@ -889,7 +885,7 @@ export class StaysComponent implements OnInit {
     this.justificationContext = '';
     this.justificationMessage = '';
     this.justificationComment = '';
-    this.justificationProceedWithoutComment = false;
+    this.justificationError = '';
     this.pendingCheckInRequest = null;
     this.pendingCheckoutStayId = null;
     this.pendingCheckoutRequest = null;

@@ -111,18 +111,44 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   await expect(createdDepartment).toContainText('80% de una noche');
 
   await page.getByRole('link', { name: 'Reservas' }).click();
+  const reservationCheckIn = page.locator('input[formcontrolname="fechaCheckIn"]');
+  const reservationCheckOut = page.locator('input[formcontrolname="fechaCheckOut"]');
+  const reservationNights = page.locator('input[formcontrolname="cantidadNoches"]');
+  const reservationTotal = page.locator('input[formcontrolname="precioTotal"]');
+  await expect(reservationCheckIn).toHaveValue(checkInDate);
+  await expect(reservationCheckOut).toHaveValue(addDays(checkInDate, 1));
+  await expect(reservationNights).toHaveValue('1');
+
+  await page.locator('select[formcontrolname="departmentId"]').selectOption({
+    label: `${departmentName} (${departmentPricePerNight}$/noche)`
+  });
+  await expect(reservationTotal).toHaveValue(String(departmentPricePerNight));
+
+  const earlierCheckIn = addDays(checkInDate, -1);
+  await reservationCheckIn.fill(earlierCheckIn);
+  await expect(reservationCheckOut).toHaveValue(addDays(checkInDate, 1));
+  await expect(reservationNights).toHaveValue('2');
+  await expect(reservationTotal).toHaveValue(String(departmentPricePerNight * 2));
+
+  await reservationCheckOut.fill(addDays(checkInDate, 2));
+  await expect(reservationCheckIn).toHaveValue(earlierCheckIn);
+  await expect(reservationNights).toHaveValue('3');
+  await expect(reservationTotal).toHaveValue(String(departmentPricePerNight * 3));
+
+  await reservationNights.fill('2');
+  await expect(reservationCheckIn).toHaveValue(earlierCheckIn);
+  await expect(reservationCheckOut).toHaveValue(addDays(checkInDate, 1));
+  await expect(reservationTotal).toHaveValue(String(departmentPricePerNight * 2));
+
   await page.locator('input[formcontrolname="firstName"]').fill(reservationFirstName);
   await page.locator('input[formcontrolname="lastName"]').fill(reservationLastName);
   await page.locator('input[formcontrolname="documentNumber"]').fill(`${unique}`);
   await page.locator('input[formcontrolname="phoneNumber"]').fill('1123456789');
   await page.locator('input[formcontrolname="cantidadPersonas"]').fill('2');
-  await page.locator('input[formcontrolname="fechaCheckIn"]').fill(checkInDate);
-  await page.locator('input[formcontrolname="cantidadNoches"]').fill('3');
-  await page.locator('select[formcontrolname="departmentId"]').selectOption({
-    label: `${departmentName} (${departmentPricePerNight}$/noche)`
-  });
+  await reservationCheckIn.fill(checkInDate);
+  await reservationNights.fill('3');
   const totalPrice = await page.locator('input[formcontrolname="precioTotal"]').inputValue();
-  expect(Number(totalPrice)).toBeGreaterThan(0);
+  expect(Number(totalPrice)).toBe(departmentPricePerNight * 3);
   const reservationDeposit = departmentDepositAmount;
   await page.locator('input[formcontrolname="montoSenia"]').fill('0');
   await page.getByRole('button', { name: 'Crear reserva' }).click();
@@ -136,6 +162,65 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   await expect(reservationRow).toContainText('$ 0');
   await expect(reservationRow.getByRole('button', { name: 'Señar' })).toBeVisible();
   await expect(reservationRow.getByRole('button', { name: 'Cancelar' })).toBeVisible();
+
+  const createCancellationReservation = async (
+    firstName: string,
+    lastName: string,
+    documentNumber: string,
+    checkIn: string,
+    deposit: number
+  ) => {
+    await page.locator('input[formcontrolname="firstName"]').fill(firstName);
+    await page.locator('input[formcontrolname="lastName"]').fill(lastName);
+    await page.locator('input[formcontrolname="documentNumber"]').fill(documentNumber);
+    await page.locator('input[formcontrolname="phoneNumber"]').fill('1123456789');
+    await page.locator('input[formcontrolname="cantidadPersonas"]').fill('1');
+    await page.locator('input[formcontrolname="fechaCheckIn"]').fill(checkIn);
+    await page.locator('input[formcontrolname="cantidadNoches"]').fill('1');
+    await page.locator('select[formcontrolname="departmentId"]').selectOption({
+      label: `${departmentName} (${departmentPricePerNight}$/noche)`
+    });
+    await page.locator('input[formcontrolname="montoSenia"]').fill(String(deposit));
+    await page.getByRole('button', { name: 'Crear reserva' }).click();
+    await expect(page.getByText('Reserva creada exitosamente.')).toBeVisible();
+  };
+  const respondToCancellation = async (row: ReturnType<typeof page.getByRole>, accept: boolean) => {
+    const dialogPromise = page.waitForEvent('dialog');
+    const clickPromise = row.getByRole('button', { name: 'Cancelar' }).click();
+    const dialog = await dialogPromise;
+    expect(dialog.message()).toBe('¿Estás seguro de cancelar esta reserva?');
+    if (accept) await dialog.accept();
+    else await dialog.dismiss();
+    await clickPromise;
+  };
+
+  const noDepositName = `Ana SinSeña ${unique}`;
+  await createCancellationReservation('Ana', `SinSeña ${unique}`, `${unique}10`, addDays(checkInDate, 10), 0);
+  const noDepositRow = page.getByRole('row').filter({ hasText: noDepositName });
+  await expect(noDepositRow).toContainText('Pendiente');
+  await expect(noDepositRow).toContainText('$ 0');
+  await respondToCancellation(noDepositRow, false);
+  await expect(noDepositRow).toContainText('Pendiente');
+  await expect(noDepositRow.getByRole('button', { name: 'Cancelar' })).toBeVisible();
+
+  await respondToCancellation(noDepositRow, true);
+  await expect(noDepositRow).toContainText('Cancelada');
+  await expect(noDepositRow).toContainText('$ 0');
+  await expect(noDepositRow.getByRole('button', { name: 'Cancelar' })).toHaveCount(0);
+
+  const paidCancellationName = `Bruno ConSeña ${unique}`;
+  await createCancellationReservation('Bruno', `ConSeña ${unique}`, `${unique}11`, addDays(checkInDate, 12), departmentDepositAmount);
+  const paidCancellationRow = page.getByRole('row').filter({ hasText: paidCancellationName });
+  await expect(paidCancellationRow).toContainText('Confirmada');
+  await expect(paidCancellationRow).toContainText(`$ ${departmentDepositAmount}`);
+  await respondToCancellation(paidCancellationRow, false);
+  await expect(paidCancellationRow).toContainText('Confirmada');
+  await expect(paidCancellationRow).toContainText(`$ ${departmentDepositAmount}`);
+
+  await respondToCancellation(paidCancellationRow, true);
+  await expect(paidCancellationRow).toContainText('Cancelada');
+  await expect(paidCancellationRow).toContainText(`$ ${departmentDepositAmount}`);
+  await expect(paidCancellationRow.getByRole('button', { name: 'Cancelar' })).toHaveCount(0);
 
   await reservationRow.getByRole('button', { name: 'Señar' }).click();
   let depositDialog = page.getByRole('dialog', { name: 'Registrar seña' });
@@ -318,6 +403,7 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   }
 
   const mismatchCheckInDate = addDays(firstDebtCheckInDate, checkoutDebtScenarios.length * 4);
+  const actualMismatchCheckInDate = addDays(mismatchCheckInDate, 1);
   const mismatchReservationName = 'Reservante Diferencia';
   await simulatedDate.fill(mismatchCheckInDate);
   await page.getByRole('link', { name: 'Reservas' }).click();
@@ -327,7 +413,7 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   await page.locator('input[formcontrolname="phoneNumber"]').fill('1123456783');
   await page.locator('input[formcontrolname="cantidadPersonas"]').fill('2');
   await page.locator('input[formcontrolname="fechaCheckIn"]').fill(mismatchCheckInDate);
-  await page.locator('input[formcontrolname="cantidadNoches"]').fill('1');
+  await page.locator('input[formcontrolname="cantidadNoches"]').fill('3');
   await page.locator('select[formcontrolname="departmentId"]').selectOption({
     label: `${departmentName} (${departmentPricePerNight}$/noche)`
   });
@@ -335,6 +421,7 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   await page.getByRole('button', { name: 'Crear reserva' }).click();
   await expect(page.getByText('Reserva creada exitosamente.')).toBeVisible();
 
+  await simulatedDate.fill(actualMismatchCheckInDate);
   await page.getByRole('link', { name: 'Estadías' }).click();
   await page.getByRole('button', { name: 'Desde Reserva' }).click();
   const mismatchReservationSelect = page.locator('select[formcontrolname="reservationId"]');
@@ -354,7 +441,81 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   await mismatchTenantCards.nth(0).locator('input[formcontrolname="email"]').fill(`diferente-${unique}@nido-sereno.local`);
   await mismatchTenantCards.nth(0).locator('input[formcontrolname="phoneNumber"]').fill('1123456784');
   await page.locator('input[formcontrolname="montoPagadoEnCheckIn"]').fill('0');
+
+  const checkInDateTime = page.locator('input[formcontrolname="fechaHoraCheckInReal"]');
+  await expect(checkInDateTime).toHaveValue(new RegExp(`^${actualMismatchCheckInDate}T`));
   await page.getByRole('button', { name: 'Realizar Check-In' }).click();
+  const justificationModal = page.locator('div.fixed.inset-0').filter({
+    has: page.getByRole('heading', { name: /Fecha de check-in no coincide/ })
+  });
+  await expect(justificationModal).toContainText(mismatchCheckInDate);
+  await expect(justificationModal).toContainText(actualMismatchCheckInDate);
+  await expect(justificationModal).toContainText('después');
+  await justificationModal.getByRole('button', { name: 'Cancelar' }).click();
+  await expect(justificationModal).toBeHidden();
+  await expect(page.getByRole('row').filter({ hasText: 'Inquilino Diferente' })).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Realizar Check-In' }).click();
+  const retryJustificationModal = page.locator('div.fixed.inset-0').filter({
+    has: page.getByRole('heading', { name: /Fecha de check-in no coincide/ })
+  });
+  const checkInReason = 'Llegó un día después por un retraso en el viaje.';
+  await retryJustificationModal.getByRole('button', { name: 'Confirmar' }).click();
+  await expect(retryJustificationModal).toBeVisible();
+  await expect(retryJustificationModal.getByText('La justificación es obligatoria para continuar con el check-in.')).toBeVisible();
+
+  await retryJustificationModal.getByPlaceholder('Escribí el motivo de la diferencia de fecha...').fill(checkInReason);
+  const checkInRequestPromise = page.waitForRequest(request =>
+    request.method() === 'POST' && request.url().endsWith('/stays/checkin')
+  );
+  await retryJustificationModal.getByRole('button', { name: 'Confirmar' }).click();
+  const checkInRequest = await checkInRequestPromise;
+  expect(checkInRequest.postDataJSON().fechaHoraCheckInReal).toMatch(new RegExp(`^${actualMismatchCheckInDate}T`));
+  expect(checkInRequest.postDataJSON().comentariosCheckIn).toContain(`[FECHA JUSTIFICADA] Motivo: ${checkInReason}`);
   await expect(page.getByText('Check-in realizado exitosamente.')).toBeVisible();
   await expect(page.getByRole('row').filter({ hasText: 'Inquilino Diferente' })).toBeVisible();
+
+  const expressCheckInDate = addDays(actualMismatchCheckInDate, 5);
+  await page.getByRole('link', { name: 'Reservas', exact: true }).click();
+  await simulatedDate.fill(expressCheckInDate);
+  await page.getByRole('link', { name: 'Estadías', exact: true }).click();
+  await page.getByRole('button', { name: 'Check-In Express', exact: true }).click();
+
+  const expressCheckInDateTime = page.locator('input[formcontrolname="fechaHoraCheckInReal"]');
+  const expressCheckOutDate = page.locator('input[formcontrolname="fechaCheckOutPlaneada"]');
+  const expressTenantCards = page.locator('div[formArrayName="tenants"] > div.border.rounded-lg');
+  await expect(expressCheckInDateTime).toHaveValue(new RegExp(`^${expressCheckInDate}T`));
+  await expect(expressCheckOutDate).toHaveValue('');
+  await expect(expressTenantCards).toHaveCount(1);
+
+  await page.locator('select[formcontrolname="departmentId"]').selectOption({ label: departmentName });
+  await expressCheckOutDate.fill(addDays(expressCheckInDate, 1));
+  const expressTotal = page.locator('input[formcontrolname="precioTotal"]');
+  await expect(expressTotal).toHaveValue(String(departmentPricePerNight));
+
+  const expressTenantName = `Eva Express ${unique}`;
+  await expressTenantCards.locator('input[formcontrolname="documentNumber"]').fill(`${unique}77`);
+  await expressTenantCards.locator('input[formcontrolname="firstName"]').fill('Eva');
+  await expressTenantCards.locator('input[formcontrolname="lastName"]').fill(`Express ${unique}`);
+  await expressTenantCards.locator('input[formcontrolname="email"]').fill(`express-${unique}@nido-sereno.local`);
+  await expressTenantCards.locator('input[formcontrolname="phoneNumber"]').fill('1123456788');
+  await page.locator('textarea[formcontrolname="comentariosCheckIn"]').fill('Llegada sin reserva previa.');
+
+  const expressRequestPromise = page.waitForRequest(request =>
+    request.method() === 'POST' && request.url().endsWith('/stays')
+  );
+  await page.getByRole('button', { name: 'Realizar Check-In Express' }).click();
+  const expressRequest = await expressRequestPromise;
+  const expressRequestBody = expressRequest.postDataJSON();
+  expect(expressRequestBody.fechaHoraCheckInReal).toMatch(new RegExp(`^${expressCheckInDate}T`));
+  expect(expressRequestBody.fechaCheckOutPlaneada).toBe(addDays(expressCheckInDate, 1));
+  expect(expressRequestBody.cantidadPersonas).toBe(1);
+  expect(expressRequestBody.precioTotal).toBe(departmentPricePerNight);
+  expect(expressRequestBody.montoSenia).toBe(departmentPricePerNight);
+  expect(expressRequestBody.tenants).toHaveLength(1);
+  expect(expressRequestBody.tenants[0].firstName).toBe('Eva');
+
+  await expect(page.getByText('Check-in express realizado exitosamente.')).toBeVisible();
+  const expressStayRow = page.getByRole('row').filter({ hasText: expressTenantName });
+  await expect(expressStayRow).toContainText('En curso');
 });
