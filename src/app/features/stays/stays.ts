@@ -63,6 +63,9 @@ export class StaysComponent implements OnInit {
   showCheckoutPaymentReminder = false;
   pendingCheckoutStayId: number | null = null;
   pendingCheckoutRequest: StayFinalizationRequest | null = null;
+  checkoutPaymentAmount: number | null = 0;
+  checkoutDebtComment = '';
+  checkoutPaymentError = '';
 
   // Mapa de inquilinos encontrados por DNI, claveado por índice de tenant
   // Ej: { 0: TenantSearchResponse, 2: TenantSearchResponse }
@@ -82,6 +85,10 @@ export class StaysComponent implements OnInit {
   
   // Checkbox para usar el reservante como inquilino
   useReservanteAsTenant = false;
+  showTenantCountConfirmation = false;
+  tenantCountDialogReservationCount = 0;
+  tenantCountDialogProposedCount = 0;
+  pendingTenantCountAction: { type: 'add' } | { type: 'remove'; index: number } | null = null;
 
   // Variables para cálculo de precio en express
   selectedDepartmentPrice: number | null = null;
@@ -255,16 +262,65 @@ export class StaysComponent implements OnInit {
   }
 
   addTenantExisting(): void {
+    if (!this.selectedReservation) {
+      this.addTenantExistingForm();
+      return;
+    }
+    this.requestTenantCountChange({ type: 'add' });
+  }
+
+  removeTenantExisting(index: number): void {
+    if (this.existingTenants.length <= 1) return;
+    if (!this.selectedReservation) {
+      this.removeTenantExistingForm(index);
+      return;
+    }
+    this.requestTenantCountChange({ type: 'remove', index });
+  }
+
+  private addTenantExistingForm(): void {
     const newIndex = this.existingTenants.length;
     this.existingTenants.push(this.createTenant());
     this.subscribeToDocumentSearch(this.existingTenants, newIndex);
   }
 
-  removeTenantExisting(index: number): void {
-    if (this.existingTenants.length > 1) {
-      delete this.foundTenants[index];
-      delete this.searchingTenants[index];
-      this.existingTenants.removeAt(index);
+  private removeTenantExistingForm(index: number): void {
+    delete this.foundTenants[index];
+    delete this.searchingTenants[index];
+    this.existingTenants.removeAt(index);
+  }
+
+  private requestTenantCountChange(action: { type: 'add' } | { type: 'remove'; index: number }): void {
+    this.pendingTenantCountAction = action;
+    this.tenantCountDialogReservationCount = this.selectedReservation?.cantidadPersonas || 1;
+    this.tenantCountDialogProposedCount = this.existingTenants.length + (action.type === 'add' ? 1 : -1);
+    this.showTenantCountConfirmation = true;
+  }
+
+  confirmTenantCountChange(): void {
+    const action = this.pendingTenantCountAction;
+    if (!action) return;
+    if (action.type === 'add') {
+      this.addTenantExistingForm();
+    } else {
+      this.removeTenantExistingForm(action.index);
+    }
+    this.closeTenantCountConfirmation();
+  }
+
+  closeTenantCountConfirmation(): void {
+    this.showTenantCountConfirmation = false;
+    this.pendingTenantCountAction = null;
+  }
+
+  private setExistingTenantCount(count: number): void {
+    const tenantCount = Math.max(1, Math.floor(count || 1));
+    this.existingTenants.clear({ emitEvent: false });
+    this.foundTenants = {};
+    this.searchingTenants = {};
+    for (let index = 0; index < tenantCount; index++) {
+      this.existingTenants.push(this.createTenant(), { emitEvent: false });
+      this.subscribeToDocumentSearch(this.existingTenants, index);
     }
   }
 
@@ -383,6 +439,7 @@ export class StaysComponent implements OnInit {
     if (!reservationId) {
       this.selectedReservation = null;
       this.useReservanteAsTenant = false;
+      this.setExistingTenantCount(1);
       this.existingForm.get('montoPagadoEnCheckIn')?.setValue(0, { emitEvent: false });
       this.existingForm.get('montoPagadoEnCheckIn')?.setValidators([Validators.min(0), Validators.max(0)]);
       this.existingForm.get('montoPagadoEnCheckIn')?.updateValueAndValidity({ emitEvent: false });
@@ -398,12 +455,14 @@ export class StaysComponent implements OnInit {
     if (!reservation) {
       this.selectedReservation = null;
       this.useReservanteAsTenant = false;
+      this.setExistingTenantCount(1);
       this.existingForm.get('montoPagadoEnCheckIn')?.setValue(0, { emitEvent: false });
       return;
     }
 
     this.selectedReservation = reservation;
     this.useReservanteAsTenant = false;
+    this.setExistingTenantCount(reservation.cantidadPersonas);
     const paymentControl = this.existingForm.get('montoPagadoEnCheckIn');
     paymentControl?.setValue(0, { emitEvent: false });
     paymentControl?.setValidators([Validators.min(0), Validators.max(this.getCheckInOutstandingAmount())]);
@@ -417,18 +476,6 @@ export class StaysComponent implements OnInit {
       { emitEvent: false }
     );
 
-    // Resetear el primer tenant
-    const firstTenant = this.existingTenants.at(0) as FormGroup;
-    if (firstTenant) {
-      firstTenant.reset({
-        documentNumber: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        dateOfBirth: ''
-      }, { emitEvent: false });
-    }
   }
 
   /**
@@ -528,6 +575,16 @@ export class StaysComponent implements OnInit {
     if (stayId === null) return 0;
     const stay = this.stays.find(item => item.id === stayId);
     return Math.max(0, (stay?.precioTotalReserva || 0) - (stay?.montoPagadoReserva || 0));
+  }
+
+  getCheckoutRemainingAfterPayment(): number {
+    if (this.pendingCheckoutStayId === null) return 0;
+    const outstanding = this.getCheckoutOutstandingAmount(this.pendingCheckoutStayId);
+    return Math.max(0, outstanding - Number(this.checkoutPaymentAmount || 0));
+  }
+
+  formatCheckoutAmount(amount: number): string {
+    return new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 }).format(amount);
   }
 
   executeCheckInFromReservation(request: CheckInRequest): void {
@@ -682,6 +739,9 @@ export class StaysComponent implements OnInit {
     if (this.getCheckoutOutstandingAmount(stayId) > 0) {
       this.pendingCheckoutStayId = stayId;
       this.pendingCheckoutRequest = request;
+      this.checkoutPaymentAmount = 0;
+      this.checkoutDebtComment = '';
+      this.checkoutPaymentError = '';
       this.showCheckoutPaymentReminder = true;
       return;
     }
@@ -721,19 +781,49 @@ export class StaysComponent implements OnInit {
   confirmCheckoutPaymentReminder(): void {
     const stayId = this.pendingCheckoutStayId;
     const request = this.pendingCheckoutRequest;
+    if (stayId === null || !request) return;
+
+    const outstanding = this.getCheckoutOutstandingAmount(stayId);
+    const paymentReceived = Number(this.checkoutPaymentAmount);
+    if (!Number.isFinite(paymentReceived) || paymentReceived < 0) {
+      this.checkoutPaymentError = 'Ingresá un importe válido, igual o mayor a cero.';
+      return;
+    }
+    if (paymentReceived > outstanding + 0.01) {
+      this.checkoutPaymentError = 'El pago no puede superar el saldo pendiente.';
+      return;
+    }
+
+    const remaining = Math.max(outstanding - paymentReceived, 0);
+    if (remaining > 0.01 && !this.checkoutDebtComment.trim()) {
+      this.checkoutPaymentError = 'Explicá el motivo del saldo impago para cerrar la estadía.';
+      return;
+    }
+
+    request.montoPagadoEnCheckOut = paymentReceived;
+    if (remaining > 0.01) {
+      const debtNote = `[SALDO IMPAGO: $${this.formatCheckoutAmount(remaining)}] Motivo: ${this.checkoutDebtComment.trim()}`;
+      request.comentariosCheckOut = [request.comentariosCheckOut?.trim(), debtNote]
+        .filter(Boolean)
+        .join('\n');
+    }
+
     this.showCheckoutPaymentReminder = false;
     this.pendingCheckoutStayId = null;
     this.pendingCheckoutRequest = null;
-    if (stayId !== null && request) {
-      request.montoPagadoEnCheckOut = this.getCheckoutOutstandingAmount(stayId);
-      this.continueCheckout(stayId, request);
-    }
+    this.checkoutPaymentAmount = 0;
+    this.checkoutDebtComment = '';
+    this.checkoutPaymentError = '';
+    this.continueCheckout(stayId, request);
   }
 
   closeCheckoutPaymentReminder(): void {
     this.showCheckoutPaymentReminder = false;
     this.pendingCheckoutStayId = null;
     this.pendingCheckoutRequest = null;
+    this.checkoutPaymentAmount = 0;
+    this.checkoutDebtComment = '';
+    this.checkoutPaymentError = '';
   }
 
   executeCheckout(stayId: number, request: StayFinalizationRequest): void {

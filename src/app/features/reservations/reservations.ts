@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ReservationService } from '../../services/reservation.service';
 import { ReservationRequest, ReservationResponse } from '../../models/reservation.models';
@@ -14,7 +14,7 @@ import { addNightsToDate, calculateNightCount } from '../../shared/pricing.utils
 @Component({
   selector: 'app-reservations',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ErrorModalComponent, RouterLink],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ErrorModalComponent, RouterLink],
   templateUrl: './reservations.html',
   styleUrl: './reservations.css'
 })
@@ -32,6 +32,11 @@ export class ReservationsComponent implements OnInit {
   success = '';
   showErrorModal = false;
   errorMessage = '';
+  showDepositModal = false;
+  depositReservation: ReservationResponse | null = null;
+  depositAmount: number | null = null;
+  depositError = '';
+  savingDeposit = false;
 
   get noDepartments(): boolean {
     return this.departments.length === 0;
@@ -223,6 +228,83 @@ export class ReservationsComponent implements OnInit {
       return;
     }
     this.calculatedDepositMinimum = baseAmount * this.selectedDepartmentDepositPercentage / 100;
+  }
+
+  getReservationDepositMinimum(reservation: ReservationResponse): number {
+    const department = this.departments.find(item => item.id === reservation.departmentId);
+    if (!department) return 0;
+    const baseAmount = department.baseCalculoSenia === 'NIGHT_PRICE'
+      ? department.precioPorNoche
+      : reservation.precioTotal;
+    return baseAmount * department.porcentajeSeniaRequerida / 100;
+  }
+
+  getDepositRemainingToConfirm(reservation: ReservationResponse): number {
+    return Math.max(0, this.getReservationDepositMinimum(reservation) - (reservation.montoSenia || 0));
+  }
+
+  getDepositRemainingAfterInput(): number {
+    if (!this.depositReservation) return 0;
+    return Math.max(0, this.getDepositRemainingToConfirm(this.depositReservation) - Number(this.depositAmount || 0));
+  }
+
+  formatAmount(amount: number): string {
+    return new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 }).format(amount);
+  }
+
+  getReservationStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      PENDING: 'Pendiente',
+      CONFIRMED: 'Confirmada',
+      CANCELED: 'Cancelada',
+      CANCELLED: 'Cancelada',
+      CHECKED_IN: 'Con check-in',
+      COMPLETED: 'Completada'
+    };
+    return labels[status] || status;
+  }
+
+  openDepositModal(reservation: ReservationResponse): void {
+    this.depositReservation = reservation;
+    this.depositAmount = null;
+    this.depositError = '';
+    this.showDepositModal = true;
+  }
+
+  closeDepositModal(): void {
+    if (this.savingDeposit) return;
+    this.showDepositModal = false;
+    this.depositReservation = null;
+    this.depositAmount = null;
+    this.depositError = '';
+  }
+
+  confirmDeposit(): void {
+    if (!this.depositReservation) return;
+    const amount = Number(this.depositAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      this.depositError = 'Ingresá un importe mayor a cero.';
+      return;
+    }
+
+    const outstanding = Math.max(0, this.depositReservation.precioTotal - (this.depositReservation.montoSenia || 0));
+    if (amount > outstanding) {
+      this.depositError = 'El pago no puede superar el saldo pendiente de la reserva.';
+      return;
+    }
+
+    this.savingDeposit = true;
+    this.resService.registerDeposit(this.depositReservation.id, amount).subscribe({
+      next: () => {
+        this.savingDeposit = false;
+        this.closeDepositModal();
+        this.loadReservations();
+      },
+      error: (err) => {
+        this.savingDeposit = false;
+        this.depositError = this.extractErrorMessage(err);
+      }
+    });
   }
 
   closeErrorModal(): void {
