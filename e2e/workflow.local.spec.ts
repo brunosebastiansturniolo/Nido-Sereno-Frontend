@@ -374,6 +374,7 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
     await scenarioStayRow.getByRole('button', { name: 'Check-out' }).click();
     await page.locator('input[formcontrolname="fechaHoraCheckOutReal"]').fill(`${scenarioCheckOutDate}T12:00`);
     await page.locator('select[formcontrolname="classificationScore"]').selectOption({ label: '5 - Excelente' });
+    await page.locator('input[formcontrolname="classificationReviewComment"]').fill(`Buena estadía de ${scenario.label}.`);
     await page.getByRole('button', { name: 'Confirmar Check-out' }).click();
 
     let checkoutDialog = page.getByRole('dialog', { name: 'Registrar pago del check-out' });
@@ -481,6 +482,62 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   await expect(page.getByText('Check-in realizado exitosamente.')).toBeVisible();
   await expect(page.getByRole('row').filter({ hasText: 'Inquilino Diferente' })).toBeVisible();
 
+  const earlyReservationCheckInDate = addDays(mismatchCheckInDate, 10);
+  const actualEarlyCheckInDate = addDays(earlyReservationCheckInDate, -1);
+  const earlyReservationName = 'Reservante Anticipado';
+  await simulatedDate.fill(actualEarlyCheckInDate);
+  await page.getByRole('link', { name: 'Reservas', exact: true }).click();
+  await page.locator('input[formcontrolname="firstName"]').fill('Reservante');
+  await page.locator('input[formcontrolname="lastName"]').fill('Anticipado');
+  await page.locator('input[formcontrolname="documentNumber"]').fill(`${unique}97`);
+  await page.locator('input[formcontrolname="phoneNumber"]').fill('1123456785');
+  await page.locator('input[formcontrolname="cantidadPersonas"]').fill('1');
+  await page.locator('input[formcontrolname="fechaCheckIn"]').fill(earlyReservationCheckInDate);
+  await page.locator('input[formcontrolname="cantidadNoches"]').fill('3');
+  await page.locator('select[formcontrolname="departmentId"]').selectOption({
+    label: `${departmentName} (${departmentPricePerNight}$/noche)`
+  });
+  await page.locator('input[formcontrolname="montoSenia"]').fill('0');
+  await page.getByRole('button', { name: 'Crear reserva' }).click();
+  await expect(page.getByText('Reserva creada exitosamente.')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Estadías', exact: true }).click();
+  await page.getByRole('button', { name: 'Desde Reserva' }).click();
+  await page.locator('select[formcontrolname="reservationId"]').selectOption({
+    label: `${earlyReservationName} - ${earlyReservationCheckInDate}`
+  });
+  const earlyTenant = page.locator('div[formArrayName="tenants"] > div.border.rounded-lg').nth(0);
+  await earlyTenant.locator('input[formcontrolname="documentNumber"]').fill(`${unique}96`);
+  await earlyTenant.locator('input[formcontrolname="firstName"]').fill('Inquilino');
+  await earlyTenant.locator('input[formcontrolname="lastName"]').fill('Anticipado');
+  await earlyTenant.locator('input[formcontrolname="email"]').fill(`anticipado-${unique}@nido-sereno.local`);
+  await earlyTenant.locator('input[formcontrolname="phoneNumber"]').fill('1123456786');
+  await page.locator('input[formcontrolname="montoPagadoEnCheckIn"]').fill('0');
+
+  const earlyCheckInDateTime = page.locator('input[formcontrolname="fechaHoraCheckInReal"]');
+  await expect(earlyCheckInDateTime).toHaveValue(new RegExp(`^${actualEarlyCheckInDate}T`));
+  await page.getByRole('button', { name: 'Realizar Check-In' }).click();
+  const earlyJustificationModal = page.locator('div.fixed.inset-0').filter({
+    has: page.getByRole('heading', { name: /Fecha de check-in no coincide/ })
+  });
+  await expect(earlyJustificationModal).toContainText(earlyReservationCheckInDate);
+  await expect(earlyJustificationModal).toContainText(actualEarlyCheckInDate);
+  await expect(earlyJustificationModal).toContainText('antes');
+  await earlyJustificationModal.getByRole('button', { name: 'Confirmar' }).click();
+  await expect(earlyJustificationModal.getByText('La justificación es obligatoria para continuar con el check-in.')).toBeVisible();
+
+  const earlyCheckInReason = 'El huésped solicitó ingresar un día antes.';
+  await earlyJustificationModal.getByPlaceholder('Escribí el motivo de la diferencia de fecha...').fill(earlyCheckInReason);
+  const earlyCheckInRequestPromise = page.waitForRequest(request =>
+    request.method() === 'POST' && request.url().endsWith('/stays/checkin')
+  );
+  await earlyJustificationModal.getByRole('button', { name: 'Confirmar' }).click();
+  const earlyCheckInRequest = await earlyCheckInRequestPromise;
+  expect(earlyCheckInRequest.postDataJSON().fechaHoraCheckInReal).toMatch(new RegExp(`^${actualEarlyCheckInDate}T`));
+  expect(earlyCheckInRequest.postDataJSON().comentariosCheckIn).toContain(`[FECHA JUSTIFICADA] Motivo: ${earlyCheckInReason}`);
+  await expect(page.getByText('Check-in realizado exitosamente.')).toBeVisible();
+  await expect(page.getByRole('row').filter({ hasText: 'Inquilino Anticipado' })).toBeVisible();
+
   const expressCheckInDate = addDays(actualMismatchCheckInDate, 5);
   await page.getByRole('link', { name: 'Reservas', exact: true }).click();
   await simulatedDate.fill(expressCheckInDate);
@@ -550,9 +607,39 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   expect(expressRequestBody.tenants).toHaveLength(2);
   expect(expressRequestBody.tenants[0].firstName).toBe('Eva');
   expect(expressRequestBody.tenants[1].firstName).toBe('Nora');
-  expect((await expressResponse.json()).fechaHoraCheckOutPlaneada).toBe(expectedExpressCheckOutDateTime);
+  const createdExpressStay = await expressResponse.json();
+  expect(createdExpressStay.fechaHoraCheckOutPlaneada).toBe(expectedExpressCheckOutDateTime);
 
   await expect(page.getByText('Check-in express realizado exitosamente.')).toBeVisible();
   const expressStayRow = page.getByRole('row').filter({ hasText: expressTenantName });
   await expect(expressStayRow).toContainText('En curso');
+
+  await expressStayRow.getByRole('button', { name: 'Check-out' }).click();
+  const checkoutScore = page.locator('select[formcontrolname="classificationScore"]');
+  await checkoutScore.selectOption({ label: '5 - Excelente' });
+  await page.getByRole('button', { name: 'Confirmar Check-out' }).click();
+  const classificationDialog = page.getByRole('dialog', { name: 'Recordatorio de clasificación' });
+  await expect(classificationDialog).toBeVisible();
+  await expect(classificationDialog).toContainText('sin guardar una clasificación');
+  await classificationDialog.getByRole('button', { name: 'Cancelar' }).click();
+  await expect(classificationDialog).toBeHidden();
+  await expect(page.locator('input[formcontrolname="fechaHoraCheckOutReal"]')).toBeVisible();
+  await expect(checkoutScore).toHaveValue('5: 5');
+  await expect(expressStayRow).toContainText('En curso');
+
+  await checkoutScore.selectOption({ label: 'Seleccioná una puntuación' });
+  await page.locator('input[formcontrolname="classificationReviewComment"]').fill('Sin puntuación, solo comentario.');
+  await page.getByRole('button', { name: 'Confirmar Check-out' }).click();
+  await expect(classificationDialog).toBeVisible();
+  const expressCheckoutRequestPromise = page.waitForRequest(request =>
+    request.method() === 'PATCH' && request.url().endsWith(`/stays/${createdExpressStay.id}/checkout`)
+  );
+  await classificationDialog.getByRole('button', { name: 'Confirmar de todas formas' }).click();
+  const expressCheckoutRequest = await expressCheckoutRequestPromise;
+  const expressCheckoutRequestBody = expressCheckoutRequest.postDataJSON();
+  expect(expressCheckoutRequestBody).not.toHaveProperty('classificationScore');
+  expect(expressCheckoutRequestBody).not.toHaveProperty('classificationReviewComment');
+  await expect(page.getByText('Check-out realizado exitosamente.')).toBeVisible();
+  await expect(expressStayRow).toContainText('Completada');
+  await expect(expressStayRow.locator('td').nth(4)).toHaveText('—');
 });

@@ -61,6 +61,7 @@ export class StaysComponent implements OnInit {
   // Datos temporales para procesar después del modal
   pendingCheckInRequest: CheckInRequest | null = null;
   showCheckoutPaymentReminder = false;
+  showCheckoutClassificationReminder = false;
   pendingCheckoutStayId: number | null = null;
   pendingCheckoutRequest: StayFinalizationRequest | null = null;
   checkoutPaymentAmount: number | null = 0;
@@ -176,7 +177,7 @@ export class StaysComponent implements OnInit {
       fechaHoraCheckOutReal: [this.dateCtrl.getDateTimeStr()],
       comentariosCheckOut: [''],
       estadoDepartamento: ['GOOD', [Validators.required]],
-      classificationScore: [null, [Validators.required, Validators.min(1), Validators.max(5)]],
+      classificationScore: [null, [Validators.min(1), Validators.max(5)]],
       classificationReviewComment: ['']
     });
 
@@ -766,8 +767,12 @@ export class StaysComponent implements OnInit {
       fechaHoraCheckOutReal: formValue.fechaHoraCheckOutReal,
       comentariosCheckOut: formValue.comentariosCheckOut,
       estadoDepartamento: formValue.estadoDepartamento,
-      classificationScore: formValue.classificationScore,
-      classificationReviewComment: formValue.classificationScore ? formValue.classificationReviewComment : undefined
+      classificationScore: formValue.classificationScore && formValue.classificationReviewComment?.trim()
+        ? formValue.classificationScore
+        : undefined,
+      classificationReviewComment: formValue.classificationScore && formValue.classificationReviewComment?.trim()
+        ? formValue.classificationReviewComment.trim()
+        : undefined
     };
 
     if (this.getCheckoutOutstandingAmount(stayId) > 0) {
@@ -783,7 +788,14 @@ export class StaysComponent implements OnInit {
     this.continueCheckout(stayId, request);
   }
 
-  private continueCheckout(stayId: number, request: StayFinalizationRequest): void {
+  private continueCheckout(stayId: number, request: StayFinalizationRequest, skipClassificationReminder = false): void {
+    if (!skipClassificationReminder && (!request.classificationScore || !request.classificationReviewComment?.trim())) {
+      this.pendingCheckoutStayId = stayId;
+      this.pendingCheckoutRequest = request;
+      this.showCheckoutClassificationReminder = true;
+      return;
+    }
+
     // Check if check-out date matches the planned check-out date.
     // Usamos la fecha del simulador (dateCtrl.getDateStr()) como referencia,
     // igual que el tutorial, para que la validación funcione correctamente.
@@ -849,6 +861,23 @@ export class StaysComponent implements OnInit {
     this.checkoutDebtComment = '';
     this.checkoutPaymentError = '';
     this.continueCheckout(stayId, request);
+  }
+
+  confirmCheckoutWithoutClassification(): void {
+    const stayId = this.pendingCheckoutStayId;
+    const request = this.pendingCheckoutRequest;
+    if (stayId === null || !request) return;
+
+    this.showCheckoutClassificationReminder = false;
+    this.pendingCheckoutStayId = null;
+    this.pendingCheckoutRequest = null;
+    this.continueCheckout(stayId, request, true);
+  }
+
+  closeCheckoutClassificationReminder(): void {
+    this.showCheckoutClassificationReminder = false;
+    this.pendingCheckoutStayId = null;
+    this.pendingCheckoutRequest = null;
   }
 
   closeCheckoutPaymentReminder(): void {
