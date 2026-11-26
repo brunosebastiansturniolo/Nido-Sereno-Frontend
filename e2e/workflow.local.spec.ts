@@ -484,21 +484,33 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   const expressCheckInDateTime = page.locator('input[formcontrolname="fechaHoraCheckInReal"]');
   const expressCheckOutDate = page.locator('input[formcontrolname="fechaCheckOutPlaneada"]');
   const expressTenantCards = page.locator('div[formArrayName="tenants"] > div.border.rounded-lg');
+  const expressPeopleCount = page.locator('input[formcontrolname="cantidadPersonas"]');
   await expect(expressCheckInDateTime).toHaveValue(new RegExp(`^${expressCheckInDate}T`));
   await expect(expressCheckOutDate).toHaveValue('');
   await expect(expressTenantCards).toHaveCount(1);
 
   await page.locator('select[formcontrolname="departmentId"]').selectOption({ label: departmentName });
   await expressCheckOutDate.fill(addDays(expressCheckInDate, 1));
+  await expressPeopleCount.fill('2');
+  await page.getByRole('button', { name: '+ Agregar inquilino' }).click();
+  await expect(expressTenantCards).toHaveCount(2);
   const expressTotal = page.locator('input[formcontrolname="precioTotal"]');
   await expect(expressTotal).toHaveValue(String(departmentPricePerNight));
 
   const expressTenantName = `Eva Express ${unique}`;
-  await expressTenantCards.locator('input[formcontrolname="documentNumber"]').fill(`${unique}77`);
-  await expressTenantCards.locator('input[formcontrolname="firstName"]').fill('Eva');
-  await expressTenantCards.locator('input[formcontrolname="lastName"]').fill(`Express ${unique}`);
-  await expressTenantCards.locator('input[formcontrolname="email"]').fill(`express-${unique}@nido-sereno.local`);
-  await expressTenantCards.locator('input[formcontrolname="phoneNumber"]').fill('1123456788');
+  const expressSecondTenantName = `Nora Express ${unique}`;
+  const expressFirstTenant = expressTenantCards.nth(0);
+  await expressFirstTenant.locator('input[formcontrolname="documentNumber"]').fill(`${unique}77`);
+  await expressFirstTenant.locator('input[formcontrolname="firstName"]').fill('Eva');
+  await expressFirstTenant.locator('input[formcontrolname="lastName"]').fill(`Express ${unique}`);
+  await expressFirstTenant.locator('input[formcontrolname="email"]').fill(`express-${unique}@nido-sereno.local`);
+  await expressFirstTenant.locator('input[formcontrolname="phoneNumber"]').fill('1123456788');
+  const expressSecondTenant = expressTenantCards.nth(1);
+  await expressSecondTenant.locator('input[formcontrolname="documentNumber"]').fill(`${unique}78`);
+  await expressSecondTenant.locator('input[formcontrolname="firstName"]').fill('Nora');
+  await expressSecondTenant.locator('input[formcontrolname="lastName"]').fill(`Express ${unique}`);
+  await expressSecondTenant.locator('input[formcontrolname="email"]').fill(`express-nora-${unique}@nido-sereno.local`);
+  await expressSecondTenant.locator('input[formcontrolname="phoneNumber"]').fill('1123456789');
   await page.locator('textarea[formcontrolname="comentariosCheckIn"]').fill('Llegada sin reserva previa.');
 
   const expressRequestPromise = page.waitForRequest(request =>
@@ -509,11 +521,12 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   const expressRequestBody = expressRequest.postDataJSON();
   expect(expressRequestBody.fechaHoraCheckInReal).toMatch(new RegExp(`^${expressCheckInDate}T`));
   expect(expressRequestBody.fechaCheckOutPlaneada).toBe(addDays(expressCheckInDate, 1));
-  expect(expressRequestBody.cantidadPersonas).toBe(1);
+  expect(expressRequestBody.cantidadPersonas).toBe(2);
   expect(expressRequestBody.precioTotal).toBe(departmentPricePerNight);
   expect(expressRequestBody.montoSenia).toBe(departmentPricePerNight);
-  expect(expressRequestBody.tenants).toHaveLength(1);
+  expect(expressRequestBody.tenants).toHaveLength(2);
   expect(expressRequestBody.tenants[0].firstName).toBe('Eva');
+  expect(expressRequestBody.tenants[1].firstName).toBe('Nora');
 
   await expect(page.getByText('Check-in express realizado exitosamente.')).toBeVisible();
   const expressStayRow = page.getByRole('row').filter({ hasText: expressTenantName });
