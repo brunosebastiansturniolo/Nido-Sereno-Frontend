@@ -28,8 +28,12 @@ export class ForgotPasswordComponent {
         this.submitted = true;
         this.loading = false;
       },
-      error: () => {
-        this.error = 'No se pudo procesar la solicitud. Intentá nuevamente más tarde.';
+      error: (err) => {
+        if (err?.error?.businessErrorCode === 303) {
+          this.error = 'El correo es correcto, pero la cuenta aún no fue activada. Activala antes de continuar.';
+        } else {
+          this.error = 'No se pudo procesar la solicitud. Intentá nuevamente más tarde.';
+        }
         this.loading = false;
       }
     });

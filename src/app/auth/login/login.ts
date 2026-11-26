@@ -41,7 +41,14 @@ export class LoginComponent {
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        this.error = 'Credenciales inválidas. Verificá tu email y contraseña.';
+        const businessErrorCode = err?.error?.businessErrorCode;
+        if (businessErrorCode === 303) {
+          this.error = 'Tu cuenta aún no está activada. Activala antes de iniciar sesión.';
+        } else if (businessErrorCode === 304) {
+          this.error = 'El email o la contraseña son incorrectos.';
+        } else {
+          this.error = 'No se pudo iniciar sesión. Intentá nuevamente más tarde.';
+        }
         this.loading = false;
         console.error(err);
       }
