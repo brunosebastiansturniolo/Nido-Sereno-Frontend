@@ -523,6 +523,7 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   await expect(earlyJustificationModal).toContainText(earlyReservationCheckInDate);
   await expect(earlyJustificationModal).toContainText(actualEarlyCheckInDate);
   await expect(earlyJustificationModal).toContainText('antes');
+  await expect(earlyJustificationModal).toContainText('La llegada anticipada suma 1 noche. Al continuar, el total pasa de $ 240.000 a $ 320.000.');
   await earlyJustificationModal.getByRole('button', { name: 'Confirmar' }).click();
   await expect(earlyJustificationModal.getByText('La justificación es obligatoria para continuar con el check-in.')).toBeVisible();
 
@@ -537,6 +538,9 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   expect(earlyCheckInRequest.postDataJSON().comentariosCheckIn).toContain(`[FECHA JUSTIFICADA] Motivo: ${earlyCheckInReason}`);
   await expect(page.getByText('Check-in realizado exitosamente.')).toBeVisible();
   await expect(page.getByRole('row').filter({ hasText: 'Inquilino Anticipado' })).toBeVisible();
+  await page.getByRole('link', { name: 'Reservas', exact: true }).click();
+  await expect(page.getByRole('row').filter({ hasText: earlyReservationName })).toContainText('$ 320000');
+  await page.getByRole('link', { name: 'Estadías', exact: true }).click();
 
   const sameDayCheckInDate = addDays(earlyReservationCheckInDate, 10);
   const sameDayReservationName = 'Reservante MismoDia';

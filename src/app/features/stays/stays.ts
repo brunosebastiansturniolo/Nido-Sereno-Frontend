@@ -548,6 +548,7 @@ export class StaysComponent implements OnInit {
   }
 
   onCheckInFromReservation(): void {
+    this.updateCheckInPaymentValidator();
     if (this.existingForm.invalid) return;
     const formValue = this.existingForm.value;
     const paymentAmount = Number(formValue.montoPagadoEnCheckIn || 0);
@@ -598,7 +599,36 @@ export class StaysComponent implements OnInit {
 
   getCheckInOutstandingAmount(): number {
     if (!this.selectedReservation) return 0;
-    return Math.max(0, (this.selectedReservation.precioTotal || 0) - (this.selectedReservation.montoSenia || 0));
+    return Math.max(0, this.getCheckInTotalAmount() - (this.selectedReservation.montoSenia || 0));
+  }
+
+  getCheckInOriginalTotalAmount(): number {
+    return this.selectedReservation?.precioTotal || 0;
+  }
+
+  getCheckInAdditionalNights(): number {
+    if (!this.selectedReservation) return 0;
+    const actualCheckInDateTime = this.pendingCheckInRequest?.fechaHoraCheckInReal
+      || this.existingForm?.get('fechaHoraCheckInReal')?.value;
+    const actualCheckInDate = actualCheckInDateTime?.slice(0, 10);
+    if (!actualCheckInDate || actualCheckInDate >= this.selectedReservation.fechaCheckIn) return 0;
+
+    const plannedDate = Date.parse(`${this.selectedReservation.fechaCheckIn}T00:00:00Z`);
+    const actualDate = Date.parse(`${actualCheckInDate}T00:00:00Z`);
+    return Math.round((plannedDate - actualDate) / 86_400_000);
+  }
+
+  getCheckInTotalAmount(): number {
+    if (!this.selectedReservation) return 0;
+    const department = this.departments.find(item => item.id === this.selectedReservation?.departmentId);
+    return this.getCheckInOriginalTotalAmount() + this.getCheckInAdditionalNights() * (department?.precioPorNoche || 0);
+  }
+
+  updateCheckInPaymentValidator(): void {
+    const paymentControl = this.existingForm.get('montoPagadoEnCheckIn');
+    if (!paymentControl) return;
+    paymentControl.setValidators([Validators.min(0), Validators.max(this.getCheckInOutstandingAmount())]);
+    paymentControl.updateValueAndValidity({ emitEvent: false });
   }
 
   getCheckInOutstandingAfterPayment(): number {
