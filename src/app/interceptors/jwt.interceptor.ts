@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { DateControllerService } from '../services/date-controller.service';
-import { catchError, Observable, throwError, from } from 'rxjs';
+import { catchError, Observable, throwError, from, switchMap } from 'rxjs';
 
 let isRefreshing = false;
 let refreshTokenPromise: Promise<void> | null = null;
@@ -73,7 +73,7 @@ function handle401Error(
     });
   }
 
-  return from(refreshTokenPromise!.then(() => {
+  return from(refreshTokenPromise!).pipe(switchMap(() => {
     const newToken = localStorage.getItem('token');
     if (!newToken) {
       throw new Error('Sesión expirada');
