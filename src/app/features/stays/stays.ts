@@ -108,22 +108,19 @@ export class StaysComponent implements OnInit {
       departmentId: [null, [Validators.required]],
       fechaHoraCheckInReal: [this.dateCtrl.getDateTimeStr()],
       fechaCheckOutPlaneada: ['', [Validators.required]],
+      horaCheckOutPlaneada: [''],
       cantidadPersonas: [1, [Validators.required, Validators.min(1)]],
       cantidadVehiculos: [0, [Validators.min(0)]],
       precioTotal: [null, [Validators.required, Validators.min(0.01)]],
       comentariosCheckIn: [''],
       tenants: this.fb.array([this.createTenant()])
-    });
+    }, { validators: this.expressSameDayCheckOutValidator() });
 
     // Calcular precio total automáticamente cuando cambian departamento o fechas
-    const expressControlsToWatch = [
-      this.expressForm.get('departmentId')!,
-      this.expressForm.get('fechaCheckOutPlaneada')!
-    ];
-    expressControlsToWatch.forEach(control => {
-      control?.valueChanges.subscribe(() => {
-        this.calculateExpressPricing();
-      });
+    this.expressForm.get('departmentId')?.valueChanges.subscribe(() => this.calculateExpressPricing());
+    this.expressForm.get('fechaCheckOutPlaneada')?.valueChanges.subscribe(() => {
+      this.updateExpressCheckOutTimeDefault();
+      this.calculateExpressPricing();
     });
     this.calculateExpressPricing();
 
@@ -355,12 +352,40 @@ export class StaysComponent implements OnInit {
   }
 
   /**
-   * Devuelve la fecha mínima para el check-out en express (día después del check-in).
+   * Devuelve la fecha mínima para el check-out express; admite la salida el mismo día.
    */
   getExpressCheckOutMinDate(): string {
     const checkIn = this.expressForm.get('fechaHoraCheckInReal')?.value;
     if (!checkIn) return '';
-    return addNightsToDate(checkIn, 1);
+    return checkIn.slice(0, 10);
+  }
+
+  isExpressSameDayCheckOut(): boolean {
+    const checkIn = this.expressForm.get('fechaHoraCheckInReal')?.value;
+    const checkOut = this.expressForm.get('fechaCheckOutPlaneada')?.value;
+    return Boolean(checkIn && checkOut && checkIn.slice(0, 10) === checkOut);
+  }
+
+  private updateExpressCheckOutTimeDefault(): void {
+    const timeControl = this.expressForm.get('horaCheckOutPlaneada');
+    if (this.isExpressSameDayCheckOut()) {
+      timeControl?.setValue('10:00', { emitEvent: false });
+    } else {
+      timeControl?.setValue('', { emitEvent: false });
+    }
+  }
+
+  private expressSameDayCheckOutValidator(): (control: AbstractControl) => ValidationErrors | null {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const checkIn = control.get('fechaHoraCheckInReal')?.value;
+      const checkOut = control.get('fechaCheckOutPlaneada')?.value;
+      if (!checkIn || !checkOut || checkIn.slice(0, 10) !== checkOut) return null;
+
+      const checkOutTime = control.get('horaCheckOutPlaneada')?.value;
+      if (!checkOutTime) return { sameDayCheckOutTimeRequired: true };
+      if (`${checkOut}T${checkOutTime}` <= checkIn) return { sameDayCheckOutTimeInvalid: true };
+      return null;
+    };
   }
 
   /**
@@ -373,7 +398,9 @@ export class StaysComponent implements OnInit {
     const checkIn = this.expressForm.get('fechaHoraCheckInReal')?.value;
     const dept = this.departments.find(d => d.id === Number(deptId));
     this.selectedDepartmentPrice = dept?.precioPorNoche ?? null;
-    this.calculatedNights = calculateNightCount(checkIn, checkOut);
+    this.calculatedNights = checkIn && checkOut && checkIn.slice(0, 10) === checkOut
+      ? 1
+      : calculateNightCount(checkIn, checkOut);
     this.calculatedTotal = this.selectedDepartmentPrice !== null && this.calculatedNights !== null
       ? this.calculatedNights * this.selectedDepartmentPrice
       : null;
@@ -385,13 +412,19 @@ export class StaysComponent implements OnInit {
   }
 
   onCheckInExpress(): void {
-    if (this.expressForm.invalid) return;
+    if (this.expressForm.invalid) {
+      this.expressForm.markAllAsTouched();
+      return;
+    }
     const formValue = this.expressForm.value;
 
     const request: StayRequest = {
       departmentId: formValue.departmentId,
       fechaHoraCheckInReal: formValue.fechaHoraCheckInReal,
       fechaCheckOutPlaneada: formValue.fechaCheckOutPlaneada,
+      fechaHoraCheckOutPlaneada: this.isExpressSameDayCheckOut()
+        ? `${formValue.fechaCheckOutPlaneada}T${formValue.horaCheckOutPlaneada}:00`
+        : undefined,
       cantidadPersonas: formValue.cantidadPersonas,
       cantidadVehiculos: formValue.cantidadVehiculos,
       precioTotal: formValue.precioTotal,
@@ -406,6 +439,7 @@ export class StaysComponent implements OnInit {
         this.success = 'Check-in express realizado exitosamente.';
         this.expressForm.reset({
           fechaHoraCheckInReal: this.dateCtrl.getDateTimeStr(),
+          horaCheckOutPlaneada: '',
           cantidadPersonas: 1,
           cantidadVehiculos: 0
         });

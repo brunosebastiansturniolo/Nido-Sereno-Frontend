@@ -7,6 +7,12 @@ function addDays(date: string, days: number): string {
   return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
 }
 
+function oneHourAfter(dateTime: string): string {
+  const [hours, minutes] = dateTime.slice(11, 16).split(':').map(Number);
+  const totalMinutes = hours * 60 + minutes + 60;
+  return `${String(Math.floor(totalMinutes / 60) % 24).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
+}
+
 async function getActivationCode(request: APIRequestContext, email: string): Promise<string> {
   let activationEmail: any;
   await expect.poll(async () => {
@@ -483,6 +489,7 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
 
   const expressCheckInDateTime = page.locator('input[formcontrolname="fechaHoraCheckInReal"]');
   const expressCheckOutDate = page.locator('input[formcontrolname="fechaCheckOutPlaneada"]');
+  const expressCheckOutTime = page.locator('input[formcontrolname="horaCheckOutPlaneada"]');
   const expressTenantCards = page.locator('div[formArrayName="tenants"] > div.border.rounded-lg');
   const expressPeopleCount = page.locator('input[formcontrolname="cantidadPersonas"]');
   await expect(expressCheckInDateTime).toHaveValue(new RegExp(`^${expressCheckInDate}T`));
@@ -490,12 +497,15 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   await expect(expressTenantCards).toHaveCount(1);
 
   await page.locator('select[formcontrolname="departmentId"]').selectOption({ label: departmentName });
-  await expressCheckOutDate.fill(addDays(expressCheckInDate, 1));
+  await expressCheckOutDate.fill(expressCheckInDate);
+  await expect(expressCheckOutTime).toBeVisible();
+  await expect(expressCheckOutTime).toHaveValue('10:00');
   await expressPeopleCount.fill('2');
   await page.getByRole('button', { name: '+ Agregar inquilino' }).click();
   await expect(expressTenantCards).toHaveCount(2);
   const expressTotal = page.locator('input[formcontrolname="precioTotal"]');
   await expect(expressTotal).toHaveValue(String(departmentPricePerNight));
+  const expressSubmitButton = page.getByRole('button', { name: 'Realizar Check-In Express' });
 
   const expressTenantName = `Eva Express ${unique}`;
   const expressSecondTenantName = `Nora Express ${unique}`;
@@ -513,20 +523,34 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   await expressSecondTenant.locator('input[formcontrolname="phoneNumber"]').fill('1123456789');
   await page.locator('textarea[formcontrolname="comentariosCheckIn"]').fill('Llegada sin reserva previa.');
 
+  await expressCheckOutTime.fill('10:00');
+  await expect(expressSubmitButton).toBeDisabled();
+  await expect(page.getByText('La hora de check-out debe ser posterior a la hora de check-in.')).toBeVisible();
+  await expect(page.getByRole('row').filter({ hasText: expressTenantName })).toHaveCount(0);
+  await expressCheckOutTime.fill(oneHourAfter(await expressCheckInDateTime.inputValue()));
+  await expect(expressSubmitButton).toBeEnabled();
+  const expectedExpressCheckOutDateTime = `${expressCheckInDate}T${await expressCheckOutTime.inputValue()}:00`;
+
   const expressRequestPromise = page.waitForRequest(request =>
     request.method() === 'POST' && request.url().endsWith('/stays')
   );
-  await page.getByRole('button', { name: 'Realizar Check-In Express' }).click();
+  const expressResponsePromise = page.waitForResponse(response =>
+    response.request().method() === 'POST' && response.url().endsWith('/stays')
+  );
+  await expressSubmitButton.click();
   const expressRequest = await expressRequestPromise;
+  const expressResponse = await expressResponsePromise;
   const expressRequestBody = expressRequest.postDataJSON();
   expect(expressRequestBody.fechaHoraCheckInReal).toMatch(new RegExp(`^${expressCheckInDate}T`));
-  expect(expressRequestBody.fechaCheckOutPlaneada).toBe(addDays(expressCheckInDate, 1));
+  expect(expressRequestBody.fechaCheckOutPlaneada).toBe(expressCheckInDate);
+  expect(expressRequestBody.fechaHoraCheckOutPlaneada).toBe(expectedExpressCheckOutDateTime);
   expect(expressRequestBody.cantidadPersonas).toBe(2);
   expect(expressRequestBody.precioTotal).toBe(departmentPricePerNight);
   expect(expressRequestBody.montoSenia).toBe(departmentPricePerNight);
   expect(expressRequestBody.tenants).toHaveLength(2);
   expect(expressRequestBody.tenants[0].firstName).toBe('Eva');
   expect(expressRequestBody.tenants[1].firstName).toBe('Nora');
+  expect((await expressResponse.json()).fechaHoraCheckOutPlaneada).toBe(expectedExpressCheckOutDateTime);
 
   await expect(page.getByText('Check-in express realizado exitosamente.')).toBeVisible();
   const expressStayRow = page.getByRole('row').filter({ hasText: expressTenantName });

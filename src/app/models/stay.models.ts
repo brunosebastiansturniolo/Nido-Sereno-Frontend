@@ -13,6 +13,7 @@ export interface StayRequest {
   departmentId?: number;
   fechaHoraCheckInReal: string;
   fechaCheckOutPlaneada?: string;
+  fechaHoraCheckOutPlaneada?: string;
   cantidadPersonas?: number;
   cantidadVehiculos?: number;
   precioTotal?: number;
@@ -29,6 +30,7 @@ export interface StayResponse {
   fechaHoraCheckOutReal?: string;
   fechaCheckInPlaneada?: string;
   fechaCheckOutPlaneada?: string;
+  fechaHoraCheckOutPlaneada?: string;
   comentariosCheckIn?: string;
   comentariosCheckOut?: string;
   estadoDepartamento?: string;
