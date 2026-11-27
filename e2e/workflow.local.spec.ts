@@ -764,4 +764,83 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   await expect(page.getByText('Check-out realizado exitosamente.')).toBeVisible();
   await expect(expressStayRow).toContainText('Completada');
   await expect(expressStayRow.locator('td').nth(4)).toHaveText('—');
+
+  const earlyCheckoutCheckInDate = addDays(actualLateCheckOutDate, 5);
+  const plannedEarlyCheckOutDate = addDays(earlyCheckoutCheckInDate, 3);
+  const actualEarlyCheckOutDate = addDays(plannedEarlyCheckOutDate, -1);
+  const earlyCheckoutReservationName = 'Reservante SalidaAnticipada';
+  const earlyCheckoutTenantName = 'Inquilino SalidaAnticipada';
+  await simulatedDate.fill(earlyCheckoutCheckInDate);
+  await page.getByRole('link', { name: 'Reservas', exact: true }).click();
+  await page.locator('input[formcontrolname="firstName"]').fill('Reservante');
+  await page.locator('input[formcontrolname="lastName"]').fill('SalidaAnticipada');
+  await page.locator('input[formcontrolname="documentNumber"]').fill(`${unique}89`);
+  await page.locator('input[formcontrolname="phoneNumber"]').fill('1123456793');
+  await page.locator('input[formcontrolname="cantidadPersonas"]').fill('1');
+  await page.locator('input[formcontrolname="fechaCheckIn"]').fill(earlyCheckoutCheckInDate);
+  await page.locator('input[formcontrolname="cantidadNoches"]').fill('3');
+  await page.locator('select[formcontrolname="departmentId"]').selectOption({
+    label: `${departmentName} (${departmentPricePerNight}$/noche)`
+  });
+  await page.locator('input[formcontrolname="montoSenia"]').fill(String(departmentDepositAmount));
+  await page.getByRole('button', { name: 'Crear reserva' }).click();
+  await expect(page.getByText('Reserva creada exitosamente.')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Estadías', exact: true }).click();
+  await page.getByRole('button', { name: 'Desde Reserva' }).click();
+  await page.locator('select[formcontrolname="reservationId"]').selectOption({
+    label: `${earlyCheckoutReservationName} - ${earlyCheckoutCheckInDate}`
+  });
+  const earlyCheckoutTenant = page.locator('div[formArrayName="tenants"] > div.border.rounded-lg').nth(0);
+  await earlyCheckoutTenant.locator('input[formcontrolname="documentNumber"]').fill(`${unique}88`);
+  await earlyCheckoutTenant.locator('input[formcontrolname="firstName"]').fill('Inquilino');
+  await earlyCheckoutTenant.locator('input[formcontrolname="lastName"]').fill('SalidaAnticipada');
+  await earlyCheckoutTenant.locator('input[formcontrolname="email"]').fill(`salida-anticipada-${unique}@nido-sereno.local`);
+  await earlyCheckoutTenant.locator('input[formcontrolname="phoneNumber"]').fill('1123456794');
+  await page.locator('input[formcontrolname="montoPagadoEnCheckIn"]').fill(String(3 * departmentPricePerNight - departmentDepositAmount));
+  const earlyCheckoutCheckInRequestPromise = page.waitForRequest(request =>
+    request.method() === 'POST' && request.url().endsWith('/stays/checkin')
+  );
+  const earlyCheckoutCheckInResponsePromise = page.waitForResponse(response =>
+    response.request().method() === 'POST' && response.url().endsWith('/stays/checkin')
+  );
+  await page.getByRole('button', { name: 'Realizar Check-In' }).click();
+  const earlyCheckoutCheckInRequest = await earlyCheckoutCheckInRequestPromise;
+  expect(earlyCheckoutCheckInRequest.postDataJSON().montoPagadoEnCheckIn).toBe(176_000);
+  const earlyCheckoutCheckInResponse = await earlyCheckoutCheckInResponsePromise;
+  const earlyCheckoutStay = await earlyCheckoutCheckInResponse.json();
+  await expect(page.getByText('Check-in realizado exitosamente.')).toBeVisible();
+
+  await simulatedDate.fill(actualEarlyCheckOutDate);
+  const earlyCheckoutStayRow = page.getByRole('row').filter({ hasText: earlyCheckoutTenantName });
+  await earlyCheckoutStayRow.getByRole('button', { name: 'Check-out' }).click();
+  await page.locator('input[formcontrolname="fechaHoraCheckOutReal"]').fill(`${actualEarlyCheckOutDate}T10:00`);
+  await page.locator('select[formcontrolname="classificationScore"]').selectOption({ label: '5 - Excelente' });
+  await page.locator('input[formcontrolname="classificationReviewComment"]').fill('La estadía terminó antes de lo reservado.');
+  await page.getByRole('button', { name: 'Confirmar Check-out' }).click();
+
+  const earlyCheckoutJustification = page.locator('div.fixed.inset-0').filter({
+    has: page.getByRole('heading', { name: /Fecha de check-out no coincide/ })
+  });
+  await expect(earlyCheckoutJustification).toContainText(plannedEarlyCheckOutDate);
+  await expect(earlyCheckoutJustification).toContainText(actualEarlyCheckOutDate);
+  await expect(earlyCheckoutJustification).toContainText('antes');
+  await earlyCheckoutJustification.getByRole('button', { name: 'Confirmar' }).click();
+  await expect(earlyCheckoutJustification.getByText('La justificación es obligatoria para continuar con el check-out.')).toBeVisible();
+  const earlyCheckoutReason = 'El huésped debió retirarse una noche antes.';
+  await earlyCheckoutJustification.getByPlaceholder('Escribí el motivo de la diferencia de fecha...').fill(earlyCheckoutReason);
+  const earlyCheckoutRequestPromise = page.waitForRequest(request =>
+    request.method() === 'PATCH' && request.url().endsWith(`/stays/${earlyCheckoutStay.id}/checkout`)
+  );
+  await earlyCheckoutJustification.getByRole('button', { name: 'Confirmar' }).click();
+  const earlyCheckoutRequest = await earlyCheckoutRequestPromise;
+  const earlyCheckoutRequestBody = earlyCheckoutRequest.postDataJSON();
+  expect(earlyCheckoutRequestBody.fechaHoraCheckOutReal).toBe(`${actualEarlyCheckOutDate}T10:00`);
+  expect(earlyCheckoutRequestBody.comentariosCheckOut).toContain(`[FECHA JUSTIFICADA] Motivo: ${earlyCheckoutReason}`);
+  await expect(page.getByText('Check-out realizado exitosamente.')).toBeVisible();
+  await expect(earlyCheckoutStayRow).toContainText('Completada');
+
+  await page.getByRole('link', { name: 'Reservas', exact: true }).click();
+  const earlyCheckoutReservationRow = page.getByRole('row').filter({ hasText: earlyCheckoutReservationName });
+  await expect(earlyCheckoutReservationRow).toContainText('$ 240000');
 });
