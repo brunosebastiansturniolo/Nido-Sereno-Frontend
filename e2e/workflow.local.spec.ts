@@ -843,4 +843,78 @@ test('recorre registro, activación, reserva, estadía y clasificación en el st
   await page.getByRole('link', { name: 'Reservas', exact: true }).click();
   const earlyCheckoutReservationRow = page.getByRole('row').filter({ hasText: earlyCheckoutReservationName });
   await expect(earlyCheckoutReservationRow).toContainText('$ 240000');
+
+  const paidAtCheckoutCheckInDate = addDays(actualEarlyCheckOutDate, 4);
+  const paidAtCheckoutCheckOutDate = addDays(paidAtCheckoutCheckInDate, 3);
+  const paidAtCheckoutReservationName = 'Reservante PagoCheckOut';
+  const paidAtCheckoutTenantName = 'Inquilino PagoCheckOut';
+  await simulatedDate.fill(paidAtCheckoutCheckInDate);
+  await page.getByRole('link', { name: 'Reservas', exact: true }).click();
+  await page.locator('input[formcontrolname="firstName"]').fill('Reservante');
+  await page.locator('input[formcontrolname="lastName"]').fill('PagoCheckOut');
+  await page.locator('input[formcontrolname="documentNumber"]').fill(`${unique}87`);
+  await page.locator('input[formcontrolname="phoneNumber"]').fill('1123456795');
+  await page.locator('input[formcontrolname="cantidadPersonas"]').fill('1');
+  await page.locator('input[formcontrolname="fechaCheckIn"]').fill(paidAtCheckoutCheckInDate);
+  await page.locator('input[formcontrolname="cantidadNoches"]').fill('3');
+  await page.locator('select[formcontrolname="departmentId"]').selectOption({
+    label: `${departmentName} (${departmentPricePerNight}$/noche)`
+  });
+  await page.locator('input[formcontrolname="montoSenia"]').fill(String(departmentDepositAmount));
+  await page.getByRole('button', { name: 'Crear reserva' }).click();
+  await expect(page.getByText('Reserva creada exitosamente.')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Estadías', exact: true }).click();
+  await page.getByRole('button', { name: 'Desde Reserva' }).click();
+  await page.locator('select[formcontrolname="reservationId"]').selectOption({
+    label: `${paidAtCheckoutReservationName} - ${paidAtCheckoutCheckInDate}`
+  });
+  const paidAtCheckoutTenant = page.locator('div[formArrayName="tenants"] > div.border.rounded-lg').nth(0);
+  await paidAtCheckoutTenant.locator('input[formcontrolname="documentNumber"]').fill(`${unique}86`);
+  await paidAtCheckoutTenant.locator('input[formcontrolname="firstName"]').fill('Inquilino');
+  await paidAtCheckoutTenant.locator('input[formcontrolname="lastName"]').fill('PagoCheckOut');
+  await paidAtCheckoutTenant.locator('input[formcontrolname="email"]').fill(`pago-checkout-${unique}@nido-sereno.local`);
+  await paidAtCheckoutTenant.locator('input[formcontrolname="phoneNumber"]').fill('1123456796');
+  await page.locator('input[formcontrolname="montoPagadoEnCheckIn"]').fill('100000');
+  const paidAtCheckoutCheckInRequestPromise = page.waitForRequest(request =>
+    request.method() === 'POST' && request.url().endsWith('/stays/checkin')
+  );
+  const paidAtCheckoutCheckInResponsePromise = page.waitForResponse(response =>
+    response.request().method() === 'POST' && response.url().endsWith('/stays/checkin')
+  );
+  await page.getByRole('button', { name: 'Realizar Check-In' }).click();
+  const paidAtCheckoutCheckInRequest = await paidAtCheckoutCheckInRequestPromise;
+  expect(paidAtCheckoutCheckInRequest.postDataJSON().montoPagadoEnCheckIn).toBe(100_000);
+  const paidAtCheckoutStay = await (await paidAtCheckoutCheckInResponsePromise).json();
+  await expect(page.getByText('Check-in realizado exitosamente.')).toBeVisible();
+
+  await simulatedDate.fill(paidAtCheckoutCheckOutDate);
+  const paidAtCheckoutStayRow = page.getByRole('row').filter({ hasText: paidAtCheckoutTenantName });
+  await paidAtCheckoutStayRow.getByRole('button', { name: 'Check-out' }).click();
+  await page.locator('input[formcontrolname="fechaHoraCheckOutReal"]').fill(`${paidAtCheckoutCheckOutDate}T10:00`);
+  await page.locator('textarea[formcontrolname="comentariosCheckOut"]').fill('Pagó el saldo completo al retirarse.');
+  await page.locator('select[formcontrolname="classificationScore"]').selectOption({ label: '5 - Excelente' });
+  await page.locator('input[formcontrolname="classificationReviewComment"]').fill('Dejó el departamento en buen estado.');
+  await page.getByRole('button', { name: 'Confirmar Check-out' }).click();
+
+  const paidAtCheckoutDialog = page.getByRole('dialog', { name: 'Registrar pago del check-out' });
+  await expect(paidAtCheckoutDialog).toContainText('Saldo pendiente antes de este pago: $ 76.000');
+  await paidAtCheckoutDialog.locator('input[name="checkoutPaymentAmount"]').fill('76000');
+  await expect(paidAtCheckoutDialog.locator('p').filter({ hasText: 'Saldo después del pago:' })).toContainText('$ 0');
+  await expect(paidAtCheckoutDialog.getByText(/saldo impago/)).toHaveCount(0);
+  const paidAtCheckoutRequestPromise = page.waitForRequest(request =>
+    request.method() === 'PATCH' && request.url().endsWith(`/stays/${paidAtCheckoutStay.id}/checkout`)
+  );
+  await paidAtCheckoutDialog.getByRole('button', { name: 'Registrar pago y finalizar check-out' }).click();
+  const paidAtCheckoutRequest = await paidAtCheckoutRequestPromise;
+  const paidAtCheckoutRequestBody = paidAtCheckoutRequest.postDataJSON();
+  expect(paidAtCheckoutRequestBody.montoPagadoEnCheckOut).toBe(76_000);
+  expect(paidAtCheckoutRequestBody.comentariosCheckOut).toBe('Pagó el saldo completo al retirarse.');
+  expect(paidAtCheckoutRequestBody.comentariosCheckOut).not.toContain('SALDO IMPAGO');
+  await expect(page.getByText('Check-out realizado exitosamente.')).toBeVisible();
+  await expect(paidAtCheckoutStayRow).toContainText('Completada');
+
+  await page.getByRole('link', { name: 'Reservas', exact: true }).click();
+  const paidAtCheckoutReservationRow = page.getByRole('row').filter({ hasText: paidAtCheckoutReservationName });
+  await expect(paidAtCheckoutReservationRow).toContainText('$ 240000');
 });
