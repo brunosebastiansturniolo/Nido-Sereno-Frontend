@@ -20,14 +20,15 @@ export default defineConfig({
   outputDir: './test-results',
   use: {
     browserName: 'chromium',
-    viewport: { width: 1280, height: 900 },
+    viewport: null,
     channel: 'chrome',
     launchOptions: {
-      args: ['--start-maximized'],
+      args: ['--start-maximized', '--start-fullscreen'],
       slowMo: Number(process.env.PLAYWRIGHT_SLOW_MO ?? 0)
     },
     baseURL: `http://${angularHost}:${angularPort}`,
-    trace: 'retain-on-failure'
+    trace: 'retain-on-failure',
+    video: 'on'
   },
   webServer: localStack
     ? [

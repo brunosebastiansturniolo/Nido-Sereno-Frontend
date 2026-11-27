@@ -78,7 +78,9 @@ test('renueva el access token vencido sin perder la sesión', async ({ page, req
     response => response.url().includes('/complexs/myComplexs') && response.status() === 200,
     { timeout: 15_000 }
   );
-  await page.getByRole('link', { name: 'Complejos', exact: true }).click();
+  await page.getByRole('link', { name: 'Complejos', exact: true }).evaluate(link => {
+    (link as HTMLElement).click();
+  });
   const refreshRequest = await refreshRequestPromise;
   expect((await refreshRequest.response())?.status()).toBe(200);
   expect((await complexesResponsePromise).status()).toBe(200);
