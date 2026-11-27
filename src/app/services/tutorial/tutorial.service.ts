@@ -137,6 +137,7 @@ export class TutorialService {
     tamanoM2: number;
     incluyeCochera: boolean;
     incluyeDesayuno: boolean;
+    tieneCocina: boolean;
     tieneWifi: boolean;
     tienePileta: boolean;
     complexId: number;
@@ -159,6 +160,7 @@ export class TutorialService {
     tamanoM2: number;
     incluyeCochera: boolean;
     incluyeDesayuno: boolean;
+    tieneCocina: boolean;
     tieneWifi: boolean;
     tienePileta: boolean;
   } {
@@ -169,6 +171,7 @@ export class TutorialService {
       tamanoM2: Math.floor(30 + Math.random() * 70),
       incluyeCochera: Math.random() > 0.3,
       incluyeDesayuno: Math.random() > 0.4,
+      tieneCocina: Math.random() > 0.5,
       tieneWifi: true,
       tienePileta: Math.random() > 0.5
     };

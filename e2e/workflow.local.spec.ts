@@ -233,6 +233,7 @@ test.describe('Flujos E2E de reservas y estadías', () => {
         tamañoM2: 65,
         incluyeCochera: false,
         incluyeDesayuno: true,
+        tieneCocina: true,
         tieneWifi: true,
         tienePileta: false,
         complexId: persistedComplex.id
@@ -242,6 +243,7 @@ test.describe('Flujos E2E de reservas y estadías', () => {
     const createdDepartment = await departmentResponse.json();
     expect(createdDepartment.nombre).toBe(departmentName);
     expect(createdDepartment.precioPorNoche).toBe(pricePerNight);
+    expect(createdDepartment.tieneCocina).toBe(true);
     await context.close();
   });
 
@@ -277,7 +279,7 @@ test.describe('Flujos E2E de reservas y estadías', () => {
     await expect(row).toContainText('Alojamiento para pruebas E2E');
   });
 
-  test('crea un departamento y lo muestra asociado al complejo', async ({ page }) => {
+  test('crea y actualiza la cocina de un departamento, conservando el valor en el formulario y la respuesta', async ({ page }) => {
     const uiDepartmentName = `Cabaña interfaz ${Date.now()}`;
     await page.goto('/#/dashboard/departments');
     await page.getByPlaceholder('Ej: Planta baja').fill(uiDepartmentName);
@@ -288,16 +290,34 @@ test.describe('Flujos E2E de reservas y estadías', () => {
     await expect(page.locator('input[formcontrolname="montoSeniaRequerida"]')).toHaveValue(String(minimumDeposit));
     await page.getByPlaceholder('Ej: 65').fill('65');
     await page.locator('select[formcontrolname="complexId"]').selectOption({ label: complexName });
+    const kitchenCheckbox = page.locator('input[formcontrolname="tieneCocina"]');
+    await expect(kitchenCheckbox).not.toBeChecked();
+    await kitchenCheckbox.check();
     const responsePromise = page.waitForResponse(response =>
       response.request().method() === 'POST' && response.url().endsWith('/departments')
     );
     await page.getByRole('button', { name: 'Crear departamento' }).click();
-    expect((await responsePromise).status()).toBe(201);
+    const createdResponse = await responsePromise;
+    expect(createdResponse.status()).toBe(201);
+    const createdDepartment = await createdResponse.json();
+    expect(createdDepartment.tieneCocina).toBe(true);
     await expect(page.getByText('Departamento creado exitosamente.')).toBeVisible();
-    const entry = page.locator('tr, div.border.rounded-lg').filter({ hasText: uiDepartmentName }).first();
+    const entry = page.locator('tr:visible, div.border.rounded-lg:visible').filter({ hasText: uiDepartmentName }).first();
     await expect(entry).toContainText(complexName);
     await expect(entry).toContainText(`$ ${pricePerNight}`);
     await expect(entry).toContainText('80% de una noche');
+    await expect(entry).toContainText('Sí');
+
+    await entry.getByRole('button', { name: 'Editar' }).click();
+    await expect(kitchenCheckbox).toBeChecked();
+    await kitchenCheckbox.uncheck();
+    const updateResponsePromise = page.waitForResponse(response =>
+      response.request().method() === 'PUT' && response.url().endsWith(`/departments/${createdDepartment.id}`)
+    );
+    await page.getByRole('button', { name: 'Guardar cambios' }).click();
+    const updatedResponse = await updateResponsePromise;
+    expect(updatedResponse.status()).toBe(200);
+    expect((await updatedResponse.json()).tieneCocina).toBe(false);
   });
 
   test('crea y lista una reserva pendiente, y recalcula fechas, noches y total', async ({ page }) => {

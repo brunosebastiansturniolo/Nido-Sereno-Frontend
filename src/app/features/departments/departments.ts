@@ -45,6 +45,7 @@ export class DepartmentsComponent implements OnInit {
     tamañoM2: [null, Validators.required],
     incluyeCochera: [false],
     incluyeDesayuno: [false],
+    tieneCocina: [false],
     tieneWifi: [false],
     tienePileta: [false],
     complexId: [null, Validators.required]
@@ -95,6 +96,7 @@ export class DepartmentsComponent implements OnInit {
       tamañoM2: formVal.tamañoM2 || 0,
       incluyeCochera: formVal.incluyeCochera || false,
       incluyeDesayuno: formVal.incluyeDesayuno || false,
+      tieneCocina: formVal.tieneCocina || false,
       tieneWifi: formVal.tieneWifi || false,
       tienePileta: formVal.tienePileta || false,
       complexId: formVal.complexId || 0
@@ -137,6 +139,7 @@ export class DepartmentsComponent implements OnInit {
       tamañoM2: department.tamañoM2,
       incluyeCochera: department.incluyeCochera,
       incluyeDesayuno: department.incluyeDesayuno,
+      tieneCocina: department.tieneCocina,
       tieneWifi: department.tieneWifi,
       tienePileta: department.tienePileta,
       complexId: department.complexId
@@ -156,6 +159,7 @@ export class DepartmentsComponent implements OnInit {
       tamañoM2: null,
       incluyeCochera: false,
       incluyeDesayuno: false,
+      tieneCocina: false,
       tieneWifi: false,
       tienePileta: false,
       complexId: null
@@ -197,6 +201,7 @@ export class DepartmentsComponent implements OnInit {
       tamañoM2: data.tamañoM2,
       incluyeCochera: data.incluyeCochera,
       incluyeDesayuno: data.incluyeDesayuno,
+      tieneCocina: data.tieneCocina,
       tieneWifi: data.tieneWifi,
       tienePileta: data.tienePileta
     } as any);

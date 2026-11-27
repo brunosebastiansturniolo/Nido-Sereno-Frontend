@@ -15,6 +15,7 @@ export interface TutorialDepartment {
   tamanoM2: number;
   incluyeCochera: boolean;
   incluyeDesayuno: boolean;
+  tieneCocina: boolean;
   tieneWifi: boolean;
   tienePileta: boolean;
   disponible: boolean;

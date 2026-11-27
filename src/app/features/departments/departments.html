@@ -61,6 +61,7 @@
       </div>
       <label class="flex items-center gap-2"><input type="checkbox" formControlName="incluyeCochera" class="w-4 h-4" /> Cochera</label>
       <label class="flex items-center gap-2"><input type="checkbox" formControlName="incluyeDesayuno" class="w-4 h-4" /> Desayuno</label>
+      <label class="flex items-center gap-2"><input type="checkbox" formControlName="tieneCocina" class="w-4 h-4" /> Cocina</label>
       <label class="flex items-center gap-2"><input type="checkbox" formControlName="tieneWifi" class="w-4 h-4" /> WiFi</label>
       <label class="flex items-center gap-2"><input type="checkbox" formControlName="tienePileta" class="w-4 h-4" /> Pileta</label>
       <div class="md:col-span-3 flex gap-2">
@@ -87,6 +88,7 @@
               <span class="px-2 py-1 bg-gray-100 rounded text-gray-600">🛏️ {{ d.numeroHabitaciones }} hab</span>
               <span class="px-2 py-1 bg-emerald-50 rounded text-emerald-600">$ {{ d.precioPorNoche }}/noche</span>
               <span class="px-2 py-1 bg-blue-50 rounded text-blue-600">Seña mínima: {{ d.porcentajeSeniaRequerida }}% {{ d.baseCalculoSenia === 'NIGHT_PRICE' ? 'de una noche' : 'del total' }}</span>
+              <span [class]="d.tieneCocina ? 'px-2 py-1 bg-amber-50 rounded text-amber-600' : 'px-2 py-1 bg-gray-100 rounded text-gray-600'">{{ d.tieneCocina ? '🍳 Cocina' : 'Sin cocina' }}</span>
               <span [class]="d.disponible ? 'px-2 py-1 bg-green-50 rounded text-green-600' : 'px-2 py-1 bg-red-50 rounded text-red-600'">
                 {{ d.disponible ? '✅ Disponible' : '❌ Ocupado' }}
               </span>
@@ -103,7 +105,7 @@
     <!-- Vista desktop: tabla -->
     <div *ngIf="!loading && departments.length > 0" class="hidden md:block overflow-x-auto">
       <table class="w-full text-left">
-        <thead><tr class="border-b"><th class="py-2 px-3 text-sm text-gray-500">Nombre</th><th class="py-2 px-3 text-sm text-gray-500">Complejo</th><th class="py-2 px-3 text-sm text-gray-500">Habitaciones</th><th class="py-2 px-3 text-sm text-gray-500">Precio/noche</th><th class="py-2 px-3 text-sm text-gray-500">Seña mínima</th><th class="py-2 px-3 text-sm text-gray-500">Disponible</th><th class="py-2 px-3 text-sm text-gray-500">Acciones</th></tr></thead>
+        <thead><tr class="border-b"><th class="py-2 px-3 text-sm text-gray-500">Nombre</th><th class="py-2 px-3 text-sm text-gray-500">Complejo</th><th class="py-2 px-3 text-sm text-gray-500">Habitaciones</th><th class="py-2 px-3 text-sm text-gray-500">Precio/noche</th><th class="py-2 px-3 text-sm text-gray-500">Seña mínima</th><th class="py-2 px-3 text-sm text-gray-500">Cocina</th><th class="py-2 px-3 text-sm text-gray-500">Disponible</th><th class="py-2 px-3 text-sm text-gray-500">Acciones</th></tr></thead>
         <tbody>
           <tr *ngFor="let d of departments" class="border-b hover:bg-gray-50">
             <td class="py-2 px-3 text-sm">{{ d.nombre }}</td>
@@ -111,6 +113,7 @@
             <td class="py-2 px-3 text-sm">{{ d.numeroHabitaciones }}</td>
             <td class="py-2 px-3 text-sm">$ {{ d.precioPorNoche }}</td>
             <td class="py-2 px-3 text-sm">{{ d.porcentajeSeniaRequerida }}% {{ d.baseCalculoSenia === 'NIGHT_PRICE' ? 'de una noche' : 'del total' }}</td>
+            <td class="py-2 px-3 text-sm">{{ d.tieneCocina ? 'Sí' : 'No' }}</td>
             <td class="py-2 px-3 text-sm">{{ d.disponible ? '✅' : '❌' }}</td>
             <td class="py-2 px-3 text-sm">
               <div class="flex gap-2">

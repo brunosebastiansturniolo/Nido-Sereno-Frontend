@@ -90,6 +90,7 @@ export class TutorialComponent {
     tamanoM2: 50,
     incluyeCochera: true,
     incluyeDesayuno: false,
+    tieneCocina: false,
     tieneWifi: true,
     tienePileta: false,
     complexId: 0
@@ -300,6 +301,7 @@ export class TutorialComponent {
       `Se creó el departamento "${dept.nombre}" en el complejo "${dept.complejoNombre}".\n\n` +
       `Precio por noche: $${dept.precioPorNoche.toLocaleString('es-AR')}\n` +
       `Habitaciones: ${dept.numeroHabitaciones} | Tamaño: ${dept.tamanoM2}m²\n\n` +
+      `Cocina: ${dept.tieneCocina ? 'Sí' : 'No'}\n\n` +
       'Un DEPARTAMENTO es una unidad alquilable dentro de tu complejo.\n\n' +
       'Ahora vamos a crear una RESERVA para este departamento.\n\n' +
       '👉 Hacé clic en "Siguiente: Crear Reserva"'
@@ -639,6 +641,7 @@ export class TutorialComponent {
   setDeptWifi(v: boolean): void { this.departmentForm.update(f => ({...f, tieneWifi: v})); }
   setDeptCochera(v: boolean): void { this.departmentForm.update(f => ({...f, incluyeCochera: v})); }
   setDeptDesayuno(v: boolean): void { this.departmentForm.update(f => ({...f, incluyeDesayuno: v})); }
+  setDeptCocina(v: boolean): void { this.departmentForm.update(f => ({...f, tieneCocina: v})); }
   setDeptPileta(v: boolean): void { this.departmentForm.update(f => ({...f, tienePileta: v})); }
 
   // Reservation form

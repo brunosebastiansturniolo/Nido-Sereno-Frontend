@@ -66,4 +66,28 @@ describe('TutorialComponent reservation pricing', () => {
     expect(component.reservationForm().precioTotal).toBe(12345);
     expect(component.reservationForm().montoSenia).toBe(18000);
   });
+
+  it('passes the kitchen selection into the simulated department', () => {
+    const tutorialService = TestBed.inject(TutorialService) as any;
+    const createDepartment = jasmine.createSpy().and.returnValue({
+      id: 1,
+      nombre: 'Departamento demo',
+      complejoNombre: 'Complejo demo',
+      precioPorNoche: 10000,
+      numeroHabitaciones: 1,
+      tamanoM2: 50,
+      tieneCocina: true
+    });
+    tutorialService.createDepartment = createDepartment;
+    component.departmentForm.set({
+      ...component.departmentForm(),
+      nombre: 'Departamento demo',
+      complexId: 1,
+      tieneCocina: true
+    });
+
+    component.createDepartment();
+
+    expect(createDepartment).toHaveBeenCalledWith(jasmine.objectContaining({ tieneCocina: true }));
+  });
 });

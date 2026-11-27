@@ -504,6 +504,10 @@
               <span class="text-sm">🍳 Desayuno</span>
             </label>
             <label class="flex items-center gap-2">
+              <input type="checkbox" [ngModel]="departmentForm().tieneCocina" (ngModelChange)="setDeptCocina($event)" class="rounded" />
+              <span class="text-sm">🍽️ Cocina</span>
+            </label>
+            <label class="flex items-center gap-2">
               <input type="checkbox" [ngModel]="departmentForm().tienePileta" (ngModelChange)="setDeptPileta($event)" class="rounded" />
               <span class="text-sm">🏊 Pileta</span>
             </label>
