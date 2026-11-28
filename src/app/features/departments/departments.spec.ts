@@ -90,6 +90,34 @@ describe('DepartmentsComponent filters and pause confirmation', () => {
     expect(component.filteredDepartments.map(item => item.id)).toEqual([1, 2]);
   });
 
+  it('deselects department status, complex, and Todos tags when clicked again', () => {
+    component.departments = [department(1, 1, true), department(2, 2, false)];
+
+    component.selectDepartmentFilter('AVAILABLE');
+    component.selectDepartmentFilter('AVAILABLE');
+    expect(component.selectedDepartmentFilter).toBeNull();
+
+    component.selectDepartmentFilter('KITCHEN');
+    component.selectDepartmentFilter('KITCHEN');
+    expect(component.selectedDepartmentFilter).toBeNull();
+
+    component.selectDepartmentFilter('PAUSED');
+    component.selectDepartmentFilter('PAUSED');
+    expect(component.selectedDepartmentFilter).toBeNull();
+
+    expect(component.isAllDepartmentsSelected).toBeFalse();
+
+    component.toggleComplexFilter(1);
+    component.toggleComplexFilter(1);
+    expect(component.selectedComplexIds.size).toBe(0);
+
+    component.selectDepartmentFilter('ALL');
+    expect(component.isAllDepartmentsSelected).toBeTrue();
+    component.selectDepartmentFilter('ALL');
+    expect(component.isAllDepartmentsSelected).toBeFalse();
+    expect(component.filteredDepartments.map(item => item.id)).toEqual([1, 2]);
+  });
+
   it('warns about the nearest future booking and excludes cancelled or ongoing stays', () => {
     const target = department(1, 1, false);
     component.reservations = [

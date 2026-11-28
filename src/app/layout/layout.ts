@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { DateControllerService } from '../services/date-controller.service';
@@ -9,7 +9,7 @@ import { DateWarningModalComponent } from '../shared/date-warning-modal/date-war
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterOutlet, FormsModule, DateWarningModalComponent],
+  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet, FormsModule, DateWarningModalComponent],
   templateUrl: './layout.html',
   styleUrl: './layout.css'
 })

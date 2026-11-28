@@ -52,7 +52,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/reservations/reservations').then(m => m.ReservationsComponent)
       },
       {
+        path: 'check-in',
+        data: { view: 'check-in' },
+        loadComponent: () => import('./features/stays/stays').then(m => m.StaysComponent)
+      },
+      {
         path: 'stays',
+        data: { view: 'stays' },
         loadComponent: () => import('./features/stays/stays').then(m => m.StaysComponent)
       },
       {

@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { StayService } from '../../services/stay.service';
 import { StayResponse, StayRequest, StayFinalizationRequest, CheckInRequest, RetroactiveStayRequest } from '../../models/stay.models';
 import { TenantRequest, TenantSearchResponse } from '../../models/tenant.models';
@@ -33,6 +33,9 @@ export class StaysComponent implements OnInit {
   private dateCtrl = inject(DateControllerService);
   private autoFill = inject(AutoFillService);
   private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+
+  isCheckInView = this.route.snapshot.data['view'] === 'check-in';
 
   stays: StayResponse[] = [];
   reservations: ReservationResponse[] = [];

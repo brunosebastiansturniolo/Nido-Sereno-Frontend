@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { FormBuilder } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { DepartmentService } from '../../services/department.service';
 import { DateControllerService } from '../../services/date-controller.service';
@@ -17,6 +18,7 @@ describe('StaysComponent pricing', () => {
     TestBed.configureTestingModule({
       providers: [
         FormBuilder,
+        { provide: ActivatedRoute, useValue: { snapshot: { data: { view: 'check-in' } } } },
         { provide: StayService, useValue: { getMyStays: () => of([]) } },
         { provide: ReservationService, useValue: { getMyReservations: () => of([]) } },
         { provide: DepartmentService, useValue: { getMyDepartments: () => of([]) } },
@@ -46,6 +48,10 @@ describe('StaysComponent pricing', () => {
     expect(component.calculatedNights).toBe(2);
     expect(component.calculatedTotal).toBe(24000);
     expect(component.expressForm.get('precioTotal')?.value).toBe(24000);
+  });
+
+  it('uses the route view to identify the check-in screen', () => {
+    expect(component.isCheckInView).toBeTrue();
   });
 
   it('recalculates retroactive pricing when nights change and preserves a manual total', () => {

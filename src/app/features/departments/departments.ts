@@ -37,6 +37,7 @@ export class DepartmentsComponent implements OnInit {
   activeDepartmentIds = new Set<number>();
   selectedDepartmentFilter: DepartmentFilter | null = null;
   selectedComplexIds = new Set<number>();
+  allDepartmentsSelected = true;
   loading = false;
   error = '';
   success = '';
@@ -67,7 +68,7 @@ export class DepartmentsComponent implements OnInit {
   }
 
   get isAllDepartmentsSelected(): boolean {
-    return this.selectedDepartmentFilter === null && this.selectedComplexIds.size === 0;
+    return this.allDepartmentsSelected;
   }
 
   createForm = this.fb.group({
@@ -137,11 +138,17 @@ export class DepartmentsComponent implements OnInit {
 
   selectDepartmentFilter(filter: DepartmentFilter | 'ALL'): void {
     if (filter === 'ALL') {
+      if (this.allDepartmentsSelected) {
+        this.allDepartmentsSelected = false;
+        return;
+      }
       this.selectedDepartmentFilter = null;
       this.selectedComplexIds = new Set<number>();
+      this.allDepartmentsSelected = true;
       return;
     }
-    this.selectedDepartmentFilter = filter;
+    this.selectedDepartmentFilter = this.selectedDepartmentFilter === filter ? null : filter;
+    this.allDepartmentsSelected = false;
   }
 
   toggleComplexFilter(complexId: number): void {
@@ -149,6 +156,7 @@ export class DepartmentsComponent implements OnInit {
     if (selected.has(complexId)) selected.delete(complexId);
     else selected.add(complexId);
     this.selectedComplexIds = selected;
+    this.allDepartmentsSelected = false;
   }
 
   isDepartmentOccupied(department: DepartmentResponse): boolean {

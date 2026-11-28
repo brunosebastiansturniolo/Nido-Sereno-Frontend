@@ -22,38 +22,43 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 py-4 overflow-y-auto">
-      <a *ngIf="hasRole('SUPER_ADMIN')" routerLink="/dashboard/admin" (click)="mobileSidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Dashboard (Admin)">
+    <nav class="min-h-0 flex-1 py-4 overflow-y-auto">
+      <a *ngIf="hasRole('SUPER_ADMIN')" routerLink="/dashboard/admin" (click)="mobileSidebarOpen = false" routerLinkActive="nav-link-active" class="mx-2 flex items-center rounded-lg px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Dashboard (Admin)">
         <span class="text-lg" aria-hidden="true">📊</span>
         <span *ngIf="isMobile || sidebarExpanded" class="ml-3 text-sm">Dashboard (Admin)</span>
       </a>
 
-      <a *ngIf="hasRole('OWNER')" routerLink="/dashboard" (click)="mobileSidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Dashboard (Owner)">
+      <a *ngIf="hasRole('OWNER')" routerLink="/dashboard" (click)="mobileSidebarOpen = false" routerLinkActive="nav-link-active" [routerLinkActiveOptions]="{ exact: true }" class="mx-2 flex items-center rounded-lg px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Dashboard (Owner)">
         <span class="text-lg" aria-hidden="true">📊</span>
         <span *ngIf="isMobile || sidebarExpanded" class="ml-3 text-sm">Dashboard (Owner)</span>
       </a>
 
-      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/complexes" (click)="mobileSidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Complejos">
+      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/complexes" (click)="mobileSidebarOpen = false" routerLinkActive="nav-link-active" class="mx-2 flex items-center rounded-lg px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Complejos">
         <span class="text-lg" aria-hidden="true">🏢</span>
         <span *ngIf="isMobile || sidebarExpanded" class="ml-3 text-sm">Complejos</span>
       </a>
 
-      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/departments" (click)="mobileSidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Departamentos">
+      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/departments" (click)="mobileSidebarOpen = false" routerLinkActive="nav-link-active" class="mx-2 flex items-center rounded-lg px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Departamentos">
         <span class="text-lg" aria-hidden="true">🚪</span>
         <span *ngIf="isMobile || sidebarExpanded" class="ml-3 text-sm">Departamentos</span>
       </a>
 
-      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/reservations" (click)="mobileSidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Reservas">
+      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/reservations" (click)="mobileSidebarOpen = false" routerLinkActive="nav-link-active" class="mx-2 flex items-center rounded-lg px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Reservas">
         <span class="text-lg" aria-hidden="true">📋</span>
         <span *ngIf="isMobile || sidebarExpanded" class="ml-3 text-sm">Reservas</span>
       </a>
 
-      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/stays" (click)="mobileSidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Estadías">
+      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/check-in" (click)="mobileSidebarOpen = false" routerLinkActive="nav-link-active" class="mx-2 flex items-center rounded-lg px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Check-in">
+        <span class="text-lg" aria-hidden="true">🛎️</span>
+        <span *ngIf="isMobile || sidebarExpanded" class="ml-3 text-sm">Check-in</span>
+      </a>
+
+      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/stays" (click)="mobileSidebarOpen = false" routerLinkActive="nav-link-active" class="mx-2 flex items-center rounded-lg px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Estadías">
         <span class="text-lg" aria-hidden="true">🛏️</span>
         <span *ngIf="isMobile || sidebarExpanded" class="ml-3 text-sm">Estadías</span>
       </a>
 
-      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/tenants" (click)="mobileSidebarOpen = false" routerLinkActive="bg-emerald-700" class="flex items-center px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Inquilinos">
+      <a *ngIf="hasRole('OWNER') || hasRole('SUPER_ADMIN')" routerLink="/dashboard/tenants" (click)="mobileSidebarOpen = false" routerLinkActive="nav-link-active" class="mx-2 flex items-center rounded-lg px-4 py-3 hover:bg-emerald-700 transition cursor-pointer" [class.justify-center]="!isMobile && !sidebarExpanded" title="Inquilinos">
         <span class="text-lg" aria-hidden="true">👥</span>
         <span *ngIf="isMobile || sidebarExpanded" class="ml-3 text-sm">Inquilinos</span>
       </a>

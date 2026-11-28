@@ -113,6 +113,29 @@ describe('ReservationsComponent', () => {
     expect(component.filteredReservations.map(reservation => reservation.id)).toEqual([1, 2, 3]);
   });
 
+  it('deselects reservation status tags and Todas when clicked again', () => {
+    component.toggleReservationFilter('ARRIVING');
+    component.toggleReservationFilter('ARRIVING');
+    expect(component.selectedReservationFilters.size).toBe(0);
+    expect(component.isAllReservationsSelected).toBeFalse();
+
+    component.toggleReservationFilter('IN_STAY');
+    component.toggleReservationFilter('IN_STAY');
+    expect(component.selectedReservationFilters.size).toBe(0);
+    expect(component.isAllReservationsSelected).toBeFalse();
+
+    component.toggleReservationFilter('CANCELLED');
+    component.toggleReservationFilter('CANCELLED');
+    expect(component.selectedReservationFilters.size).toBe(0);
+    expect(component.isAllReservationsSelected).toBeFalse();
+
+    component.showAllReservations();
+    expect(component.isAllReservationsSelected).toBeTrue();
+    component.showAllReservations();
+    expect(component.isAllReservationsSelected).toBeFalse();
+    expect(component.filteredReservations).toEqual(component.reservations);
+  });
+
   it('filters active stays independently from payment status', () => {
     component.reservations = [
       { id: 1, estado: 'PENDING', enEstadia: true } as ReservationResponse,

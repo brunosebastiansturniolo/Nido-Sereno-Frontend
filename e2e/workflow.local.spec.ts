@@ -129,7 +129,7 @@ async function checkInFromReservation(
   actualDate = booking.checkInDate
 ): Promise<any> {
   await setSimulatedDate(page, actualDate);
-  await page.goto('/#/dashboard/stays');
+  await page.goto('/#/dashboard/check-in');
   await page.getByRole('button', { name: 'Desde Reserva' }).click();
   const reservationSelect = page.locator('select[formcontrolname="reservationId"]');
   await reservationSelect.selectOption({ label: `${booking.name} - ${booking.checkInDate}` });
@@ -267,6 +267,25 @@ test.describe('Flujos E2E de reservas y estadías', () => {
     await expect(page).toHaveURL(/#\/dashboard/);
   });
 
+  test('separa Check-in de Estadías y marca la opción activa en el menú lateral', async ({ page }) => {
+    await page.goto('/#/dashboard/check-in');
+    await expect(page.getByRole('heading', { name: '🛏️ Check-in', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mis estadías' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Abrir menú' }).click();
+    const checkInLink = page.getByRole('link', { name: 'Check-in', exact: true });
+    await expect(checkInLink).toHaveClass(/nav-link-active/);
+
+    const staysLink = page.getByRole('link', { name: 'Estadías', exact: true });
+    await staysLink.click();
+    await expect(page).toHaveURL(/#\/dashboard\/stays$/);
+    await expect(page.getByRole('heading', { name: '🛏️ Estadías', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mis estadías' })).toBeVisible();
+    await expect(page.locator('select[formcontrolname="departmentId"]')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Abrir menú' }).click();
+    await expect(staysLink).toHaveClass(/nav-link-active/);
+    await expect(checkInLink).not.toHaveClass(/nav-link-active/);
+  });
+
   test('crea un complejo y muestra sus datos en la lista', async ({ page }) => {
     const uiComplexName = `Complejo interfaz ${Date.now()}`;
     await page.goto('/#/dashboard/complexes');
@@ -383,7 +402,7 @@ test.describe('Flujos E2E de reservas y estadías', () => {
       .filter({ hasText: pausedDepartmentName });
     await expect(pausedReservationOption).toBeDisabled();
 
-    await page.goto('/#/dashboard/stays');
+    await page.goto('/#/dashboard/check-in');
     const expressDepartmentOption = page.locator('select[formcontrolname="departmentId"] option')
       .filter({ hasText: pausedDepartmentName });
     await expect(expressDepartmentOption).toBeDisabled();
@@ -491,7 +510,7 @@ test.describe('Flujos E2E de reservas y estadías', () => {
     const booking = createBooking('DosInquilinos', 40, 3, 2, minimumDeposit);
     await createReservation(page, booking);
     await setSimulatedDate(page, booking.checkInDate);
-    await page.goto('/#/dashboard/stays');
+    await page.goto('/#/dashboard/check-in');
     await page.getByRole('button', { name: 'Desde Reserva' }).click();
     await page.locator('select[formcontrolname="reservationId"]').selectOption({
       label: `${booking.name} - ${booking.checkInDate}`
@@ -617,7 +636,7 @@ test.describe('Flujos E2E de reservas y estadías', () => {
     await createReservation(page, booking);
     const actualDate = addDays(booking.checkInDate, 1);
     await setSimulatedDate(page, actualDate);
-    await page.goto('/#/dashboard/stays');
+    await page.goto('/#/dashboard/check-in');
     await page.getByRole('button', { name: 'Desde Reserva' }).click();
     await page.locator('select[formcontrolname="reservationId"]').selectOption({
       label: `${booking.name} - ${booking.checkInDate}`
@@ -660,7 +679,7 @@ test.describe('Flujos E2E de reservas y estadías', () => {
     await createReservation(page, booking);
     const actualDate = addDays(booking.checkInDate, -1);
     await setSimulatedDate(page, actualDate);
-    await page.goto('/#/dashboard/stays');
+    await page.goto('/#/dashboard/check-in');
     await page.getByRole('button', { name: 'Desde Reserva' }).click();
     await page.locator('select[formcontrolname="reservationId"]').selectOption({
       label: `${booking.name} - ${booking.checkInDate}`
@@ -693,7 +712,7 @@ test.describe('Flujos E2E de reservas y estadías', () => {
     const booking = createBooking('LlegadaMismoDia', 110, 1, 1, 0);
     await createReservation(page, booking);
     await setSimulatedDate(page, booking.checkInDate);
-    await page.goto('/#/dashboard/stays');
+    await page.goto('/#/dashboard/check-in');
     await page.getByRole('button', { name: 'Desde Reserva' }).click();
     await page.locator('select[formcontrolname="reservationId"]').selectOption({
       label: `${booking.name} - ${booking.checkInDate}`
@@ -757,7 +776,7 @@ test.describe('Flujos E2E de reservas y estadías', () => {
   test('permite el check-in express el mismo día y advierte si se omite la clasificación', async ({ page }) => {
     const expressDate = addDays(baseDate, 130);
     await setSimulatedDate(page, expressDate, '06:00');
-    await page.goto('/#/dashboard/stays');
+    await page.goto('/#/dashboard/check-in');
     await page.getByRole('button', { name: 'Check-In Express', exact: true }).click();
     await page.locator('select[formcontrolname="departmentId"]').selectOption({ label: departmentName });
     const checkIn = page.locator('input[formcontrolname="fechaHoraCheckInReal"]');

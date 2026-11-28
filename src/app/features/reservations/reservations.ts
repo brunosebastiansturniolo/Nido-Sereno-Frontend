@@ -29,6 +29,7 @@ export class ReservationsComponent implements OnInit {
 
   reservations: ReservationResponse[] = [];
   selectedReservationFilters = new Set<ReservationFilter>();
+  allReservationsSelected = true;
   departments: DepartmentResponse[] = [];
   loading = false;
   error = '';
@@ -106,11 +107,16 @@ export class ReservationsComponent implements OnInit {
   }
 
   get isAllReservationsSelected(): boolean {
-    return this.selectedReservationFilters.size === 0;
+    return this.allReservationsSelected;
   }
 
   showAllReservations(): void {
+    if (this.allReservationsSelected) {
+      this.allReservationsSelected = false;
+      return;
+    }
     this.selectedReservationFilters = new Set<ReservationFilter>();
+    this.allReservationsSelected = true;
   }
 
   toggleReservationFilter(filter: ReservationFilter): void {
@@ -118,6 +124,7 @@ export class ReservationsComponent implements OnInit {
     if (selected.has(filter)) selected.delete(filter);
     else selected.add(filter);
     this.selectedReservationFilters = selected;
+    this.allReservationsSelected = false;
   }
 
   isPausedFutureReservation(reservation: ReservationResponse): boolean {
