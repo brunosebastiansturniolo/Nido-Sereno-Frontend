@@ -88,7 +88,12 @@ function createBooking(label: string, dayOffset: number, nights = 3, people = 1,
   };
 }
 
-async function createReservation(page: Page, booking: Booking): Promise<void> {
+async function createReservation(
+  page: Page,
+  booking: Booking,
+  selectedDepartmentName = departmentName,
+  selectedDepartmentPrice = pricePerNight
+): Promise<void> {
   await setSimulatedDate(page, addDays(booking.checkInDate, -1));
   await page.goto('/#/dashboard/reservations');
   await page.locator('input[formcontrolname="firstName"]').fill(booking.firstName);
@@ -99,7 +104,7 @@ async function createReservation(page: Page, booking: Booking): Promise<void> {
   await page.locator('input[formcontrolname="fechaCheckIn"]').fill(booking.checkInDate);
   await page.locator('input[formcontrolname="cantidadNoches"]').fill(String(booking.nights));
   await page.locator('select[formcontrolname="departmentId"]').selectOption({
-    label: `${departmentName} (${pricePerNight}$/noche)`
+    label: `${selectedDepartmentName} (${selectedDepartmentPrice}$/noche)`
   });
   await page.locator('input[formcontrolname="montoSenia"]').fill(String(booking.deposit));
   await page.getByRole('button', { name: 'Crear reserva' }).click();
@@ -318,6 +323,80 @@ test.describe('Flujos E2E de reservas y estadías', () => {
     const updatedResponse = await updateResponsePromise;
     expect(updatedResponse.status()).toBe(200);
     expect((await updatedResponse.json()).tieneCocina).toBe(false);
+  });
+
+  test('pausa un departamento con reservas futuras, alerta al owner y marca sus reservas', async ({ page, request }) => {
+    const pausedDepartmentName = `Departamento pausado ${Date.now()}`;
+    const token = await page.evaluate(() => localStorage.getItem('token'));
+    expect(token).toBeTruthy();
+    const complexesResponse = await request.get('http://localhost:8081/api/v1/complexs/myComplexs', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    expect(complexesResponse.status()).toBe(200);
+    const complexes = await complexesResponse.json();
+    const complex = complexes.find((item: { nombre: string }) => item.nombre === complexName);
+    expect(complex?.id).toBeTruthy();
+
+    const departmentResponse = await request.post('http://localhost:8081/api/v1/departments', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: {
+        nombre: pausedDepartmentName,
+        numeroHabitaciones: 1,
+        precioPorNoche: pricePerNight,
+        porcentajeSeniaRequerida: 0,
+        baseCalculoSenia: 'RESERVATION_TOTAL',
+        tamañoM2: 40,
+        incluyeCochera: false,
+        incluyeDesayuno: false,
+        tieneCocina: false,
+        tieneWifi: true,
+        tienePileta: false,
+        complexId: complex.id
+      }
+    });
+    expect(departmentResponse.status(), await departmentResponse.text()).toBe(201);
+    const department = await departmentResponse.json();
+    const booking = createBooking('Reserva departamento pausado', 15, 2);
+    await createReservation(page, booking, pausedDepartmentName);
+
+    await page.goto('/#/dashboard/departments');
+    const departmentRow = page.locator('tr:visible, div.border.rounded-lg:visible')
+      .filter({ hasText: pausedDepartmentName }).first();
+    await departmentRow.getByRole('button', { name: 'Pausar' }).click();
+    const confirmationDialog = page.getByRole('dialog', { name: `Pausar ${pausedDepartmentName}` });
+    await expect(confirmationDialog).toContainText(booking.name);
+    await expect(confirmationDialog).toContainText(booking.checkInDate);
+    await expect(confirmationDialog).toContainText('deberás respetar');
+
+    const pauseResponsePromise = page.waitForResponse(response =>
+      response.request().method() === 'POST' && response.url().endsWith(`/departments/${department.id}/pause`)
+    );
+    await confirmationDialog.getByRole('button', { name: 'Confirmar pausa' }).click();
+    expect((await pauseResponsePromise).status()).toBe(200);
+    await expect(departmentRow).toContainText('Pausado');
+    await expect(departmentRow.getByRole('button', { name: 'Reactivar' })).toBeVisible();
+
+    await page.goto('/#/dashboard/reservations');
+    const reservationRow = page.getByRole('row').filter({ hasText: booking.name });
+    await expect(reservationRow).toHaveClass(/reservation-attention/);
+    const pausedReservationOption = page.locator('select[formcontrolname="departmentId"] option')
+      .filter({ hasText: pausedDepartmentName });
+    await expect(pausedReservationOption).toBeDisabled();
+
+    await page.goto('/#/dashboard/stays');
+    const expressDepartmentOption = page.locator('select[formcontrolname="departmentId"] option')
+      .filter({ hasText: pausedDepartmentName });
+    await expect(expressDepartmentOption).toBeDisabled();
+    await page.getByRole('button', { name: 'Retroactivo' }).click();
+    const retroactiveDepartmentOption = page.locator('select[formcontrolname="departmentId"] option')
+      .filter({ hasText: pausedDepartmentName });
+    await expect(retroactiveDepartmentOption).toBeEnabled();
+
+    await page.goto('/#/dashboard/departments');
+    const pausedRow = page.locator('tr:visible, div.border.rounded-lg:visible')
+      .filter({ hasText: pausedDepartmentName }).first();
+    await pausedRow.getByRole('button', { name: 'Reactivar' }).click();
+    await expect(pausedRow.getByRole('button', { name: 'Pausar' })).toBeVisible();
   });
 
   test('crea y lista una reserva pendiente, y recalcula fechas, noches y total', async ({ page }) => {

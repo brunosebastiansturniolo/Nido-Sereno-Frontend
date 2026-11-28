@@ -7,7 +7,13 @@ import { ComplexService } from '../../services/complex.service';
 import { AutoFillService } from '../../services/auto-fill.service';
 import { DepartmentRequest, DepartmentResponse, DepositCalculationBase } from '../../models/department.models';
 import { ComplexResponse } from '../../models/complex.models';
+import { ReservationResponse } from '../../models/reservation.models';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
+import { ReservationService } from '../../services/reservation.service';
+import { StayService } from '../../services/stay.service';
+import { DateControllerService } from '../../services/date-controller.service';
+
+type DepartmentFilter = 'AVAILABLE' | 'KITCHEN' | 'PAUSED';
 
 @Component({
   selector: 'app-departments',
@@ -21,18 +27,47 @@ export class DepartmentsComponent implements OnInit {
   private deptService = inject(DepartmentService);
   private complexService = inject(ComplexService);
   private autoFill = inject(AutoFillService);
+  private reservationService = inject(ReservationService);
+  private stayService = inject(StayService);
+  private dateCtrl = inject(DateControllerService);
 
   departments: DepartmentResponse[] = [];
   complexes: ComplexResponse[] = [];
+  reservations: ReservationResponse[] = [];
+  activeDepartmentIds = new Set<number>();
+  selectedDepartmentFilter: DepartmentFilter | null = null;
+  selectedComplexIds = new Set<number>();
   loading = false;
   error = '';
   success = '';
   showErrorModal = false;
   errorMessage = '';
   editingDepartmentId: number | null = null;
+  showPauseConfirmation = false;
+  pauseTarget: DepartmentResponse | null = null;
+  upcomingReservations: ReservationResponse[] = [];
+  departmentActionInProgressId: number | null = null;
 
   get noComplexes(): boolean {
     return this.complexes.length === 0;
+  }
+
+  get filteredDepartments(): DepartmentResponse[] {
+    return this.departments.filter(department => {
+      const matchesComplex = this.selectedComplexIds.size === 0 || this.selectedComplexIds.has(department.complexId);
+      const matchesFilter = this.selectedDepartmentFilter === 'AVAILABLE'
+        ? department.disponible && !department.pausado
+        : this.selectedDepartmentFilter === 'KITCHEN'
+          ? department.tieneCocina
+          : this.selectedDepartmentFilter === 'PAUSED'
+            ? department.pausado
+            : true;
+      return matchesComplex && matchesFilter;
+    });
+  }
+
+  get isAllDepartmentsSelected(): boolean {
+    return this.selectedDepartmentFilter === null && this.selectedComplexIds.size === 0;
   }
 
   createForm = this.fb.group({
@@ -54,6 +89,8 @@ export class DepartmentsComponent implements OnInit {
   ngOnInit(): void {
     this.loadDepartments();
     this.loadComplexes();
+    this.loadReservations();
+    this.loadActiveStays();
     this.createForm.get('baseCalculoSenia')?.valueChanges.subscribe(base => {
       this.onDepositBaseChange(base as DepositCalculationBase);
     });
@@ -78,6 +115,104 @@ export class DepartmentsComponent implements OnInit {
       next: (data) => { this.complexes = data; },
       error: (err) => console.error(err)
     });
+  }
+
+  loadReservations(): void {
+    this.reservationService.getMyReservations().subscribe({
+      next: reservations => { this.reservations = reservations; },
+      error: err => console.error(err)
+    });
+  }
+
+  loadActiveStays(): void {
+    this.stayService.getMyStays(undefined, undefined, true).subscribe({
+      next: stays => {
+        this.activeDepartmentIds = new Set(stays
+          .filter(stay => stay.fechaHoraCheckInReal && !stay.fechaHoraCheckOutReal)
+          .map(stay => stay.departmentId));
+      },
+      error: err => console.error(err)
+    });
+  }
+
+  selectDepartmentFilter(filter: DepartmentFilter | 'ALL'): void {
+    if (filter === 'ALL') {
+      this.selectedDepartmentFilter = null;
+      this.selectedComplexIds = new Set<number>();
+      return;
+    }
+    this.selectedDepartmentFilter = filter;
+  }
+
+  toggleComplexFilter(complexId: number): void {
+    const selected = new Set(this.selectedComplexIds);
+    if (selected.has(complexId)) selected.delete(complexId);
+    else selected.add(complexId);
+    this.selectedComplexIds = selected;
+  }
+
+  isDepartmentOccupied(department: DepartmentResponse): boolean {
+    return this.activeDepartmentIds.has(department.id);
+  }
+
+  openPauseConfirmation(department: DepartmentResponse): void {
+    if (this.isDepartmentOccupied(department) || department.pausado) return;
+    this.pauseTarget = department;
+    this.upcomingReservations = this.reservations
+      .filter(reservation => reservation.departmentId === department.id
+        && reservation.fechaCheckIn >= this.dateCtrl.getDateStr()
+        && !this.isCancelled(reservation)
+        && !reservation.enEstadia)
+      .sort((first, second) => first.fechaCheckIn.localeCompare(second.fechaCheckIn));
+    this.showPauseConfirmation = true;
+  }
+
+  closePauseConfirmation(): void {
+    if (this.departmentActionInProgressId !== null) return;
+    this.showPauseConfirmation = false;
+    this.pauseTarget = null;
+    this.upcomingReservations = [];
+  }
+
+  confirmPause(): void {
+    if (!this.pauseTarget || this.departmentActionInProgressId !== null) return;
+    const department = this.pauseTarget;
+    this.departmentActionInProgressId = department.id;
+    this.deptService.pauseDepartment(department.id).subscribe({
+      next: updatedDepartment => {
+        this.departments = this.departments.map(item => item.id === updatedDepartment.id ? updatedDepartment : item);
+        this.success = `Departamento "${department.nombre}" pausado.`;
+        this.departmentActionInProgressId = null;
+        this.closePauseConfirmation();
+      },
+      error: err => {
+        this.errorMessage = this.extractErrorMessage(err);
+        this.showErrorModal = true;
+        this.departmentActionInProgressId = null;
+        this.closePauseConfirmation();
+      }
+    });
+  }
+
+  resumeDepartment(department: DepartmentResponse): void {
+    if (this.departmentActionInProgressId !== null) return;
+    this.departmentActionInProgressId = department.id;
+    this.deptService.resumeDepartment(department.id).subscribe({
+      next: updatedDepartment => {
+        this.departments = this.departments.map(item => item.id === updatedDepartment.id ? updatedDepartment : item);
+        this.success = `Departamento "${department.nombre}" reactivado.`;
+        this.departmentActionInProgressId = null;
+      },
+      error: err => {
+        this.errorMessage = this.extractErrorMessage(err);
+        this.showErrorModal = true;
+        this.departmentActionInProgressId = null;
+      }
+    });
+  }
+
+  private isCancelled(reservation: ReservationResponse): boolean {
+    return reservation.estado === 'CANCELED' || reservation.estado === 'CANCELLED';
   }
 
   onSubmit(): void {

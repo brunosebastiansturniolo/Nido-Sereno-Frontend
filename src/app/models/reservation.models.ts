@@ -29,4 +29,5 @@ export interface ReservationResponse {
   departmentId: number;
   departmentName: string;
   checkInRealizado: boolean;
+  enEstadia: boolean;
 }

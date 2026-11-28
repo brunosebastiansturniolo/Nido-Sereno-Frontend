@@ -82,7 +82,7 @@
         <label class="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
         <select formControlName="departmentId" class="w-full px-3 lg:px-4 py-2.5 lg:py-2 border rounded-lg text-base lg:text-sm">
           <option value="" disabled>Seleccioná un departamento</option>
-          <option *ngFor="let d of departments" [ngValue]="d.id">{{ d.nombre }} ({{ d.precioPorNoche }}$/noche)</option>
+          <option *ngFor="let d of departments" [ngValue]="d.id" [disabled]="d.pausado">{{ d.nombre }} ({{ d.precioPorNoche }}$/noche){{ d.pausado ? ' · Pausado' : '' }}</option>
         </select>
         <p *ngIf="createForm.get('departmentId')?.touched && createForm.get('departmentId')?.errors?.['required']" class="text-red-500 text-xs mt-1">Debe seleccionar un departamento.</p>
       </div>
@@ -114,12 +114,31 @@
   <!-- Lista de reservas -->
   <div class="bg-white rounded-xl shadow p-4 lg:p-6">
     <h2 class="text-base lg:text-lg font-semibold text-gray-700 mb-3 lg:mb-4">Mis reservas</h2>
+    <div class="flex flex-wrap gap-2 mb-4" role="group" aria-label="Filtrar reservas">
+      <button type="button" (click)="showAllReservations()" [attr.aria-pressed]="isAllReservationsSelected"
+        [class.bg-emerald-600]="isAllReservationsSelected" [class.text-white]="isAllReservationsSelected"
+        [class.bg-gray-100]="!isAllReservationsSelected" [class.text-gray-700]="!isAllReservationsSelected"
+        class="px-3 py-1.5 rounded-full text-sm font-medium">Todas</button>
+      <button type="button" (click)="toggleReservationFilter('ARRIVING')" [attr.aria-pressed]="selectedReservationFilters.has('ARRIVING')"
+        [class.bg-blue-600]="selectedReservationFilters.has('ARRIVING')" [class.text-white]="selectedReservationFilters.has('ARRIVING')"
+        [class.bg-gray-100]="!selectedReservationFilters.has('ARRIVING')" [class.text-gray-700]="!selectedReservationFilters.has('ARRIVING')"
+        class="px-3 py-1.5 rounded-full text-sm font-medium">Por llegar</button>
+      <button type="button" (click)="toggleReservationFilter('IN_STAY')" [attr.aria-pressed]="selectedReservationFilters.has('IN_STAY')"
+        [class.bg-emerald-600]="selectedReservationFilters.has('IN_STAY')" [class.text-white]="selectedReservationFilters.has('IN_STAY')"
+        [class.bg-gray-100]="!selectedReservationFilters.has('IN_STAY')" [class.text-gray-700]="!selectedReservationFilters.has('IN_STAY')"
+        class="px-3 py-1.5 rounded-full text-sm font-medium">En estadía</button>
+      <button type="button" (click)="toggleReservationFilter('CANCELLED')" [attr.aria-pressed]="selectedReservationFilters.has('CANCELLED')"
+        [class.bg-red-600]="selectedReservationFilters.has('CANCELLED')" [class.text-white]="selectedReservationFilters.has('CANCELLED')"
+        [class.bg-gray-100]="!selectedReservationFilters.has('CANCELLED')" [class.text-gray-700]="!selectedReservationFilters.has('CANCELLED')"
+        class="px-3 py-1.5 rounded-full text-sm font-medium">Canceladas</button>
+    </div>
     <div *ngIf="loading" class="text-gray-500">Cargando...</div>
     <div *ngIf="!loading && reservations.length === 0" class="text-gray-400 text-sm">No tenés reservas aún.</div>
+    <div *ngIf="!loading && reservations.length > 0 && filteredReservations.length === 0" class="text-gray-400 text-sm">No hay reservas que coincidan con los filtros seleccionados.</div>
     
     <!-- Vista móvil: cards -->
-    <div *ngIf="!loading && reservations.length > 0" class="space-y-3 md:hidden">
-      <div *ngFor="let r of reservations" class="border rounded-lg p-3 hover:bg-gray-50 transition">
+    <div *ngIf="!loading && filteredReservations.length > 0" class="space-y-3 md:hidden">
+      <div *ngFor="let r of filteredReservations" [class.reservation-attention]="isPausedFutureReservation(r)" class="border rounded-lg p-3 hover:bg-gray-50 transition">
         <div class="flex items-start justify-between mb-2">
           <div class="flex-1 min-w-0">
             <h3 class="font-semibold text-gray-800">{{ r.firstName }} {{ r.lastName }}</h3>
@@ -153,11 +172,11 @@
     </div>
 
     <!-- Vista desktop: tabla -->
-    <div *ngIf="!loading && reservations.length > 0" class="hidden md:block overflow-x-auto">
+    <div *ngIf="!loading && filteredReservations.length > 0" class="hidden md:block overflow-x-auto">
       <table class="w-full text-left">
         <thead><tr class="border-b"><th class="py-2 px-3 text-sm text-gray-500">Reservante</th><th class="py-2 px-3 text-sm text-gray-500">Departamento</th><th class="py-2 px-3 text-sm text-gray-500">Personas</th><th class="py-2 px-3 text-sm text-gray-500">DNI</th><th class="py-2 px-3 text-sm text-gray-500">Check-in</th><th class="py-2 px-3 text-sm text-gray-500">Check-out</th><th class="py-2 px-3 text-sm text-gray-500">Estado</th><th class="py-2 px-3 text-sm text-gray-500">Total</th><th class="py-2 px-3 text-sm text-gray-500">Pagado</th><th class="py-2 px-3 text-sm text-gray-500">Acciones</th></tr></thead>
         <tbody>
-          <tr *ngFor="let r of reservations" class="border-b hover:bg-gray-50">
+          <tr *ngFor="let r of filteredReservations" [class.reservation-attention]="isPausedFutureReservation(r)" class="border-b hover:bg-gray-50">
             <td class="py-2 px-3 text-sm">{{ r.firstName }} {{ r.lastName }}</td>
             <td class="py-2 px-3 text-sm">{{ r.departmentName || 'No disponible' }}</td>
             <td class="py-2 px-3 text-sm">{{ r.cantidadPersonas }} {{ r.cantidadPersonas === 1 ? 'persona' : 'personas' }}</td>

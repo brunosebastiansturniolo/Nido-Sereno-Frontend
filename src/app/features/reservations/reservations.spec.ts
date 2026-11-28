@@ -70,7 +70,8 @@ describe('ReservationsComponent', () => {
       montoSenia: 0,
       cantidadNoches: 1,
       departmentId: 5,
-      departmentName: 'D2'
+      departmentName: 'D2',
+      enEstadia: false
     } as ReservationResponse];
     fixture.detectChanges();
 
@@ -79,5 +80,66 @@ describe('ReservationsComponent', () => {
       .some((header: any) => header.textContent.trim() === 'Departamento')).toBeTrue();
     expect(Array.from(fixture.nativeElement.querySelectorAll('td'))
       .some((cell: any) => cell.textContent.trim() === 'D2')).toBeTrue();
+  });
+
+  it('filters arrivals from today by pending or confirmed status', () => {
+    component.reservations = [
+      { id: 1, estado: 'PENDING', fechaCheckIn: '2025-01-10' } as ReservationResponse,
+      { id: 2, estado: 'CONFIRMED', fechaCheckIn: '2025-01-11' } as ReservationResponse,
+      { id: 3, estado: 'PENDING', fechaCheckIn: '2025-01-09' } as ReservationResponse,
+      { id: 4, estado: 'CANCELED', fechaCheckIn: '2025-01-11' } as ReservationResponse,
+      { id: 5, estado: 'COMPLETED', fechaCheckIn: '2025-01-12' } as ReservationResponse
+    ];
+
+    component.toggleReservationFilter('ARRIVING');
+
+    expect(component.filteredReservations.map(reservation => reservation.id)).toEqual([1, 2]);
+  });
+
+  it('unites the selected reservation tags and clears them with Todas', () => {
+    component.reservations = [
+      { id: 1, estado: 'PENDING', fechaCheckIn: '2025-01-10' } as ReservationResponse,
+      { id: 2, estado: 'CANCELED', fechaCheckIn: '2025-01-11' } as ReservationResponse,
+      { id: 3, estado: 'COMPLETED', fechaCheckIn: '2025-01-12' } as ReservationResponse
+    ];
+    component.toggleReservationFilter('ARRIVING');
+    component.toggleReservationFilter('CANCELLED');
+
+    expect(component.filteredReservations.map(reservation => reservation.id)).toEqual([1, 2]);
+
+    component.showAllReservations();
+
+    expect(component.isAllReservationsSelected).toBeTrue();
+    expect(component.filteredReservations.map(reservation => reservation.id)).toEqual([1, 2, 3]);
+  });
+
+  it('filters active stays independently from payment status', () => {
+    component.reservations = [
+      { id: 1, estado: 'PENDING', enEstadia: true } as ReservationResponse,
+      { id: 2, estado: 'COMPLETED', enEstadia: false } as ReservationResponse
+    ];
+
+    component.toggleReservationFilter('IN_STAY');
+
+    expect(component.filteredReservations.map(reservation => reservation.id)).toEqual([1]);
+  });
+
+  it('highlights future non-cancelled reservations of paused departments', () => {
+    component.departments = [{ id: 5, pausado: true } as DepartmentResponse];
+    const futureReservation = {
+      id: 1,
+      estado: 'COMPLETED',
+      fechaCheckIn: '2025-01-11',
+      departmentId: 5,
+      enEstadia: false
+    } as ReservationResponse;
+    const cancelledReservation = { ...futureReservation, id: 2, estado: 'CANCELED' };
+    const activeStay = { ...futureReservation, id: 3, enEstadia: true };
+    const pastReservation = { ...futureReservation, id: 4, fechaCheckIn: '2025-01-09' };
+
+    expect(component.isPausedFutureReservation(futureReservation)).toBeTrue();
+    expect(component.isPausedFutureReservation(cancelledReservation)).toBeFalse();
+    expect(component.isPausedFutureReservation(activeStay)).toBeFalse();
+    expect(component.isPausedFutureReservation(pastReservation)).toBeFalse();
   });
 });

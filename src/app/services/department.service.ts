@@ -23,6 +23,14 @@ export class DepartmentService {
     return this.http.put<DepartmentResponse>(`${this.baseUrl}/${id}`, request);
   }
 
+  pauseDepartment(id: number): Observable<DepartmentResponse> {
+    return this.http.post<DepartmentResponse>(`${this.baseUrl}/${id}/pause`, null);
+  }
+
+  resumeDepartment(id: number): Observable<DepartmentResponse> {
+    return this.http.delete<DepartmentResponse>(`${this.baseUrl}/${id}/pause`);
+  }
+
   deleteDepartment(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }

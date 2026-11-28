@@ -11,6 +11,8 @@ import { AutoFillService } from '../../services/auto-fill.service';
 import { ErrorModalComponent } from '../../shared/error-modal/error-modal';
 import { addNightsToDate, calculateNightCount } from '../../shared/pricing.utils';
 
+type ReservationFilter = 'ARRIVING' | 'IN_STAY' | 'CANCELLED';
+
 @Component({
   selector: 'app-reservations',
   standalone: true,
@@ -26,6 +28,7 @@ export class ReservationsComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   reservations: ReservationResponse[] = [];
+  selectedReservationFilters = new Set<ReservationFilter>();
   departments: DepartmentResponse[] = [];
   loading = false;
   error = '';
@@ -40,6 +43,15 @@ export class ReservationsComponent implements OnInit {
 
   get noDepartments(): boolean {
     return this.departments.length === 0;
+  }
+
+  get filteredReservations(): ReservationResponse[] {
+    if (this.selectedReservationFilters.size === 0) return this.reservations;
+    return this.reservations.filter(reservation =>
+      (this.selectedReservationFilters.has('ARRIVING') && this.isArriving(reservation))
+      || (this.selectedReservationFilters.has('IN_STAY') && reservation.enEstadia)
+      || (this.selectedReservationFilters.has('CANCELLED') && this.isCancelled(reservation))
+    );
   }
 
   createForm!: FormGroup;
@@ -93,6 +105,38 @@ export class ReservationsComponent implements OnInit {
     this.calculateSmartPricing();
   }
 
+  get isAllReservationsSelected(): boolean {
+    return this.selectedReservationFilters.size === 0;
+  }
+
+  showAllReservations(): void {
+    this.selectedReservationFilters = new Set<ReservationFilter>();
+  }
+
+  toggleReservationFilter(filter: ReservationFilter): void {
+    const selected = new Set(this.selectedReservationFilters);
+    if (selected.has(filter)) selected.delete(filter);
+    else selected.add(filter);
+    this.selectedReservationFilters = selected;
+  }
+
+  isPausedFutureReservation(reservation: ReservationResponse): boolean {
+    const department = this.departments.find(item => item.id === reservation.departmentId);
+    return !!department?.pausado
+      && reservation.fechaCheckIn >= this.dateCtrl.getDateStr()
+      && !this.isCancelled(reservation)
+      && !reservation.enEstadia;
+  }
+
+  private isArriving(reservation: ReservationResponse): boolean {
+    return (reservation.estado === 'PENDING' || reservation.estado === 'CONFIRMED')
+      && reservation.fechaCheckIn >= this.dateCtrl.getDateStr();
+  }
+
+  private isCancelled(reservation: ReservationResponse): boolean {
+    return reservation.estado === 'CANCELED' || reservation.estado === 'CANCELLED';
+  }
+
   /**
    * Cuando el usuario cambia la cantidad de noches, ajustar la fecha de check-out.
    * Se suma la cantidad de noches a la fecha de check-in.
@@ -137,6 +181,12 @@ export class ReservationsComponent implements OnInit {
   onCreate(): void {
     if (this.createForm.invalid) return;
     const formValue = this.createForm.value;
+    const department = this.departments.find(item => item.id === Number(formValue.departmentId));
+    if (department?.pausado) {
+      this.errorMessage = 'El departamento está pausado y no admite nuevas reservas.';
+      this.showErrorModal = true;
+      return;
+    }
     const request: ReservationRequest = {
       firstName: formValue.firstName,
       lastName: formValue.lastName,
@@ -319,8 +369,9 @@ export class ReservationsComponent implements OnInit {
     this.createForm.patchValue(data);
 
     // Seleccionar un departamento aleatorio si hay departamentos disponibles
-    if (this.departments.length > 0) {
-      const randomDept = this.departments[Math.floor(Math.random() * this.departments.length)];
+    const bookableDepartments = this.departments.filter(department => !department.pausado);
+    if (bookableDepartments.length > 0) {
+      const randomDept = bookableDepartments[Math.floor(Math.random() * bookableDepartments.length)];
       this.createForm.get('departmentId')?.setValue(randomDept.id, { emitEvent: true });
       // emitEvent: true dispara calculateSmartPricing() para calcular noches y precio total
     }

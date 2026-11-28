@@ -418,6 +418,12 @@ export class StaysComponent implements OnInit {
       return;
     }
     const formValue = this.expressForm.value;
+    const department = this.departments.find(item => item.id === Number(formValue.departmentId));
+    if (department?.pausado) {
+      this.errorMessage = 'El departamento está pausado y no admite nuevos check-in express.';
+      this.showErrorModal = true;
+      return;
+    }
 
     const request: StayRequest = {
       departmentId: formValue.departmentId,

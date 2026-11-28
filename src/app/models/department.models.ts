@@ -29,6 +29,7 @@ export interface DepartmentResponse {
   tieneWifi: boolean;
   tienePileta: boolean;
   disponible: boolean;
+  pausado: boolean;
   complexId: number;
   complexNombre: string;
 }
