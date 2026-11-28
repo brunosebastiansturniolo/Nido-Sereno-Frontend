@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Nido Sereno</title>
+  <rect width="128" height="128" fill="#0c2118"/>
+  <rect x="7" y="7" width="114" height="114" rx="25" fill="#fff8e9"/>
+  <path d="M28 62 63 31l27 24V43h10v21l8 7H91L63 47 35 71H19z" fill="#00583b"/>
+  <path d="M57 56h6v6h-6zm9 0h6v6h-6zm-9 9h6v6h-6zm9 0h6v6h-6z" fill="#00583b"/>
+  <path d="M62 100C48 83 32 80 28 64c19-2 34 8 34 29zm4 0c14-17 30-20 34-36-19-2-34 8-34 29z" fill="#78b52a"/>
+  <path d="M64 101V79m0 22C59 85 48 76 41 72m23 29c5-16 16-25 23-29" fill="none" stroke="#fff8e9" stroke-linecap="round" stroke-width="2.5"/>
+</svg>
