@@ -18,6 +18,8 @@ import { addNightsToDate, calculateNightCount } from '../../shared/pricing.utils
 import { debounceTime, distinctUntilChanged, switchMap, tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
+type StayFilter = 'PROGRAMMED' | 'IN_PROGRESS' | 'COMPLETED';
+
 @Component({
   selector: 'app-stays',
   standalone: true,
@@ -38,6 +40,7 @@ export class StaysComponent implements OnInit {
   isCheckInView = this.route.snapshot.data['view'] === 'check-in';
 
   stays: StayResponse[] = [];
+  selectedStayFilters = new Set<StayFilter>();
   reservations: ReservationResponse[] = [];
   departments: DepartmentResponse[] = [];
   loading = false;
@@ -53,6 +56,36 @@ export class StaysComponent implements OnInit {
 
   get noReservations(): boolean {
     return this.reservations.length === 0;
+  }
+
+  get filteredStays(): StayResponse[] {
+    if (this.selectedStayFilters.size === 0) return this.stays;
+    return this.stays.filter(stay => this.selectedStayFilters.has(this.getStayFilter(stay)));
+  }
+
+  toggleStayFilter(filter: StayFilter): void {
+    const selected = new Set(this.selectedStayFilters);
+    if (selected.has(filter)) selected.delete(filter);
+    else selected.add(filter);
+    this.selectedStayFilters = selected;
+  }
+
+  isStayFilterSelected(filter: StayFilter): boolean {
+    return this.selectedStayFilters.has(filter);
+  }
+
+  getStayFilter(stay: StayResponse): StayFilter {
+    if (stay.status === 'COMPLETED') return 'COMPLETED';
+    if (stay.status === 'IN_PROGRESS' || stay.status === 'ACTIVE') return 'IN_PROGRESS';
+    if (stay.status === 'PENDING') return 'PROGRAMMED';
+    return stay.fechaHoraCheckInReal ? 'IN_PROGRESS' : 'PROGRAMMED';
+  }
+
+  getStayStatusLabel(stay: StayResponse): string {
+    const status = this.getStayFilter(stay);
+    if (status === 'COMPLETED') return 'Completada';
+    if (status === 'IN_PROGRESS') return 'En curso';
+    return 'Programada';
   }
 
   // Modal de justificación de fecha

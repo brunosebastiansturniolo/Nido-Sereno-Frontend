@@ -742,12 +742,27 @@
   <!-- Lista de estadías -->
   <div class="bg-white rounded-xl shadow p-4 lg:p-6">
     <h2 class="text-base lg:text-lg font-semibold text-gray-700 mb-3 lg:mb-4">Mis estadías</h2>
+    <div class="flex flex-wrap gap-2 mb-4" role="group" aria-label="Filtrar estadías por estado">
+      <button type="button" (click)="toggleStayFilter('PROGRAMMED')" [attr.aria-pressed]="isStayFilterSelected('PROGRAMMED')"
+        [class.bg-emerald-600]="isStayFilterSelected('PROGRAMMED')" [class.text-white]="isStayFilterSelected('PROGRAMMED')"
+        [class.bg-gray-100]="!isStayFilterSelected('PROGRAMMED')" [class.text-gray-700]="!isStayFilterSelected('PROGRAMMED')"
+        class="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-emerald-100">Por llegar / Programada</button>
+      <button type="button" (click)="toggleStayFilter('IN_PROGRESS')" [attr.aria-pressed]="isStayFilterSelected('IN_PROGRESS')"
+        [class.bg-emerald-600]="isStayFilterSelected('IN_PROGRESS')" [class.text-white]="isStayFilterSelected('IN_PROGRESS')"
+        [class.bg-gray-100]="!isStayFilterSelected('IN_PROGRESS')" [class.text-gray-700]="!isStayFilterSelected('IN_PROGRESS')"
+        class="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-emerald-100">En curso</button>
+      <button type="button" (click)="toggleStayFilter('COMPLETED')" [attr.aria-pressed]="isStayFilterSelected('COMPLETED')"
+        [class.bg-emerald-600]="isStayFilterSelected('COMPLETED')" [class.text-white]="isStayFilterSelected('COMPLETED')"
+        [class.bg-gray-100]="!isStayFilterSelected('COMPLETED')" [class.text-gray-700]="!isStayFilterSelected('COMPLETED')"
+        class="rounded-full px-3 py-1.5 text-sm font-medium hover:bg-emerald-100">Completada / Finalizada</button>
+    </div>
     <div *ngIf="loading" class="text-gray-500">Cargando...</div>
     <div *ngIf="!loading && stays.length === 0" class="text-gray-400 text-sm">No tenés estadías aún.</div>
+    <div *ngIf="!loading && stays.length > 0 && filteredStays.length === 0" class="text-gray-400 text-sm">No hay estadías con los estados seleccionados.</div>
     
     <!-- Vista móvil: cards -->
-    <div *ngIf="!loading && stays.length > 0" class="space-y-3 md:hidden">
-      <div *ngFor="let s of stays" class="border rounded-lg p-3 hover:bg-gray-50 transition">
+    <div *ngIf="!loading && filteredStays.length > 0" class="space-y-3 md:hidden">
+      <div *ngFor="let s of filteredStays" class="border rounded-lg p-3 hover:bg-gray-50 transition">
         <div class="flex items-start justify-between mb-2">
           <div class="flex-1 min-w-0">
             <h3 class="font-semibold text-gray-800 text-sm">
@@ -758,10 +773,10 @@
             </h3>
           </div>
           <span class="px-2 py-1 rounded text-xs font-semibold ml-2 flex-shrink-0"
-            [class.bg-yellow-100]="s.status==='PENDING'"
-            [class.bg-green-100]="s.status==='IN_PROGRESS' || s.status==='ACTIVE'"
-            [class.bg-blue-100]="s.status==='COMPLETED'">
-            {{ s.status === 'PENDING' ? 'Pendiente' : s.status === 'COMPLETED' ? 'Completada' : (s.fechaHoraCheckInReal ? 'En curso' : 'Programada') }}
+            [class.bg-yellow-100]="getStayFilter(s)==='PROGRAMMED'"
+            [class.bg-green-100]="getStayFilter(s)==='IN_PROGRESS'"
+            [class.bg-blue-100]="getStayFilter(s)==='COMPLETED'">
+            {{ getStayStatusLabel(s) }}
           </span>
         </div>
         <div class="flex flex-wrap gap-2 text-xs text-gray-600">
@@ -779,7 +794,7 @@
     </div>
 
     <!-- Vista desktop: tabla -->
-    <div *ngIf="!loading && stays.length > 0" class="hidden md:block overflow-x-auto">
+    <div *ngIf="!loading && filteredStays.length > 0" class="hidden md:block overflow-x-auto">
       <table class="w-full text-left">
         <thead><tr class="border-b">
           <th class="py-2 px-3 text-sm text-gray-500">Check-in</th>
@@ -790,15 +805,15 @@
           <th class="py-2 px-3 text-sm text-gray-500">Acciones</th>
         </tr></thead>
         <tbody>
-          <tr *ngFor="let s of stays" class="border-b hover:bg-gray-50">
+          <tr *ngFor="let s of filteredStays" class="border-b hover:bg-gray-50">
             <td class="py-2 px-3 text-sm">{{ s.fechaHoraCheckInReal ? formatDate(s.fechaHoraCheckInReal) : (s.fechaCheckInPlaneada ? formatDate(s.fechaCheckInPlaneada) : '—') }}</td>
             <td class="py-2 px-3 text-sm">{{ s.fechaHoraCheckOutReal ? formatDate(s.fechaHoraCheckOutReal) : '—' }}</td>
             <td class="py-2 px-3">
               <span class="px-2 py-1 rounded text-xs font-semibold"
-                [class.bg-yellow-100]="s.status==='PENDING'"
-                [class.bg-green-100]="s.status==='IN_PROGRESS' || s.status==='ACTIVE'"
-                [class.bg-blue-100]="s.status==='COMPLETED'">
-                {{ s.status === 'PENDING' ? 'Pendiente' : s.status === 'COMPLETED' ? 'Completada' : (s.fechaHoraCheckInReal ? 'En curso' : 'Programada') }}
+                [class.bg-yellow-100]="getStayFilter(s)==='PROGRAMMED'"
+                [class.bg-green-100]="getStayFilter(s)==='IN_PROGRESS'"
+                [class.bg-blue-100]="getStayFilter(s)==='COMPLETED'">
+                {{ getStayStatusLabel(s) }}
               </span>
             </td>
             <td class="py-2 px-3 text-sm">

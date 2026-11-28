@@ -9,6 +9,7 @@ import { StayService } from '../../services/stay.service';
 import { TenantService } from '../../services/tenant.service';
 import { AutoFillService } from '../../services/auto-fill.service';
 import { DepartmentResponse } from '../../models/department.models';
+import { StayResponse } from '../../models/stay.models';
 import { StaysComponent } from './stays';
 
 describe('StaysComponent pricing', () => {
@@ -52,6 +53,34 @@ describe('StaysComponent pricing', () => {
 
   it('uses the route view to identify the check-in screen', () => {
     expect(component.isCheckInView).toBeTrue();
+  });
+
+  it('filters stays by their lifecycle status, combines tags, and deselects them on a second click', () => {
+    component.stays = [
+      { id: 1, status: 'PENDING' } as StayResponse,
+      { id: 2, status: 'IN_PROGRESS' } as StayResponse,
+      { id: 3, status: 'COMPLETED' } as StayResponse
+    ];
+
+    expect(component.filteredStays.map(stay => stay.id)).toEqual([1, 2, 3]);
+
+    component.toggleStayFilter('PROGRAMMED');
+    expect(component.filteredStays.map(stay => stay.id)).toEqual([1]);
+    component.toggleStayFilter('COMPLETED');
+    expect(component.filteredStays.map(stay => stay.id)).toEqual([1, 3]);
+
+    component.toggleStayFilter('PROGRAMMED');
+    expect(component.filteredStays.map(stay => stay.id)).toEqual([3]);
+    component.toggleStayFilter('COMPLETED');
+    expect(component.selectedStayFilters.size).toBe(0);
+    expect(component.filteredStays.map(stay => stay.id)).toEqual([1, 2, 3]);
+  });
+
+  it('maps legacy active stays to the in-progress category', () => {
+    const activeStay = { id: 4, status: 'ACTIVE' } as StayResponse;
+
+    expect(component.getStayFilter(activeStay)).toBe('IN_PROGRESS');
+    expect(component.getStayStatusLabel(activeStay)).toBe('En curso');
   });
 
   it('recalculates retroactive pricing when nights change and preserves a manual total', () => {
