@@ -12,7 +12,10 @@
   >
     <!-- Logo -->
     <div class="p-4 flex items-center justify-between border-b border-emerald-700" [class.justify-center]="!isMobile && !sidebarExpanded">
-      <span *ngIf="isMobile || sidebarExpanded" class="text-lg lg:text-xl font-bold truncate">🌿 Nido Sereno</span>
+      <div class="flex min-w-0 items-center gap-2">
+        <img src="nido-sereno-logo.svg" alt="" class="h-10 w-10 shrink-0 rounded-lg">
+        <span *ngIf="isMobile || sidebarExpanded" class="text-lg lg:text-xl font-bold truncate">Nido Sereno</span>
+      </div>
       <button (click)="mobileSidebarOpen = false" class="p-1 hover:bg-emerald-700 rounded lg:hidden" aria-label="Cerrar menú">
         ✕
       </button>
@@ -123,7 +126,10 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
       </svg>
     </button>
-    <span class="ml-3 font-bold text-sm">🌿 Nido Sereno</span>
+    <div class="ml-3 flex items-center gap-2 font-bold text-sm">
+      <img src="nido-sereno-logo.svg" alt="" class="h-8 w-8 rounded-md">
+      <span>Nido Sereno</span>
+    </div>
   </div>
 
   <!-- Main content -->

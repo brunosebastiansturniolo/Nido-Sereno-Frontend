@@ -12,7 +12,7 @@
   >
     <!-- Logo -->
     <div class="p-4 flex items-center justify-between border-b border-emerald-700" [class.justify-center]="!isMobile() && !sidebarExpanded()">
-      <span *ngIf="isMobile() || sidebarExpanded()" class="text-lg lg:text-xl font-bold truncate">🌿 Tutorial</span>
+      <span *ngIf="isMobile() || sidebarExpanded()" class="flex min-w-0 items-center gap-2 text-lg lg:text-xl font-bold truncate"><img src="nido-sereno-logo.svg" alt="" class="h-10 w-10 shrink-0 rounded-lg">Tutorial</span>
       <button (click)="mobileSidebarOpen.set(false)" class="p-1 hover:bg-emerald-700 rounded lg:hidden" aria-label="Cerrar menú">
         ✕
       </button>
@@ -132,7 +132,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
       </svg>
     </button>
-    <span class="ml-3 font-bold text-sm">🌿 Tutorial</span>
+    <span class="ml-3 flex items-center gap-2 font-bold text-sm"><img src="nido-sereno-logo.svg" alt="" class="h-8 w-8 rounded-md">Tutorial</span>
   </div>
 
   <!-- Main content -->
@@ -141,7 +141,7 @@
     <div *ngIf="currentSection() === 'welcome'" class="p-4 lg:p-6">
       <div class="max-w-4xl mx-auto">
         <div class="text-center mb-8">
-          <h1 class="text-4xl font-bold text-emerald-500 mb-2">🌿 Nido Sereno</h1>
+          <h1 class="text-4xl font-bold text-emerald-500 mb-2"><img src="nido-sereno-logo.svg" alt="" class="mx-auto mb-3 h-20 w-20 rounded-2xl">Nido Sereno</h1>
           <p class="text-xl text-gray-600">Tutorial Interactivo</p>
           <p class="text-sm text-gray-400 mt-1">Aprendé a usar el sistema sin riesgo — y simulando el paso del tiempo</p>
         </div>
